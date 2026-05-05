@@ -7,8 +7,10 @@ import { Listing } from '@/lib/dummyData'
 export const useWishlist = () => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
+    setIsHydrated(true)
     // Load wishlist on mount
     const loadWishlist = () => {
       setWishlist(WishlistService.getWishlist())
@@ -59,6 +61,7 @@ export const useWishlist = () => {
   return {
     wishlist,
     isLoading,
+    isHydrated,
     addToWishlist,
     removeFromWishlist,
     isInWishlist,

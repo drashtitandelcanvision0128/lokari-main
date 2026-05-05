@@ -151,36 +151,46 @@ const Navbar = () => {
             Lokhari
           </Link>
           <div className="hidden md:flex items-center gap-6 font-headline font-semibold tracking-tight">
-            <Link
-              href="/listings"
-              className={`border-b-2 pb-1 transition-colors ${
-                isActive('/listings')
-                  ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
-                  : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-              }`}
-            >
-              Marketplace
-            </Link>
-            <Link
-              href="/services"
-              className={`border-b-2 pb-1 transition-colors ${
-                isActive('/services')
-                  ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
-                  : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-              }`}
-            >
-              Services
-            </Link>
-            <Link
-              href="/insights"
-              className={`border-b-2 pb-1 transition-colors ${
-                isActive('/insights')
-                  ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
-                  : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-              }`}
-            >
-              Insights
-            </Link>
+            {/* Hide Marketplace, Services, and Insights tabs on all dashboard and admin pages */}
+            {!pathname.startsWith('/dashboard') && 
+             !pathname.startsWith('/farmer-dashboard') && 
+             !pathname.startsWith('/trader-dashboard') && 
+             !pathname.startsWith('/transporter-dashboard') && 
+             !pathname.startsWith('/warehouse-dashboard') && 
+             !pathname.startsWith('/admin') && (
+              <>
+                <Link
+                  href="/listings"
+                  className={`border-b-2 pb-1 transition-colors ${
+                    isActive('/listings')
+                      ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
+                      : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
+                  }`}
+                >
+                  Marketplace
+                </Link>
+                <Link
+                  href="/services"
+                  className={`border-b-2 pb-1 transition-colors ${
+                    isActive('/services')
+                      ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
+                      : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
+                  }`}
+                >
+                  Services
+                </Link>
+                <Link
+                  href="/insights"
+                  className={`border-b-2 pb-1 transition-colors ${
+                    isActive('/insights')
+                      ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
+                      : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
+                  }`}
+                >
+                  Insights
+                </Link>
+              </>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-4">

@@ -11,10 +11,11 @@ interface WishlistIconProps {
 }
 
 const WishlistIcon = ({ listing, size = 'md', className = '' }: WishlistIconProps) => {
-  const { isInWishlist, toggleWishlist } = useWishlist()
+  const { isInWishlist, toggleWishlist, isHydrated } = useWishlist()
   const [isAnimating, setIsAnimating] = useState(false)
 
-  const isWishlisted = isInWishlist(listing.id)
+  // Only check wishlist state after hydration to prevent server/client mismatch
+  const isWishlisted = isHydrated ? isInWishlist(listing.id) : false
 
   const sizeClasses = {
     sm: 'w-5 h-5',
