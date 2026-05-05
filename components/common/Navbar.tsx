@@ -236,7 +236,17 @@ const Navbar = () => {
                 >
                   Marketplace
                 </Link>
-                                <Link
+                <Link
+                  href="/services"
+                  className={`border-b-2 pb-1 transition-colors ${
+                    isActive('/services')
+                      ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
+                      : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
+                  }`}
+                >
+                  Services
+                </Link>
+                <Link
                   href="/insights"
                   className={`border-b-2 pb-1 transition-colors ${
                     isActive('/insights')
