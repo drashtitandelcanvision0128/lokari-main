@@ -1,0 +1,320 @@
+'use client'
+
+import { useState } from 'react'
+import { AuditLogEntry } from '@/types/admin'
+import { mockAuditLog } from '@/data/adminMock'
+import { AdminDetailDrawer } from '../AdminDetailDrawer'
+
+interface AuditLogPanelProps {
+  searchQuery?: string
+}
+
+export function AuditLogPanel({ searchQuery = '' }: AuditLogPanelProps) {
+  const [logs] = useState<AuditLogEntry[]>(mockAuditLog)
+  const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedSeverity, setSelectedSeverity] = useState<string>('all')
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('24h')
+
+  const handleViewLog = (log: AuditLogEntry) => {
+    setSelectedLog(log)
+    setIsDrawerOpen(true)
+  }
+
+  const handleCloseDrawer = () => {
+    setIsDrawerOpen(false)
+    setSelectedLog(null)
+  }
+
+  const filteredLogs = logs.filter(log => {
+    const matchesSearch = log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         log.details.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (log.userName && log.userName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                         log.resource.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = selectedCategory === 'all' || log.category === selectedCategory
+    const matchesSeverity = selectedSeverity === 'all' || log.severity === selectedSeverity
+    
+    return matchesSearch && matchesCategory && matchesSeverity
+  })
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return 'bg-error text-on-error'
+      case 'error':
+        return 'bg-error-container text-error'
+      case 'warning':
+        return 'bg-secondary-fixed text-secondary'
+      case 'info':
+        return 'bg-tertiary-fixed text-tertiary'
+      default:
+        return 'bg-surface-container text-on-surface-variant'
+    }
+  }
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'user':
+        return 'person'
+      case 'listing':
+        return 'inventory_2'
+      case 'order':
+        return 'shopping_cart'
+      case 'payment':
+        return 'payments'
+      case 'system':
+        return 'settings'
+      case 'security':
+        return 'security'
+      default:
+        return 'info'
+    }
+  }
+
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return 'error'
+      case 'error':
+        return 'error_outline'
+      case 'warning':
+        return 'warning'
+      case 'info':
+        return 'info'
+      default:
+        return 'info'
+    }
+  }
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+      return diffInMinutes < 1 ? 'Just now' : `${diffInMinutes}m ago`
+    }
+    if (diffInHours < 24) return `${diffInHours}h ago`
+    if (diffInHours < 48) return 'Yesterday'
+    
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const getSeverityPriority = (severity: string) => {
+    const priorities = {
+      'critical': 0,
+      'error': 1,
+      'warning': 2,
+      'info': 3
+    }
+    return priorities[severity as keyof typeof priorities] || 999
+  }
+
+  const sortedLogs = [...filteredLogs].sort((a, b) => {
+    const severityPriority = getSeverityPriority(a.severity) - getSeverityPriority(b.severity)
+    if (severityPriority !== 0) return severityPriority
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  })
+
+  const getSeverityStats = () => {
+    const stats = {
+      critical: logs.filter(log => log.severity === 'critical').length,
+      error: logs.filter(log => log.severity === 'error').length,
+      warning: logs.filter(log => log.severity === 'warning').length,
+      info: logs.filter(log => log.severity === 'info').length
+    }
+    return stats
+  }
+
+  const severityStats = getSeverityStats()
+
+  return (
+    <>
+      <div className="p-6 space-y-6">
+        {/* Header with Stats */}
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-2xl font-bold text-on-surface font-headline">Audit Trail</h2>
+            <p className="text-on-surface-variant mt-1">Monitor all system activities and security events</p>
+          </div>
+          
+          <div className="flex gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-error">{severityStats.critical}</div>
+              <div className="text-xs text-on-surface-variant">Critical</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-error-container">{severityStats.error}</div>
+              <div className="text-xs text-on-surface-variant">Errors</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-secondary">{severityStats.warning}</div>
+              <div className="text-xs text-on-surface-variant">Warnings</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-tertiary">{severityStats.info}</div>
+              <div className="text-xs text-on-surface-variant">Info</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-on-surface-variant">Category:</label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-outline rounded-lg bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">All Categories</option>
+              <option value="user">User</option>
+              <option value="listing">Listing</option>
+              <option value="order">Order</option>
+              <option value="payment">Payment</option>
+              <option value="system">System</option>
+              <option value="security">Security</option>
+            </select>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-on-surface-variant">Severity:</label>
+            <select
+              value={selectedSeverity}
+              onChange={(e) => setSelectedSeverity(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-outline rounded-lg bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">All Severities</option>
+              <option value="critical">Critical</option>
+              <option value="error">Error</option>
+              <option value="warning">Warning</option>
+              <option value="info">Info</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-on-surface-variant">Time Range:</label>
+            <select
+              value={selectedTimeRange}
+              onChange={(e) => setSelectedTimeRange(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-outline rounded-lg bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="1h">Last Hour</option>
+              <option value="24h">Last 24 Hours</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+            </select>
+          </div>
+
+          <div className="ml-auto text-sm text-on-surface-variant">
+            Showing {sortedLogs.length} of {logs.length} entries
+          </div>
+        </div>
+
+        {/* Audit Log Entries */}
+        <div className="space-y-3">
+          {sortedLogs.map((log) => (
+            <div key={log.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant p-4 hover:shadow-sm transition-shadow">
+              <div className="flex items-start gap-4">
+                {/* Severity Indicator */}
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getSeverityColor(log.severity)}`}>
+                  <span className="material-symbols-outlined text-sm">
+                    {getSeverityIcon(log.severity)}
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-on-surface">{log.action}</span>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(log.severity)}`}>
+                          {log.severity}
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant">
+                          {log.category}
+                        </span>
+                      </div>
+                      <p className="text-sm text-on-surface-variant">{log.details}</p>
+                    </div>
+                    <div className="text-right ml-4">
+                      <div className="text-sm text-on-surface-variant">{formatTimestamp(log.timestamp)}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-on-surface-variant">
+                    {log.userName && (
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined">person</span>
+                        {log.userName}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1">
+                      <span className="material-symbols-outlined">
+                        {getCategoryIcon(log.category)}
+                      </span>
+                      {log.resource} ({log.resourceId})
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="material-symbols-outlined">ip</span>
+                      {log.ipAddress}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => handleViewLog(log)}
+                    className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-lg">visibility</span>
+                  </button>
+                  <button className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
+                    <span className="material-symbols-outlined text-lg">download</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {sortedLogs.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="material-symbols-outlined text-2xl text-on-surface-variant">history</span>
+            </div>
+            <h3 className="text-lg font-medium text-on-surface mb-2">No audit logs found</h3>
+            <p className="text-on-surface-variant">Try adjusting your search or filters</p>
+          </div>
+        )}
+
+        {/* Load More */}
+        {sortedLogs.length > 0 && (
+          <div className="text-center">
+            <button className="px-6 py-2 text-sm font-medium bg-primary text-on-primary rounded-lg hover:bg-primary-container transition-colors cursor-pointer">
+              Load More Entries
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Admin Detail Drawer */}
+      <AdminDetailDrawer
+        isOpen={isDrawerOpen}
+        onClose={handleCloseDrawer}
+        data={selectedLog}
+        type="auditLog"
+      />
+    </>
+  )
+}
