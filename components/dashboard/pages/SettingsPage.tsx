@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { getCurrentUser } from '@/lib/auth'
+import { useDashboardSearch } from '@/hooks/useSearchFilter'
 
 interface Address {
   id: string
@@ -38,9 +39,16 @@ const mockAddresses: Address[] = [
   }
 ]
 
-export function SettingsPage() {
+interface SettingsPageProps {
+  searchQuery?: string
+}
+
+export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
   const [activeSection, setActiveSection] = useState<'profile' | 'kyc' | 'addresses' | 'notifications'>('profile')
-  const [addresses, setAddresses] = useState<Address[]>(mockAddresses)
+  const [addresses] = useState<Address[]>(mockAddresses)
+
+  // Filter addresses based on search query using the new search hook
+  const filteredAddresses = useDashboardSearch(addresses, searchQuery)
   const [currentUser, setCurrentUser] = useState<any>(null)
   
   const [profileData, setProfileData] = useState({
@@ -280,7 +288,7 @@ export function SettingsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {addresses.map((address) => (
+                  {filteredAddresses.map((address) => (
                     <div key={address.id} className="border border-stone-200 rounded-lg p-4">
                       <div className="flex justify-between items-start">
                         <div className="flex gap-4">

@@ -5,12 +5,16 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 import { mockNotifications, mockBids } from '@/data/dashboardMock'
+import { useDashboardSearch } from '@/hooks/useSearchFilter'
 
 interface OverviewPageProps {
   searchQuery?: string
 }
 
 export function OverviewPage({ searchQuery = '' }: OverviewPageProps) {
+  // Filter notifications based on search query
+  const filteredNotifications = useDashboardSearch(mockNotifications, searchQuery)
+  
   const stats = [
     {
       title: 'Active Listings',
@@ -130,11 +134,11 @@ export function OverviewPage({ searchQuery = '' }: OverviewPageProps) {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-primary">Alerts</h3>
                 <span className="w-6 h-6 flex items-center justify-center bg-red rounded-full text-[10px] font-bold text-white">
-                  {mockNotifications.length}
+                  {filteredNotifications.length}
                 </span>
               </div>
               <div className="space-y-4">
-                {mockNotifications.map((notification) => (
+                {filteredNotifications.map((notification) => (
                   <div key={notification.id} className="bg-surface-container p-4 rounded-xl flex gap-4">
                     <div className="shrink-0 w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent">
                       <Icon name={notification.type === 'payment' ? 'payments' : notification.type === 'bid' ? 'gavel' : 'schedule'} className="text-sm" />

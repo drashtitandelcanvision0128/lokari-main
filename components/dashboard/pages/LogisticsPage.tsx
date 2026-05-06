@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/Icon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Shipment, TransportListing, TransportRequest, TransportQuote } from '@/types/dashboard'
 import { mockShipments, mockTransportListings, mockTransportRequests, mockTransportQuotes } from '@/data/dashboardMock'
+import { useDashboardSearch } from '@/hooks/useSearchFilter'
 
 interface LogisticsPageProps {
   searchQuery?: string
@@ -14,13 +15,10 @@ interface LogisticsPageProps {
 
 export function LogisticsPage({ searchQuery = '' }: LogisticsPageProps) {
   const [activeSubTab, setActiveSubTab] = useState<'listings' | 'requests' | 'shipments' | 'quotes'>('shipments')
-  const [shipments, setShipments] = useState<Shipment[]>(mockShipments.filter(shipment => {
-    return searchQuery === '' || 
-      shipment.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      shipment.from.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      shipment.to.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      shipment.trackingNumber.toLowerCase().includes(searchQuery.toLowerCase())
-  }))
+  const [shipments] = useState<Shipment[]>(mockShipments)
+
+  // Filter shipments based on search query using the new search hook
+  const filteredShipments = useDashboardSearch(shipments, searchQuery)
 
   const getStatusBadge = (status: Shipment['status']) => {
     const variants = {
@@ -166,7 +164,7 @@ export function LogisticsPage({ searchQuery = '' }: LogisticsPageProps) {
                     </tr>
                   </thead>
                   <tbody className="text-sm font-medium divide-y divide-outline">
-                    {shipments.map((shipment) => (
+                    {filteredShipments.map((shipment) => (
                       <tr key={shipment.id}>
                         <td className="py-4">
                           <p className="text-primary font-mono">{shipment.trackingNumber}</p>

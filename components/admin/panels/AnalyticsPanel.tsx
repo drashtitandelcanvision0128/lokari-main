@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { AdminAnalytics } from '@/types/admin'
 import { mockAdminAnalytics } from '@/data/adminMock'
+import { useAdminSearch } from '@/hooks/useSearchFilter'
 
 interface AnalyticsPanelProps {
   searchQuery?: string

@@ -83,19 +83,21 @@ export function AdminLayout({
 
           {/* Right Section */}
           <div className="flex items-center gap-6">
-            {/* Search Bar */}
-            <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline">
-              <span className="material-symbols-outlined text-sm text-on-surface-variant">
-                search
-              </span>
-              <input
-                className="bg-transparent border-none text-sm focus:ring-0 p-0 w-48 text-on-surface placeholder-on-surface-variant"
-                placeholder="Search admin data..."
-                type="text"
-                value={localSearchQuery}
-                onChange={handleSearchInputChange}
-              />
-            </form>
+            {/* Search Bar - Hidden for Analytics Tab */}
+            {activeTab !== 'analytics' && (
+              <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline">
+                <span className="material-symbols-outlined text-sm text-on-surface-variant">
+                  search
+                </span>
+                <input
+                  className="bg-transparent border-none text-sm focus:ring-0 p-0 w-48 text-on-surface placeholder-on-surface-variant"
+                  placeholder="Search admin data..."
+                  type="text"
+                  value={localSearchQuery}
+                  onChange={handleSearchInputChange}
+                />
+              </form>
+            )}
 
             {/* Admin Actions */}
             <div className="flex items-center gap-2">
