@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { getCurrentUser, getUserRole } from '@/lib/auth'
+import { usePostListingNavigation } from '@/hooks/usePostListingNavigation'
 
 interface SidebarFiltersProps {
   onFilterChange: (filters: FilterState) => void
@@ -19,6 +20,7 @@ interface FilterState {
 
 const SidebarFilters = ({ onFilterChange }: SidebarFiltersProps) => {
   const [userRole, setUserRole] = useState<string>('')
+  const { createListingPath } = usePostListingNavigation()
   const [filters, setFilters] = useState<FilterState>({
     categories: ['produce', 'warehouse', 'transport'],
     location: 'all',
@@ -183,7 +185,7 @@ const SidebarFilters = ({ onFilterChange }: SidebarFiltersProps) => {
       </div>
       
       {userRole !== 'trader' && (
-        <Link href="/create-listing" className="mt-auto w-full py-3 bg-[#012d1d] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#1b4332] transition-all font-['Manrope'] text-center block">
+        <Link href={createListingPath} className="mt-auto w-full py-3 bg-[#012d1d] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#1b4332] transition-all font-['Manrope'] text-center block">
           <span className="text-sm">+</span>
           Post Listing
         </Link>
