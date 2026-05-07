@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import { getCurrentUser, getUserRole, isUserVerified } from '@/lib/auth'
 import Button from '@/components/common/Button'
 import WishlistIcon from '@/components/ui/WishlistIcon'
+import CartIcon from '@/components/ui/CartIcon'
+import { useWishlist } from '@/hooks/useWishlist'
+import { useCart } from '@/hooks/useCart'
 
 interface ListingDetailsProps {
   listing: any
@@ -35,6 +38,8 @@ const getProductImage = (listing: any) => {
 
 const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
   const router = useRouter()
+  const { toggleWishlist, isInWishlist } = useWishlist()
+  const { toggleCart, isInCart } = useCart()
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [userRole, setUserRole] = useState<string>('')
   const [isVerified, setIsVerified] = useState(false)
@@ -142,16 +147,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
   }
 
   const handleSaveToWishlist = () => {
+    const success = toggleWishlist(listing)
     setIsSaved(!isSaved)
-    // Save to localStorage for now
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]')
-    if (isSaved) {
-      const updated = wishlist.filter((id: string) => id !== listing.id)
-      localStorage.setItem('wishlist', JSON.stringify(updated))
-    } else {
-      wishlist.push(listing.id)
-      localStorage.setItem('wishlist', JSON.stringify(wishlist))
-    }
   }
 
   const handleShareListing = () => {
@@ -244,7 +241,10 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
           <div className="border-b border-gray-100 pb-6 mb-6">
             <div className="flex items-start justify-between mb-4">
               <h1 className="text-3xl font-bold text-[#0b5d68]">{listing.title}</h1>
-              <WishlistIcon listing={listing} size="lg" />
+              <div className="flex items-center gap-2">
+                <WishlistIcon listing={listing} size="lg" />
+                <CartIcon listing={listing} size="lg" />
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
