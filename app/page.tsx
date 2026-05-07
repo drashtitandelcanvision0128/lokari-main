@@ -7,6 +7,7 @@ import { getCurrentUser, getUserDisplayName, getUserRole } from '@/lib/auth'
 import { registrationService } from '@/lib/registration'
 import { dummyListings } from '@/lib/dummyData'
 import WishlistIcon from '@/components/ui/WishlistIcon'
+import CartIcon from '@/components/ui/CartIcon'
 
 // Set up global event handler immediately (outside React component)
 if (typeof window !== 'undefined') {
@@ -336,6 +337,7 @@ export default function Home() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="absolute top-3 right-3 flex items-center gap-2">
                       <WishlistIcon listing={listing} size="md" />
+                      <CartIcon listing={listing} size="md" />
                       {listing.qualityGrade && (
                         <div className={`${isDark ? 'bg-gray-700/90' : 'bg-white/90'} backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${isDark ? 'border-gray-600' : 'border-white/20'}`}>
                           {listing.qualityGrade}

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Listing } from '@/lib/dummyData'
 import WishlistIcon from '@/components/ui/WishlistIcon'
+import CartIcon from '@/components/ui/CartIcon'
 
 interface ListingCardProps {
   listing: Listing
@@ -115,6 +116,7 @@ const ListingCard = ({ listing }: ListingCardProps) => {
           </div>
           <div className="absolute top-4 right-4 flex items-center gap-2">
             <WishlistIcon listing={listing} size="md" />
+            <CartIcon listing={listing} size="md" />
             {listing.priceType === 'auction' && (
               <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-white animate-pulse shadow-lg">
                 LIVE BID
