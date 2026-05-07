@@ -582,15 +582,14 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
 
                 <div className="space-y-3">
                   <Button 
-                    type="button"
+                    type="submit"
                     className="w-full bg-[#e89151] hover:bg-[#f0a060] text-white py-3 rounded-lg font-semibold"
-                    onClick={() => {
+                    onClick={(e) => {
                       if (!isVerified) {
+                        e.preventDefault()
                         setShowKycModal(true)
-                      } else {
-                        // Handle actual bid submission logic here
-                        console.log('Place bid clicked - verified user')
                       }
+                      // If verified, let the form submit normally
                     }}
                   >
                     Place Bid
