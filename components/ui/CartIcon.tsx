@@ -1,21 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { useWishlist } from '@/hooks/useWishlist'
+import { useCart } from '@/hooks/useCart'
 import { Listing } from '@/lib/dummyData'
 
-interface WishlistIconProps {
+interface CartIconProps {
   listing: Listing
   size?: 'sm' | 'md' | 'lg'
   className?: string
 }
 
-const WishlistIcon = ({ listing, size = 'md', className = '' }: WishlistIconProps) => {
-  const { isInWishlist, toggleWishlist, isHydrated } = useWishlist()
+const CartIcon = ({ listing, size = 'md', className = '' }: CartIconProps) => {
+  const { isInCart, toggleCart, isHydrated } = useCart()
   const [isAnimating, setIsAnimating] = useState(false)
 
-  // Only check wishlist state after hydration to prevent server/client mismatch
-  const isWishlisted = isHydrated ? isInWishlist(listing.id) : false
+  // Only check cart state after hydration to prevent server/client mismatch
+  const isInCartState = isHydrated ? isInCart(listing.id) : false
 
   const sizeClasses = {
     sm: 'w-5 h-5',
@@ -28,7 +28,7 @@ const WishlistIcon = ({ listing, size = 'md', className = '' }: WishlistIconProp
     e.stopPropagation()
     
     setIsAnimating(true)
-    toggleWishlist(listing)
+    toggleCart(listing)
     
     setTimeout(() => setIsAnimating(false), 300)
   }
@@ -40,18 +40,18 @@ const WishlistIcon = ({ listing, size = 'md', className = '' }: WishlistIconProp
         ${sizeClasses[size]}
         flex items-center justify-center
         rounded-xl transition-all duration-300 ease-out
-        ${isWishlisted 
-          ? 'bg-gradient-to-br from-[#d55b39] via-[#c54a28] to-[#b03a17] text-white shadow-xl ring-2 ring-[#d55b39]/50 hover:ring-4 hover:scale-105' 
-          : 'bg-gradient-to-br from-white via-gray-50 to-gray-100 text-[#d55b39] shadow-xl ring-2 ring-[#d55b39]/20 hover:ring-4 hover:scale-105 hover:from-[#d55b39] hover:via-gray-50 hover:to-white'
+        ${isInCartState 
+          ? 'bg-gradient-to-br from-[#e89151] via-[#d67a40] to-[#c56a30] text-white shadow-xl ring-2 ring-[#e89151]/50 hover:ring-4 hover:scale-105' 
+          : 'bg-gradient-to-br from-white via-gray-50 to-gray-100 text-[#0b5d68] shadow-xl ring-2 ring-[#0b5d68]/20 hover:ring-4 hover:scale-105 hover:from-[#e89151] hover:via-gray-50 hover:to-white'
         }
         ${isAnimating ? 'scale-110' : 'hover:scale-105'}
         ${className}
       `}
-      aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-      title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+      aria-label={isInCartState ? 'Remove from cart' : 'Add to cart'}
+      title={isInCartState ? 'Remove from cart' : 'Add to cart'}
     >
-      {isWishlisted ? (
-        // Premium filled state with white heart icon
+      {isInCartState ? (
+        // Premium filled state with white cart icon
         <div className="relative w-full h-full flex items-center justify-center">
           <svg
             className={`w-4 h-4 ${isAnimating ? 'animate-pulse' : ''}`}
@@ -62,10 +62,10 @@ const WishlistIcon = ({ listing, size = 'md', className = '' }: WishlistIconProp
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="2"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
             />
           </svg>
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#e89151] rounded-full flex items-center justify-center">
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#d55b39] rounded-full flex items-center justify-center">
             <svg
               className="w-2 h-2 text-white"
               viewBox="0 0 24 24"
@@ -95,7 +95,7 @@ const WishlistIcon = ({ listing, size = 'md', className = '' }: WishlistIconProp
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
           />
         </svg>
       )}
@@ -103,4 +103,4 @@ const WishlistIcon = ({ listing, size = 'md', className = '' }: WishlistIconProp
   )
 }
 
-export default WishlistIcon
+export default CartIcon

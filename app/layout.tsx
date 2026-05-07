@@ -3,6 +3,7 @@ import { Manrope, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/common/Navbar";
 import ConditionalFooter from "@/components/common/ConditionalFooter";
+import { CartProvider } from "@/contexts/CartContext";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -32,11 +33,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-[#fcf9f5] text-[#1c1c19] font-body selection:bg-primary-container selection:text-on-primary-container">
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <ConditionalFooter />
-        </div>
+        <CartProvider>
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <ConditionalFooter />
+          </div>
+        </CartProvider>
       </body>
     </html>
   );

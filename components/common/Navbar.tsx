@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { getCurrentUser, getUserDisplayName } from '@/lib/auth'
 import { registrationService } from '@/lib/registration'
 import { WishlistService } from '@/lib/wishlist'
+import { useCartContext } from '@/contexts/CartContext'
 import ProfileDropdown from '@/components/ui/ProfileDropdown'
 
 const Navbar = () => {
@@ -18,36 +19,72 @@ const Navbar = () => {
   const [userName, setUserName] = useState('')
   const [kycBypassEnabled, setKycBypassEnabled] = useState(false)
   const [wishlistCount, setWishlistCount] = useState(0)
+  const { count: cartCount } = useCartContext()
 
   useEffect(() => {
-    const stored = localStorage.getItem('theme')
-    // Default to light mode, only use dark if explicitly set
-    const shouldBeDark = stored === 'dark'
-    setIsDark(shouldBeDark)
-    if (shouldBeDark) {
-      document.documentElement.classList.add('dark')
+    const checkAuthState = () => {
+      const stored = localStorage.getItem('theme')
+      // Default to light mode, only use dark if explicitly set
+      const shouldBeDark = stored === 'dark'
+      setIsDark(shouldBeDark)
+      if (shouldBeDark) {
+        document.documentElement.classList.add('dark')
+      }
+
+      // Check authentication state from registration service
+      if (typeof window !== 'undefined') {
+        const user = getCurrentUser()
+        if (user) {
+          setIsLoggedIn(true)
+          setCurrentUser(user)
+          setUserName(getUserDisplayName())
+          
+          // Check KYC bypass status
+          const bypassStatus = localStorage.getItem(`dev_kyc_bypass_${user.id}`)
+          setKycBypassEnabled(bypassStatus === 'true')
+          
+          // Load wishlist count
+          setWishlistCount(WishlistService.getWishlistCount())
+          // Cart count is now handled by context
+        } else {
+          setIsLoggedIn(false)
+          setCurrentUser(null)
+          setUserName('')
+          setWishlistCount(0)
+          // Cart count is now handled by context
+        }
+      }
     }
 
-    // Check authentication state from registration service
-    if (typeof window !== 'undefined') {
-      const user = getCurrentUser()
-      if (user) {
-        setIsLoggedIn(true)
-        setCurrentUser(user)
-        setUserName(getUserDisplayName())
-        
-        // Check KYC bypass status
-        const bypassStatus = localStorage.getItem(`dev_kyc_bypass_${user.id}`)
-        setKycBypassEnabled(bypassStatus === 'true')
-        
-        // Load wishlist count
-        setWishlistCount(WishlistService.getWishlistCount())
-      } else {
-        setIsLoggedIn(false)
-        setCurrentUser(null)
-        setUserName('')
-        setWishlistCount(0)
+    checkAuthState()
+
+    // Re-check auth state when window gets focus (handles back navigation)
+    const handleFocus = () => {
+      checkAuthState()
+    }
+
+    // Re-check auth state when page becomes visible (handles back navigation)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAuthState()
       }
+    }
+
+    // Listen for storage changes that might affect auth
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'currentUser' || e.key === 'userProfile') {
+        checkAuthState()
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('storage', handleStorageChange)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('storage', handleStorageChange)
     }
   }, [])
 
@@ -66,6 +103,7 @@ const Navbar = () => {
       if (e.key === 'lokhari_wishlist') {
         setWishlistCount(WishlistService.getWishlistCount())
       }
+      // Cart count is now handled by context automatically
     }
 
     window.addEventListener('storage', handleStorageChange)
@@ -238,6 +276,14 @@ const Navbar = () => {
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-[#d55b39] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                     {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
+              </Link>
+              <Link href="/cart" className="p-2 text-[#0b5d68] relative">
+                <span className="material-symbols-outlined">shopping_cart</span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#0b5d68] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                    {cartCount > 99 ? '99+' : cartCount}
                   </span>
                 )}
               </Link>
