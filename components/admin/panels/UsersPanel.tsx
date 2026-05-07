@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { AdminUser } from '@/types/admin'
 import { mockAdminUsers } from '@/data/adminMock'
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
+import { useAdminSearch } from '@/hooks/useSearchFilter'
 
 interface UsersPanelProps {
   searchQuery?: string
@@ -26,13 +27,10 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     setSelectedUser(null)
   }
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = useAdminSearch(users, searchQuery, (user) => {
     const matchesRole = selectedRole === 'all' || user.role === selectedRole
     const matchesStatus = selectedStatus === 'all' || user.status === selectedStatus
-    
-    return matchesSearch && matchesRole && matchesStatus
+    return matchesRole && matchesStatus
   })
 
   const getStatusColor = (status: string) => {

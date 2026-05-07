@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/Icon'
 import { DashboardTabs, TabType } from '@/types/dashboard'
 import { getUserRole } from '@/lib/auth'
+import { usePostListingNavigation } from '@/hooks/usePostListingNavigation'
 
 interface SidebarProps {
   activeTab: TabType
@@ -25,6 +26,7 @@ const tabConfig = {
 
 export function Sidebar({ activeTab, onTabChange, dashboardTabs }: SidebarProps) {
   const [userRole, setUserRole] = useState<string>('')
+  const { navigateToCreateListing, createListingPath } = usePostListingNavigation()
 
   useEffect(() => {
     const role = getUserRole()
@@ -47,7 +49,10 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs }: SidebarProps)
           </div>
         </div>
         {userRole !== 'trader' && (
-          <button className="w-full bg-[#e89151] text-white py-3 px-4 rounded-md font-body text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#e89151]/90 transition-all active:scale-[0.98]">
+          <button 
+            onClick={navigateToCreateListing}
+            className="w-full bg-[#e89151] text-white py-3 px-4 rounded-md font-body text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#e89151]/90 transition-all active:scale-[0.98]"
+          >
             <Icon name="add" />
             Post Listing
           </button>
