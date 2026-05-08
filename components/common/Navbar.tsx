@@ -77,13 +77,20 @@ const Navbar = () => {
       }
     }
 
-    window.addEventListener('focus', handleFocus)
-    window.addEventListener('visibilitychange', handleVisibilityChange)
+    // Add event listeners
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', handleFocus)
+      window.addEventListener('visibilitychange', handleVisibilityChange)
+    }
+
     window.addEventListener('storage', handleStorageChange)
-    
+
+    // Cleanup event listeners
     return () => {
-      window.removeEventListener('focus', handleFocus)
-      window.removeEventListener('visibilitychange', handleVisibilityChange)
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('focus', handleFocus)
+        window.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
       window.removeEventListener('storage', handleStorageChange)
     }
   }, [])

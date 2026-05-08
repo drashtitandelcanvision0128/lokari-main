@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode, useState } from 'react'
+import Link from 'next/link'
 import { Sidebar } from './Sidebar'
 import { DashboardTabs, TabType } from '@/types/dashboard'
 
@@ -95,6 +96,11 @@ export function DashboardLayout({
                 onChange={handleSearchInputChange}
               />
             </form>
+            
+            {/* Notification Icon */}
+            <Link href={`/${role || 'farmer'}-dashboard/notifications`} className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
+              <span className="material-symbols-outlined text-sm">notifications</span>
+            </Link>
           </div>
         </div>
         {/* Page Content */}

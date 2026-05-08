@@ -1,11 +1,74 @@
 'use client'
 
-import { useState } from 'react'
-import { dummyNotifications } from '@/lib/dummyData'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { getCurrentUser } from '@/lib/auth'
 import Button from '@/components/common/Button'
+import { mockAdminUsers, mockAdminListings } from '@/data/adminMock'
 
-export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState(dummyNotifications)
+// Admin-specific notification data
+const adminNotifications = [
+  {
+    id: '1',
+    title: 'New User Registration',
+    message: `${mockAdminUsers[0]?.name || 'New user'} has registered and needs verification`,
+    type: 'warning',
+    read: false,
+    createdAt: new Date('2024-01-20T10:30:00Z'),
+    actionUrl: '/admin?tab=users'
+  },
+  {
+    id: '2',
+    title: 'Listing Flagged',
+    message: `Premium ${mockAdminListings[0]?.title || 'listing'} has been flagged for review`,
+    type: 'error',
+    read: false,
+    createdAt: new Date('2024-01-20T09:15:00Z'),
+    actionUrl: '/admin?tab=listings'
+  },
+  {
+    id: '3',
+    title: 'System Update Complete',
+    message: 'Database backup completed successfully',
+    type: 'success',
+    read: true,
+    createdAt: new Date('2024-01-19T02:00:00Z'),
+    actionUrl: null
+  },
+  {
+    id: '4',
+    title: 'New Dispute Raised',
+    message: `${mockAdminUsers[0]?.name || 'New user'} raised a dispute regarding warehouse quality`,
+    type: 'error',
+    read: false,
+    createdAt: new Date('2024-01-19T18:30:00Z'),
+    actionUrl: '/admin?tab=disputes'
+  },
+  {
+    id: '5',
+    title: 'Payment Processed',
+    message: 'Payment of ₹25,000 processed and placed in escrow',
+    type: 'success',
+    read: true,
+    createdAt: new Date('2024-01-19T16:45:00Z'),
+    actionUrl: '/admin?tab=orders'
+  }
+]
+
+export default function AdminNotificationsPage() {
+  const router = useRouter()
+  const [notifications, setNotifications] = useState(adminNotifications)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+
+  // Authentication check
+  useEffect(() => {
+    const user = getCurrentUser()
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    setCurrentUser(user)
+  }, [])
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -64,13 +127,25 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter(n => !n.read).length
 
+  // Show loading state while checking authentication
+  if (!currentUser) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0b5d68] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Notifications</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Notifications</h1>
           <p className="text-gray-600">
-            Stay updated with your agricultural trading activities
+            System alerts and administrative notifications
           </p>
         </div>
         {unreadCount > 0 && (
@@ -88,7 +163,7 @@ export default function NotificationsPage() {
                 {notifications.length} total notifications
               </span>
               {unreadCount > 0 && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                   {unreadCount} unread
                 </span>
               )}
@@ -152,6 +227,15 @@ export default function NotificationsPage() {
                         </p>
                       </div>
                       <div className="flex items-center space-x-2 ml-4">
+                        {notification.actionUrl && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(notification.actionUrl)}
+                          >
+                            View
+                          </Button>
+                        )}
                         {!notification.read && (
                           <button
                             onClick={() => markAsRead(notification.id)}

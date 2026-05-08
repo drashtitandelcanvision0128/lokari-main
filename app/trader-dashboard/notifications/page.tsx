@@ -1,11 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { getCurrentUser, getUserRole } from '@/lib/auth'
 import { dummyNotifications } from '@/lib/dummyData'
 import Button from '@/components/common/Button'
 
-export default function NotificationsPage() {
+export default function TraderDashboardNotificationsPage() {
+  const router = useRouter()
   const [notifications, setNotifications] = useState(dummyNotifications)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+
+  // Authentication check
+  useEffect(() => {
+    const user = getCurrentUser()
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    
+    // Only traders can access this page
+    if (user.role !== 'trader') {
+      router.push('/dashboard')
+      return
+    }
+    
+    setCurrentUser(user)
+  }, [router])
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -64,13 +85,25 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter(n => !n.read).length
 
+  // Show loading state while checking authentication
+  if (!currentUser) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0b5d68] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Notifications</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Trader Notifications</h1>
           <p className="text-gray-600">
-            Stay updated with your agricultural trading activities
+            Stay updated with your trading activities and marketplace updates
           </p>
         </div>
         {unreadCount > 0 && (

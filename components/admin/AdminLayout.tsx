@@ -1,6 +1,8 @@
 'use client'
 
-import { ReactNode, useState } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { AdminSidebar } from './AdminSidebar'
 import { AdminTabs, TabType } from '@/types/admin'
 
@@ -13,6 +15,7 @@ interface AdminLayoutProps {
   children: ReactNode
   searchQuery?: string
   onSearchChange?: (query: string) => void
+  role?: string
 }
 
 export function AdminLayout({
@@ -23,10 +26,24 @@ export function AdminLayout({
   userAvatar,
   children,
   searchQuery = '',
-  onSearchChange
+  onSearchChange,
+  role = 'farmer'
 }: AdminLayoutProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const searchParams = useSearchParams()
+
+  // Auto-set active tab based on URL parameter
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab') as TabType
+    
+    // Validate that the tab from URL is a valid admin tab
+    const validTabs: TabType[] = ['users', 'listings', 'orders', 'disputes', 'analytics', 'auditLog']
+    
+    if (tabFromUrl && validTabs.includes(tabFromUrl) && tabFromUrl !== activeTab) {
+      onTabChange(tabFromUrl)
+    }
+  }, [activeTab, onTabChange, searchParams])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -108,9 +125,9 @@ export function AdminLayout({
 
             {/* Admin Actions */}
             <div className="flex items-center gap-2">
-              <button className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
+              <Link href="/admin/notifications" className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
                 <span className="material-symbols-outlined text-sm">notifications</span>
-              </button>
+              </Link>
               <button className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
                 <span className="material-symbols-outlined text-sm">settings</span>
               </button>
