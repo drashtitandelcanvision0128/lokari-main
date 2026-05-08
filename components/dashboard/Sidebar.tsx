@@ -11,6 +11,8 @@ interface SidebarProps {
   activeTab: TabType
   onTabChange: (tab: TabType) => void
   dashboardTabs: DashboardTabs
+  isCollapsed: boolean
+  onToggleCollapse: () => void
 }
 
 const tabConfig = {
@@ -24,7 +26,7 @@ const tabConfig = {
   settings: { icon: 'settings', label: 'Settings' }
 }
 
-export function Sidebar({ activeTab, onTabChange, dashboardTabs }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, onToggleCollapse }: SidebarProps) {
   const [userRole, setUserRole] = useState<string>('')
   const { navigateToCreateListing, createListingPath } = usePostListingNavigation()
 
@@ -34,21 +36,30 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs }: SidebarProps)
   }, [])
 
   return (
-    <aside className="hidden md:flex h-screen w-64 border-r border-outline bg-surface flex-col py-6 gap-2 sticky top-16 shrink-0">
+    <aside 
+      className={`
+        hidden md:flex h-screen border-r border-outline bg-surface flex-col py-6 gap-2 sticky top-16 shrink-0
+        transition-all duration-300 ease-in-out
+        ${isCollapsed ? 'w-20' : 'w-64'}
+      `}
+    >
       {/* Logo Section */}
-      <div className="px-6 mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-            <Icon name="agriculture" className="text-accent" />
-          </div>
-          <div>
+      <div className={`mb-8 transition-all duration-300 ease-in-out ${isCollapsed ? 'px-3' : 'px-6'}`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} mb-4`}>
+          <button 
+            onClick={onToggleCollapse}
+            className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer group flex-shrink-0"
+          >
+            <Icon name="agriculture" className="text-accent group-hover:scale-110 transition-transform" />
+          </button>
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
             <h1 className="font-headline font-bold text-primary text-lg leading-tight">
               Exchange Dashboard
             </h1>
             <p className="text-xs text-on-surface-variant font-medium">Verified Account</p>
           </div>
         </div>
-        {userRole !== 'trader' && (
+        {userRole !== 'trader' && !isCollapsed && (
           <button 
             onClick={navigateToCreateListing}
             className="w-full bg-[#e89151] text-white py-3 px-4 rounded-md font-body text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#e89151]/90 transition-all active:scale-[0.98]"
@@ -57,10 +68,19 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs }: SidebarProps)
             Post Listing
           </button>
         )}
+        {userRole !== 'trader' && isCollapsed && (
+          <button 
+            onClick={navigateToCreateListing}
+            className="w-10 h-10 bg-[#e89151] text-white rounded-md font-body text-sm font-medium flex items-center justify-center hover:bg-[#e89151]/90 transition-all active:scale-[0.98]"
+            title="Post Listing"
+          >
+            <Icon name="add" />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1">
+      <nav className={`flex-1 space-y-1 transition-all duration-300 ease-in-out ${isCollapsed ? 'px-2' : ''}`}>
         {Object.entries(dashboardTabs).map(([tab, isVisible]) => {
           if (!isVisible) return null
           
@@ -73,14 +93,20 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs }: SidebarProps)
               key={tabKey}
               onClick={() => onTabChange(tabKey)}
               className={cn(
-                'mx-2 px-4 py-3 flex items-center gap-3 font-body text-sm font-medium transition-all rounded-md',
+                'flex items-center font-body text-sm font-medium transition-all rounded-md',
+                isCollapsed ? 'px-2 py-3 justify-center' : 'mx-2 px-4 py-3 gap-3',
                 isActive
                   ? 'bg-primary text-white'
                   : 'text-on-surface-variant hover:bg-accent/10'
               )}
+              title={isCollapsed ? config.label : undefined}
             >
               <Icon name={config.icon} />
-              {config.label}
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+              }`}>
+                {config.label}
+              </span>
             </button>
           )
         })}

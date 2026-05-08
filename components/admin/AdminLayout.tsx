@@ -26,6 +26,7 @@ export function AdminLayout({
   onSearchChange
 }: AdminLayoutProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,6 +43,10 @@ export function AdminLayout({
     if (onSearchChange) {
       onSearchChange(newQuery)
     }
+  }
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed)
   }
 
   const getTabTitle = (tab: TabType): string => {
@@ -63,6 +68,8 @@ export function AdminLayout({
         activeTab={activeTab}
         onTabChange={onTabChange}
         adminTabs={adminTabs}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
       />
 
       {/* Main Content */}

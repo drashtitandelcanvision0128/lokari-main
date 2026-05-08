@@ -28,6 +28,7 @@ export function DashboardLayout({
   role = 'farmer'
 }: DashboardLayoutProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,6 +46,10 @@ export function DashboardLayout({
       onSearchChange(newQuery)
     }
   }
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed)
+  }
   return (
     <div className="bg-surface text-on-surface flex min-h-screen pt-16">
       {/* Sidebar */}
@@ -52,6 +57,8 @@ export function DashboardLayout({
         activeTab={activeTab}
         onTabChange={onTabChange}
         dashboardTabs={dashboardTabs}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
       />
 
       {/* Main Content */}
