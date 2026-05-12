@@ -8,6 +8,7 @@ import { registrationService } from '@/lib/registration'
 import { WishlistService } from '@/lib/wishlist'
 import { useCartContext } from '@/contexts/CartContext'
 import ProfileDropdown from '@/components/ui/ProfileDropdown'
+import { isAdminAuthenticated } from '@/lib/adminAuth'
 
 const Navbar = () => {
   const pathname = usePathname()
@@ -20,42 +21,46 @@ const Navbar = () => {
   const [kycBypassEnabled, setKycBypassEnabled] = useState(false)
   const [wishlistCount, setWishlistCount] = useState(0)
   const { count: cartCount } = useCartContext()
+  const [isAdminSession, setIsAdminSession] = useState(false)
 
-  useEffect(() => {
-    const checkAuthState = () => {
-      const stored = localStorage.getItem('theme')
-      // Default to light mode, only use dark if explicitly set
-      const shouldBeDark = stored === 'dark'
-      setIsDark(shouldBeDark)
-      if (shouldBeDark) {
-        document.documentElement.classList.add('dark')
-      }
-
-      // Check authentication state from registration service
-      if (typeof window !== 'undefined') {
-        const user = getCurrentUser()
-        if (user) {
-          setIsLoggedIn(true)
-          setCurrentUser(user)
-          setUserName(getUserDisplayName())
-          
-          // Check KYC bypass status
-          const bypassStatus = localStorage.getItem(`dev_kyc_bypass_${user.id}`)
-          setKycBypassEnabled(bypassStatus === 'true')
-          
-          // Load wishlist count
-          setWishlistCount(WishlistService.getWishlistCount())
-          // Cart count is now handled by context
-        } else {
-          setIsLoggedIn(false)
-          setCurrentUser(null)
-          setUserName('')
-          setWishlistCount(0)
-          // Cart count is now handled by context
-        }
-      }
+  const checkAuthState = () => {
+    const stored = localStorage.getItem('theme')
+    // Default to light mode, only use dark if explicitly set
+    const shouldBeDark = stored === 'dark'
+    setIsDark(shouldBeDark)
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark')
     }
 
+    // Check authentication state from registration service
+    if (typeof window !== 'undefined') {
+      const adminAuth = isAdminAuthenticated()
+      setIsAdminSession(adminAuth)
+      
+      const user = getCurrentUser()
+      if (user) {
+        setIsLoggedIn(true)
+        setCurrentUser(user)
+        setUserName(getUserDisplayName())
+        
+        // Check KYC bypass status
+        const bypassStatus = localStorage.getItem(`dev_kyc_bypass_${user.id}`)
+        setKycBypassEnabled(bypassStatus === 'true')
+        
+        // Load wishlist count
+        setWishlistCount(WishlistService.getWishlistCount())
+        // Cart count is now handled by context
+      } else {
+        setIsLoggedIn(false)
+        setCurrentUser(null)
+        setUserName('')
+        setWishlistCount(0)
+        // Cart count is now handled by context
+      }
+    }
+  }
+
+  useEffect(() => {
     checkAuthState()
 
     // Re-check auth state when window gets focus (handles back navigation)
@@ -72,7 +77,7 @@ const Navbar = () => {
 
     // Listen for storage changes that might affect auth
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'currentUser' || e.key === 'userProfile') {
+      if (e.key === 'currentUser' || e.key === 'userProfile' || e.key === 'adminSession') {
         checkAuthState()
       }
     }
@@ -113,8 +118,18 @@ const Navbar = () => {
       // Cart count is now handled by context automatically
     }
 
+    // Listen for custom admin session changes
+    const handleAdminSessionChange = () => {
+      checkAuthState()
+    }
+
     window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
+    window.addEventListener('adminSessionChanged', handleAdminSessionChange)
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('adminSessionChanged', handleAdminSessionChange)
+    }
   }, [])
 
   const toggleDark = () => {
@@ -154,14 +169,21 @@ const Navbar = () => {
   }
 
   const handleLogout = () => {
-    // Clear current user session only
-    localStorage.removeItem('currentUser')
-    localStorage.removeItem('userProfile')
-    localStorage.removeItem('otpSession')
-    setIsLoggedIn(false)
-    setCurrentUser(null)
-    setUserName('')
-    window.location.href = '/'
+    if (isAdminSession) {
+      // Clear admin session
+      localStorage.removeItem('adminSession')
+      setIsAdminSession(false)
+      window.location.href = '/'
+    } else {
+      // Clear regular user session
+      localStorage.removeItem('currentUser')
+      localStorage.removeItem('userProfile')
+      localStorage.removeItem('otpSession')
+      setIsLoggedIn(false)
+      setCurrentUser(null)
+      setUserName('')
+      window.location.href = '/'
+    }
   }
 
   const toggleLoginState = () => {
@@ -270,11 +292,21 @@ const Navbar = () => {
             </div>
           )}
           
-          {isLoggedIn ? (
+          {isAdminSession ? (
             <>
-              <Link href="/admin" className="p-2 text-[#0b5d68]">
-                <span className="material-symbols-outlined">admin_panel_settings</span>
-              </Link>
+              {/* Admin-specific options */}
+              <button 
+                onClick={handleLogout}
+                className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+                  isDark ? 'text-white bg-[#d55b39] hover:bg-[#c44928]' : 'text-white bg-[#d55b39] hover:bg-[#c44928]'
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">logout</span>
+                <span>Admin Logout</span>
+              </button>
+            </>
+          ) : isLoggedIn ? (
+            <>
               <Link href="/notifications" className="p-2 text-[#0b5d68]">
                 <span className="material-symbols-outlined">notifications</span>
               </Link>
