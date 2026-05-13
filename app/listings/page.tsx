@@ -112,6 +112,29 @@ function ListingsPageContent() {
         if (sidebarFilters.priceMax) {
           filtered = filtered.filter(listing => listing.price <= parseFloat(sidebarFilters.priceMax))
         }
+
+        // Storage type filter (only applies to warehouse listings)
+        if (sidebarFilters.storageTypes.length > 0) {
+          filtered = filtered.filter(listing => {
+            // Only apply storage type filter to warehouse listings
+            if (listing.type !== 'warehouse') {
+              return false
+            }
+            
+            // Map filter values to keywords to search in title/description/storageTypes
+            const typeMapping: { [key: string]: string[] } = {
+              'cold': ['cold storage', 'temperature controlled', 'freeze'],
+              'dry': ['dry grain', 'dry storage', 'silo', 'grain storage'],
+              'climate': ['climate controlled', 'temperature controlled', 'humidity']
+            }
+            
+            return sidebarFilters.storageTypes.some(filterType => {
+              const keywords = typeMapping[filterType] || []
+              const searchText = `${listing.title} ${listing.description} ${(listing.storageTypes || []).join(' ')}`.toLowerCase()
+              return keywords.some(keyword => searchText.includes(keyword))
+            })
+          })
+        }
       }
 
       // Sorting
