@@ -514,12 +514,38 @@ setKycData(parsed)
               <div className="flex space-x-4">
                 <Button
                   onClick={() => {
-                    const returnUrl = localStorage.getItem('kyc_return_url')
-                    if (returnUrl) {
-                      localStorage.removeItem('kyc_return_url')
-                      router.push(returnUrl)
+                    // Temporary bypass for development/testing
+                    if (process.env.NODE_ENV === 'development') {
+                      // Set bypass flag
+                      localStorage.setItem(`dev_kyc_bypass_${currentUser.id}`, 'true')
+                      
+                      // Set KYC as verified in localStorage
+                      const bypassKycData = {
+                        aadhaarNumber: '000000000000',
+                        otp: '000000',
+                        documentUrl: '/mock-document.pdf',
+                        status: 'verified' as KYCStatus,
+                        submittedAt: new Date().toISOString(),
+                        verifiedAt: new Date().toISOString()
+                      }
+                      localStorage.setItem(`kyc_${currentUser.id}`, JSON.stringify(bypassKycData))
+                      
+                      const returnUrl = localStorage.getItem('kyc_return_url')
+                      if (returnUrl) {
+                        localStorage.removeItem('kyc_return_url')
+                        router.push(returnUrl)
+                      } else {
+                        router.push('/dashboard')
+                      }
                     } else {
-                      router.push('/dashboard')
+                      // Normal flow for production
+                      const returnUrl = localStorage.getItem('kyc_return_url')
+                      if (returnUrl) {
+                        localStorage.removeItem('kyc_return_url')
+                        router.push(returnUrl)
+                      } else {
+                        router.push('/dashboard')
+                      }
                     }
                   }}
                   className="flex-1 bg-[#0b5d68] hover:bg-[#1a6b70] text-white py-3 rounded-lg font-semibold"

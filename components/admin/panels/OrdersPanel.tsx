@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { AdminOrder } from '@/types/admin'
-import { mockAdminOrders } from '@/data/adminMock'
+import { mockAdminOrders, mockAdminUsers } from '@/data/adminMock'
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
 
 interface OrdersPanelProps {
@@ -15,6 +15,7 @@ export function OrdersPanel({ searchQuery = '' }: OrdersPanelProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<string>('all')
+  const [selectedSellerRole, setSelectedSellerRole] = useState<string>('all')
 
   const handleViewOrder = (order: AdminOrder) => {
     setSelectedOrder(order)
@@ -26,6 +27,11 @@ export function OrdersPanel({ searchQuery = '' }: OrdersPanelProps) {
     setSelectedOrder(null)
   }
 
+  const getUserRoleById = (userId: string): string => {
+    const user = mockAdminUsers.find(u => u.id === userId)
+    return user?.role || 'unknown'
+  }
+
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          order.listingTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -33,8 +39,10 @@ export function OrdersPanel({ searchQuery = '' }: OrdersPanelProps) {
                          order.seller.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus
     const matchesPaymentStatus = selectedPaymentStatus === 'all' || order.paymentStatus === selectedPaymentStatus
+    const sellerRole = getUserRoleById(order.seller.id)
+    const matchesSellerRole = selectedSellerRole === 'all' || sellerRole === selectedSellerRole
     
-    return matchesSearch && matchesStatus && matchesPaymentStatus
+    return matchesSearch && matchesStatus && matchesPaymentStatus && matchesSellerRole
   })
 
   const getStatusColor = (status: string) => {
@@ -129,6 +137,20 @@ export function OrdersPanel({ searchQuery = '' }: OrdersPanelProps) {
               <option value="in_escrow">In Escrow</option>
               <option value="released">Released</option>
               <option value="refunded">Refunded</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-on-surface-variant">Seller Role:</label>
+            <select
+              value={selectedSellerRole}
+              onChange={(e) => setSelectedSellerRole(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-outline rounded-lg bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="all">All Seller Roles</option>
+              <option value="farmer">Farmer</option>
+              <option value="warehouse">Warehouse</option>
+              <option value="transporter">Transporter</option>
             </select>
           </div>
 

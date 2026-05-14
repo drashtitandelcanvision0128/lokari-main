@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
@@ -15,6 +15,28 @@ interface ListingsPageProps {
 export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const [listings, setListings] = useState<Listing[]>(mockListings)
   const [filter, setFilter] = useState<'all' | 'live' | 'reviewing' | 'paused' | 'sold' | 'expired'>('all')
+  const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(null)
+  const statusDropdownRef = useRef<HTMLDivElement | null>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target as Node)) {
+        setOpenStatusDropdown(null)
+      }
+    }
+    if (openStatusDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [openStatusDropdown])
+
+  const handleStatusChange = (listingId: string, newStatus: 'live' | 'paused') => {
+    setListings(prev =>
+      prev.map(l => l.id === listingId ? { ...l, status: newStatus } : l)
+    )
+    setOpenStatusDropdown(null)
+  }
   const [listingTypeFilter, setListingTypeFilter] = useState<'all' | 'produce' | 'warehouse' | 'transport'>('all')
 
   const filteredListings = listings.filter(listing => {
@@ -105,7 +127,12 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredListings.map((listing) => (
-            <div key={listing.id} className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-[#f0f0f0]">
+            <div 
+              key={listing.id} 
+              className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-[#f0f0f0] ${
+                listing.status === 'paused' ? 'opacity-70 grayscale-[0.3] bg-[#fcfcfc]' : ''
+              }`}
+            >
               {/* Product Image */}
               <div className="h-56 relative bg-gradient-to-br from-[#f9f9f7] to-[#f5f5f3]">
                 {listing.image ? (
@@ -173,9 +200,68 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                   <Button variant="outline" size="sm" className="hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors">
                     <Icon name="edit" />
                   </Button>
-                  <Button variant="outline" size="sm" className="hover:border-[#e89151] hover:text-[#e89151] transition-colors">
-                    <Icon name="pause" />
-                  </Button>
+
+                  {/* Eye / Status Toggle Button */}
+                  <div className="relative" ref={openStatusDropdown === listing.id ? statusDropdownRef : undefined}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`w-full hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${
+                        openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''
+                      }`}
+                      onClick={() =>
+                        setOpenStatusDropdown(prev => prev === listing.id ? null : listing.id)
+                      }
+                      title="Change status"
+                    >
+                      <Icon name="visibility" />
+                    </Button>
+
+                    {/* Status Dropdown */}
+                    {openStatusDropdown === listing.id && (
+                      <div className="absolute left-0 bottom-full mb-2 z-50 min-w-[130px] bg-white rounded-xl shadow-xl border border-[#e0e0e0] overflow-hidden animate-fade-in-up">
+                        {/* Dropdown arrow */}
+                        <div className="absolute -bottom-1.5 left-4 w-3 h-3 bg-white border-r border-b border-[#e0e0e0] rotate-45" />
+
+                        <div className="p-1.5 space-y-0.5">
+                          <button
+                            onClick={() => handleStatusChange(listing.id, 'live')}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                              listing.status === 'live'
+                                ? 'bg-[#2eb5c2]/10 text-[#2eb5c2]'
+                                : 'text-[#0b5d68] hover:bg-[#f5fafa] hover:text-[#2eb5c2]'
+                            }`}
+                          >
+                            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
+                              listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#cccccc]'
+                            }`} />
+                            Active
+                            {listing.status === 'live' && (
+                              <Icon name="check" className="ml-auto text-[#2eb5c2] text-base" />
+                            )}
+                          </button>
+
+                          <button
+                            onClick={() => handleStatusChange(listing.id, 'paused')}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                              listing.status === 'paused'
+                                ? 'bg-[#d55b39]/10 text-[#d55b39]'
+                                : 'text-[#0b5d68] hover:bg-[#fef5f3] hover:text-[#d55b39]'
+                            }`}
+                          >
+                            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
+                              listing.status === 'paused' ? 'bg-[#d55b39]' : 'bg-[#cccccc]'
+                            }`} />
+                            Inactive
+                            {listing.status === 'paused' && (
+                              <Icon name="check" className="ml-auto text-[#d55b39] text-base" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <Button variant="outline" size="sm" className="hover:border-[#d55b39] hover:text-[#d55b39] transition-colors">
                     <Icon name="refresh" />
                   </Button>

@@ -22,6 +22,7 @@ const TAB_COMPONENTS = {
   logistics: LogisticsPage,
   orders: OrdersPage,
   transactions: TransactionsPage,
+  notifications: () => <div>Notifications Page</div>,
   settings: SettingsPage,
 }
 

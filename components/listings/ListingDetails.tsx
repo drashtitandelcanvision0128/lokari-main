@@ -43,6 +43,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [userRole, setUserRole] = useState<string>('')
   const [isVerified, setIsVerified] = useState(false)
+  const [showKycModal, setShowKycModal] = useState(false)
   
   // Auction state
   const [bidAmount, setBidAmount] = useState('')
@@ -583,7 +584,13 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   <Button 
                     type="submit"
                     className="w-full bg-[#e89151] hover:bg-[#f0a060] text-white py-3 rounded-lg font-semibold"
-                    disabled={!isVerified}
+                    onClick={(e) => {
+                      if (!isVerified) {
+                        e.preventDefault()
+                        setShowKycModal(true)
+                      }
+                      // If verified, let the form submit normally
+                    }}
                   >
                     Place Bid
                   </Button>
@@ -1337,6 +1344,43 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
       {listingType === 'warehouse' && renderWarehouseListing()}
       {listingType === 'transport' && renderTransportListing()}
       
+      {/* KYC Verification Modal */}
+      {showKycModal && !isVerified && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-scale-in">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">KYC Verification Required</h2>
+              <p className="text-gray-600 mb-6">
+                You need to complete KYC verification to participate in live auctions and place bids.
+              </p>
+              <div className="space-y-3">
+                <Button
+                  onClick={() => {
+                    setShowKycModal(false)
+                    localStorage.setItem('kyc_return_url', `/listings/${listing.id}`)
+                    router.push('/kyc')
+                  }}
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+                >
+                  Complete KYC Verification
+                </Button>
+                <button
+                  onClick={() => setShowKycModal(false)}
+                  className="w-full text-gray-500 hover:text-gray-700 font-medium"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Contact Modal */}
       {renderContactModal()}
     </div>
