@@ -4,10 +4,72 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+  // output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum UserRole {
+  FARMER
+  WAREHOUSE_OWNER
+  TRADER
+  TRANSPORTER
+}
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model User {
+  user_id     String       @id @default(uuid())
+  name        String?
+  email       String       @unique
+  password    String
+  is_verified Boolean      @default(false)
+  is_active   Boolean      @default(true)
+  is_deleted  Boolean      @default(false)
+  profile     UserProfile?
+  addresses   Address[]
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+}
+
+model UserProfile {
+  profile_id String @id @default(uuid())
+  user_id    String @unique
+
+  avatar_url String?
+  bio        String?
+  kyc_status KycStatus @default(PENDING)
+
+  user User @relation(fields: [user_id], references: [user_id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Address {
+  address_id String @id @default(uuid())
+  user_id    String
+
+  street  String
+  city    String
+  state   String
+  pincode String
+  country String
+
+  lat Float?
+  lng Float?
+
+  is_default Boolean @default(false)
+
+  user User @relation(fields: [user_id], references: [user_id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
