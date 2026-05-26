@@ -10,9 +10,10 @@ interface AdminDetailDrawerProps {
   onClose: () => void
   data: AdminUser | AdminListing | AdminOrder | AdminDispute | AuditLogEntry | null
   type: DetailType
+  onAction?: (action: string, item: any) => void
 }
 
-export function AdminDetailDrawer({ isOpen, onClose, data, type }: AdminDetailDrawerProps) {
+export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: AdminDetailDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null)
 
   // Close on ESC key
@@ -92,11 +93,11 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type }: AdminDetailDr
               <p className="text-sm text-[#0b5d68]/70 font-medium mt-1">{user.email}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor(user.status, 'user')} shadow-sm`}>
+              <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor(user.verificationStatus, 'user')} shadow-sm`}>
                 <span className="material-symbols-outlined text-sm mr-1">
-                  {user.status === 'active' ? 'check_circle' : 'pause_circle'}
+                  {user.verificationStatus === 'verified' ? 'verified_user' : 'pending_actions'}
                 </span>
-                {user.status}
+                <span className="capitalize">{user.verificationStatus}</span>
               </span>
               <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold bg-[#f9f9f7] border border-[#0b5d68]/20 text-[#0b5d68] shadow-sm">
                 <span className="material-symbols-outlined text-sm mr-1">badge</span>
@@ -506,8 +507,8 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type }: AdminDetailDr
     if (!data) return null
 
     const baseActions = [
-      { label: 'Edit', color: 'bg-[#e89151] hover:bg-[#d55b39] text-white hover:shadow-md transition-all duration-200' },
-      { label: 'Download', color: 'border border-[#0b5d68] text-[#0b5d68] hover:bg-[#0b5d68] hover:text-white transition-all duration-200' }
+      { label: 'Edit', color: 'bg-[#e89151] hover:bg-[#d55b39] text-white hover:shadow-md transition-all duration-200', actionType: 'edit' },
+      { label: 'Delete', color: 'border border-[#d55b39] text-[#d55b39] hover:bg-[#d55b39] hover:text-white transition-all duration-200', actionType: 'delete' }
     ]
 
     let specificActions: any[] = []
@@ -516,8 +517,15 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type }: AdminDetailDr
       case 'user':
         const user = data as AdminUser
         specificActions = user.status === 'active' 
-          ? [{ label: 'Suspend', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200' }]
-          : [{ label: 'Activate', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200' }]
+          ? [{ label: 'Ban', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_ban' }]
+          : [{ label: 'Unban', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_ban' }]
+        
+        // Add verification button
+        if (user.verificationStatus === 'verified') {
+          specificActions.push({ label: 'Unverify', color: 'bg-[#e89151] hover:bg-[#d55b39] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_verify' })
+        } else {
+          specificActions.push({ label: 'Verify User', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_verify' })
+        }
         break
       case 'listing':
         const listing = data as AdminListing
@@ -559,6 +567,11 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type }: AdminDetailDr
           {allActions.map((action, index) => (
             <button
               key={index}
+              onClick={() => {
+                if (action.actionType && onAction) {
+                  onAction(action.actionType, data)
+                }
+              }}
               className={`px-4 py-2 text-sm font-medium rounded-lg cursor-pointer ${action.color}`}
             >
               {action.label}
