@@ -25,6 +25,20 @@ enum KycStatus {
   REJECTED
 }
 
+// Listings Managaement : 
+enum ListingType {
+  PRODUCE
+  WAREHOUSE
+  TRANSPORT
+}
+
+enum ListingStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  EXPIRED
+}
+
 model User {
   user_id     String       @id @default(uuid())
   name        String?
@@ -39,6 +53,7 @@ model User {
   addresses   Address[]
   created_at  DateTime     @default(now())
   updated_at  DateTime     @updatedAt
+  listings    Listing[]
 }
 
 model UserProfile {
@@ -85,4 +100,73 @@ model Address {
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+// Listing management Tables 
+model Listing {
+  listing_id String @id @default(uuid())
+  user_id    String
+
+  type        ListingType
+  title       String
+  description String?
+  price       Decimal
+  price_type  String
+  status      ListingStatus @default(DRAFT)
+
+  is_deleted Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [user_id])
+
+  produceListing   ProduceListing?
+  warehouseListing WarehouseListing?
+  transportListing TransportListing?
+}
+
+model ProduceListing {
+  produce_listing_id String @id @default(uuid())
+  listing_id         String @unique
+
+  crop_type     String
+  quantity      Decimal
+  unit          String
+  harvest_date  DateTime?
+  expiry_date   DateTime?
+  quality_grade String?
+
+  listing Listing @relation(fields: [listing_id], references: [listing_id])
+}
+
+model WarehouseListing {
+  warehouse_listing_id String @id @default(uuid())
+  listing_id           String @unique
+
+  warehouse_id String?
+
+  capacity           Decimal
+  capacity_unit      String
+  available_from     DateTime?
+  available_to       DateTime?
+  climate_controlled Boolean   @default(false)
+
+  listing Listing @relation(fields: [listing_id], references: [listing_id])
+}
+
+model TransportListing {
+  transport_listing_id String @id @default(uuid())
+  listing_id           String @unique
+
+  vehicle_id String?
+
+  vehicle_type    String
+  capacity        Decimal
+  capacity_unit   String
+  available_from  DateTime?
+  available_to    DateTime?
+  is_refrigerated Boolean   @default(false)
+
+  listing Listing @relation(fields: [listing_id], references: [listing_id])
 }

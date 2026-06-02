@@ -8,6 +8,7 @@ import { connectDB, disconnectDB } from "./config/db.js";
 // Import Routes
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import listingRoutes from "./routes/listingRoutes.js";
 
 config();
 connectDB();
@@ -26,6 +27,7 @@ app.use(express.urlencoded({ extended: true })); // to parse URL-encoded data
 // API Routes
 app.use("/auth", authRoutes);
 app.use("/admin", adminRoutes);
+app.use('/listings', listingRoutes);
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
