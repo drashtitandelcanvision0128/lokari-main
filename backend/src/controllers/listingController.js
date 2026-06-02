@@ -109,3 +109,18 @@ export const getListingsByUser = async (req, res) => {
         });
     }
 };
+
+// Data Manipulation Through UI
+export const deleteListing = async (req, res) => {
+    const { id } = req.params
+
+    try {
+        await prisma.listing.delete({
+            where: { listing_id: id }
+        })
+
+        res.json({ success: true })
+    } catch (err) {
+        res.status(500).json({ error: "Delete failed" })
+    }
+}

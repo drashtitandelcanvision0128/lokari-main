@@ -12,10 +12,13 @@ export default function ListingDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchListing = async () => {
-      const id = params.id as string
+    if (!params?.id) return
 
-      // Check dummyListings first (for existing demo data)
+    const fetchListing = async () => {
+      const id = Array.isArray(params.id) ? params.id[0] : params.id
+      if (!id) return
+
+      // dummy check
       const dummyMatch = dummyListings.find(l => l.id === id)
       if (dummyMatch) {
         setListing(dummyMatch)
@@ -23,43 +26,43 @@ export default function ListingDetailPage() {
         return
       }
 
-      // Otherwise fetch from real API
       try {
         const response = await fetch(`http://localhost:5000/listings/${id}`)
         const result = await response.json()
 
-        if (result.success && result.data) {
-          const d = result.data
-          setListing({
-            id: d.listing_id,
-            title: d.title,
-            description: d.description,
-            type: d.type?.toLowerCase(),
-            price: Number(d.price),
-            priceType: d.price_type?.toLowerCase(),
-            status: d.status?.toLowerCase(),
-            location: '',
-            quantity: d.produceListing?.quantity || d.warehouseListing?.capacity || d.transportListing?.capacity || 0,
-            unit: d.produceListing?.unit || 'kg',
-            cropName: d.produceListing?.crop_type,
-            qualityGrade: d.produceListing?.quality_grade,
-            harvestDate: d.produceListing?.harvest_date,
-            capacity: d.warehouseListing?.capacity || d.transportListing?.capacity,
-            vehicleType: d.transportListing?.vehicle_type,
-            seller: {
-              name: d.user?.name || 'Seller',
-              rating: 4.5,
-              verified: d.user?.is_verified || false,
-            },
-            images: [],
-            postedAt: d.created_at,
-            category: d.produceListing?.crop_type || d.type || 'General',
-          })
-        } else {
+        if (!result?.success || !result?.data) {
           setListing(null)
+          return
         }
+
+        const d = result.data
+
+        setListing({
+          id: d.listing_id,
+          title: d.title,
+          description: d.description,
+          type: d.type?.toLowerCase(),
+          price: Number(d.price ?? 0),
+          priceType: d.price_type?.toLowerCase(),
+          status: d.status?.toLowerCase(),
+          location: '',
+          quantity:
+            d.produceListing?.quantity ||
+            d.warehouseListing?.capacity ||
+            d.transportListing?.capacity ||
+            0,
+          unit: d.produceListing?.unit || 'kg',
+          seller: {
+            name: d.user?.name || 'Seller',
+            rating: 4.5,
+            verified: d.user?.is_verified || false,
+          },
+          images: [],
+          postedAt: d.created_at,
+          category: d.produceListing?.crop_type || d.type || 'General',
+        })
       } catch (err) {
-        console.error('Failed to fetch listing:', err)
+        console.error(err)
         setListing(null)
       } finally {
         setLoading(false)
@@ -67,7 +70,7 @@ export default function ListingDetailPage() {
     }
 
     fetchListing()
-  }, [params.id])
+  }, [params?.id])
 
   if (loading) {
     return (
