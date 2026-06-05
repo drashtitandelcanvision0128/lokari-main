@@ -28,9 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${manrope.variable} ${inter.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <link key="preconnect-1" rel="preconnect" href="https://fonts.googleapis.com" />
+        <link key="preconnect-2" rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link key="material-symbols" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-[#fcf9f5] text-[#1c1c19] font-body selection:bg-primary-container selection:text-on-primary-container">
         <CartProvider>

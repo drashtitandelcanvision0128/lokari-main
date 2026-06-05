@@ -7,6 +7,9 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+# Set NODE_ENV to development to ensure devDependencies are installed
+ENV NODE_ENV=development
+
 # Install frontend dependencies
 COPY package.json package-lock.json* ./
 RUN npm ci
@@ -60,4 +63,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Run Prisma migrations and start both servers
-CMD ["sh", "-c", "cd backend && npx prisma migrate deploy && cd .. && node server.js & cd backend && node src/server.js"]
+CMD ["sh", "-c", "cd backend && npx prisma migrate deploy && node src/server.js & cd .. && npm start"]
