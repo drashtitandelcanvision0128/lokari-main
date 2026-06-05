@@ -3,7 +3,11 @@ import express from "express"; // type: module
 import { config } from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { connectDB, disconnectDB } from "./config/db.js";
+import { connectDB, disconnectDB, prisma } from "./config/db.js";
+import { exec } from "child_process";
+import { promisify } from "util";
+
+const execAsync = promisify(exec);
 
 // Import Routes
 import authRoutes from "./routes/authRoutes.js";
@@ -11,6 +15,22 @@ import adminRoutes from "./routes/adminRoutes.js";
 import listingRoutes from "./routes/listingRoutes.js";
 
 config();
+
+// Run Prisma migrations on startup (only in production)
+const runMigrations = async () => {
+    if (process.env.NODE_ENV === "production") {
+        try {
+            console.log("Running Prisma migrations...");
+            await execAsync("npx prisma migrate deploy");
+            console.log("Migrations completed successfully");
+        } catch (error) {
+            console.error("Migration failed:", error.message);
+            // Don't exit, let the server start anyway
+        }
+    }
+};
+
+await runMigrations();
 connectDB();
 
 const app = express();
