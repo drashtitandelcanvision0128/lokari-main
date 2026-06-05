@@ -15,8 +15,9 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 # Install backend dependencies
+WORKDIR /app
+COPY backend/package.json backend/package-lock.json* ./backend/
 WORKDIR /app/backend
-COPY backend/package.json backend/package-lock.json* ./
 RUN npm ci
 
 # Rebuild the source code only when needed
