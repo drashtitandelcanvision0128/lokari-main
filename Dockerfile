@@ -24,6 +24,7 @@ COPY --from=deps /app/backend/node_modules ./backend/node_modules
 COPY . .
 
 # Build the frontend
+ENV NODE_ENV=development
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
