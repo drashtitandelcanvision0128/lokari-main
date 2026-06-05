@@ -63,4 +63,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Run Prisma migrations and start both servers
-CMD ["sh", "-c", "cd backend && npx prisma migrate deploy && node src/server.js & cd .. && npm start"]
+CMD ["sh", "-c", "cd backend && npx prisma migrate deploy && node src/server.js & cd /app && npm start"]
