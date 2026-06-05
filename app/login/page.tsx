@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showDebug, setShowDebug] = useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
@@ -23,7 +23,7 @@ export default function LoginPage() {
       console.log('Attempting login with:', { email, password })
       
       // Validate credentials against registered users
-      const user = registrationService.authenticateUser(email, password)
+      const user = await registrationService.authenticateUser(email, password)
       
       if (user) {
         // User authenticated successfully
@@ -39,7 +39,7 @@ export default function LoginPage() {
       }
     } catch (error) {
       console.error('Login error:', error)
-      setError('Login failed. Please try again.')
+      setError(error instanceof Error ? error.message : 'Login failed. Please try again.')
     } finally {
       setIsLoading(false)
     }

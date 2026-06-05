@@ -6,14 +6,17 @@ import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Listing } from '@/types/dashboard'
-import { mockListings } from '@/data/dashboardMock'
+// import { mockListings } from '@/data/dashboardMock'
+import { getCurrentUser } from '@/lib/auth'
 
 interface ListingsPageProps {
   searchQuery?: string
 }
 
 export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
-  const [listings, setListings] = useState<Listing[]>(mockListings)
+  // const [listings, setListings] = useState<Listing[]>(mockListings)
+  const [listings, setListings] = useState<Listing[]>([])
+  const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'live' | 'reviewing' | 'paused' | 'sold' | 'expired'>('all')
   const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(null)
   const statusDropdownRef = useRef<HTMLDivElement | null>(null)
@@ -31,6 +34,64 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [openStatusDropdown])
 
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const currentUser = getCurrentUser()
+
+        if (!currentUser?.id) {
+          setListings([])
+          return
+        }
+
+        const response = await fetch('http://localhost:5000/listings')
+        const result = await response.json()
+        console.log(result.data[0])
+
+        if (result.success) {
+          const userListings = result.data
+            .filter((item: any) => item.user_id === currentUser.id)
+            .map((item: any) => ({
+              id: item.listing_id,
+              product: item.title,
+              description: item.description || '',
+              quantity: item.produceListing
+                ? `${item.produceListing.quantity} ${item.produceListing.unit}`
+                : item.warehouseListing
+                  ? `${item.warehouseListing.capacity}`
+                  : 'N/A',
+              bids: 0,
+              views: 0,
+              inquiries: 0,
+              status:
+                item.status === 'ACTIVE'
+                  ? 'live'
+                  : item.status === 'PAUSED'
+                    ? 'paused'
+                    : 'reviewing',
+              listingType:
+                item.type === 'PRODUCE'
+                  ? 'produce'
+                  : item.type === 'WAREHOUSE'
+                    ? 'warehouse'
+                    : 'transport',
+              price: `₹${item.price}`,
+              image: '',
+              createdAt: item.created_at,
+            }))
+
+          setListings(userListings)
+        }
+      } catch (error) {
+        console.error('Failed to fetch listings:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchListings()
+  }, [])
+
   const handleStatusChange = (listingId: string, newStatus: 'live' | 'paused') => {
     setListings(prev =>
       prev.map(l => l.id === listingId ? { ...l, status: newStatus } : l)
@@ -39,10 +100,17 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   }
   const [listingTypeFilter, setListingTypeFilter] = useState<'all' | 'produce' | 'warehouse' | 'transport'>('all')
 
+  if (loading) {
+    return (
+      <div className="p-6">
+        <p>Loading listings...</p>
+      </div>
+    )
+  }
   const filteredListings = listings.filter(listing => {
     const matchesFilter = filter === 'all' || listing.status === filter
     const matchesTypeFilter = listingTypeFilter === 'all' || listing.listingType === listingTypeFilter
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       listing.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
       listing.description.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesFilter && matchesTypeFilter && matchesSearch
@@ -75,7 +143,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           <h1 className="text-3xl font-bold text-primary mb-2">My Listings</h1>
           <p className="text-on-surface-variant">Manage your product listings and track bids</p>
         </div>
-        
+
         {/* Right: Filters and Action - Vertically Stacked */}
         <div className="flex flex-col gap-3 items-end">
           {/* Status Filters - Top Row */}
@@ -127,17 +195,16 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredListings.map((listing) => (
-            <div 
-              key={listing.id} 
-              className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-[#f0f0f0] ${
-                listing.status === 'paused' ? 'opacity-70 grayscale-[0.3] bg-[#fcfcfc]' : ''
-              }`}
+            <div
+              key={listing.id}
+              className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-[#f0f0f0] ${listing.status === 'paused' ? 'opacity-70 grayscale-[0.3] bg-[#fcfcfc]' : ''
+                }`}
             >
               {/* Product Image */}
               <div className="h-56 relative bg-gradient-to-br from-[#f9f9f7] to-[#f5f5f3]">
                 {listing.image ? (
-                  <img 
-                    src={listing.image} 
+                  <img
+                    src={listing.image}
                     alt={listing.product}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -164,7 +231,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                   <h3 className="font-bold text-lg text-[#0b5d68] mb-2 leading-tight">{listing.product}</h3>
                   <p className="text-sm text-[#666666] leading-relaxed">{listing.description}</p>
                 </div>
-                
+
                 {/* Stats Row */}
                 <div className="flex justify-between items-center py-3 border-y border-[#f0f0f0]">
                   <div className="flex items-center gap-1 text-xs text-[#666666]">
@@ -206,9 +273,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`w-full hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${
-                        openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''
-                      }`}
+                      className={`w-full hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''
+                        }`}
                       onClick={() =>
                         setOpenStatusDropdown(prev => prev === listing.id ? null : listing.id)
                       }
@@ -226,15 +292,13 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                         <div className="p-1.5 space-y-0.5">
                           <button
                             onClick={() => handleStatusChange(listing.id, 'live')}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
-                              listing.status === 'live'
-                                ? 'bg-[#2eb5c2]/10 text-[#2eb5c2]'
-                                : 'text-[#0b5d68] hover:bg-[#f5fafa] hover:text-[#2eb5c2]'
-                            }`}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${listing.status === 'live'
+                              ? 'bg-[#2eb5c2]/10 text-[#2eb5c2]'
+                              : 'text-[#0b5d68] hover:bg-[#f5fafa] hover:text-[#2eb5c2]'
+                              }`}
                           >
-                            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
-                              listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#cccccc]'
-                            }`} />
+                            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#cccccc]'
+                              }`} />
                             Active
                             {listing.status === 'live' && (
                               <Icon name="check" className="ml-auto text-[#2eb5c2] text-base" />
@@ -243,15 +307,13 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
                           <button
                             onClick={() => handleStatusChange(listing.id, 'paused')}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
-                              listing.status === 'paused'
-                                ? 'bg-[#d55b39]/10 text-[#d55b39]'
-                                : 'text-[#0b5d68] hover:bg-[#fef5f3] hover:text-[#d55b39]'
-                            }`}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${listing.status === 'paused'
+                              ? 'bg-[#d55b39]/10 text-[#d55b39]'
+                              : 'text-[#0b5d68] hover:bg-[#fef5f3] hover:text-[#d55b39]'
+                              }`}
                           >
-                            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
-                              listing.status === 'paused' ? 'bg-[#d55b39]' : 'bg-[#cccccc]'
-                            }`} />
+                            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'paused' ? 'bg-[#d55b39]' : 'bg-[#cccccc]'
+                              }`} />
                             Inactive
                             {listing.status === 'paused' && (
                               <Icon name="check" className="ml-auto text-[#d55b39] text-base" />

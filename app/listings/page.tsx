@@ -36,16 +36,19 @@ const getProductImage = (listing: any) => {
     'Fresh Strawberries - Hot Auction': 'https://images.pexels.com/photos/1994461/strawberries-fruits-fresh-red-1994461.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&fit=crop',
     'Premium Soybeans - Fixed Price Deal': 'https://images.pexels.com/photos/536210/soybeans-bean-legume-soy-536210.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&fit=crop'
   }
-  
+
   return imageMap[listing.title] || 'https://images.pexels.com/photos/264537/pexels-photo-264537.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&fit=crop' // Default farm image
 }
 
 function ListingsPageContent() {
   const searchParams = useSearchParams()
   const categoryFromUrl = searchParams.get('category')
-  
+
   const [listings, setListings] = useState(dummyListings)
   const [filteredListings, setFilteredListings] = useState(dummyListings)
+
+  const [dbListings, setDbListings] = useState<any[]>([])
+  const [loadingListings, setLoadingListings] = useState(true)
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState(categoryFromUrl || 'all')
@@ -61,8 +64,62 @@ function ListingsPageContent() {
   })
 
   useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        setLoadingListings(true)
+
+        const res = await fetch("http://localhost:5000/listings")
+        const result = await res.json()
+
+        console.log("DB listings:", result)
+
+        // IMPORTANT FIX 👇
+        const dbArray = result.data || []
+
+        setDbListings(dbArray)
+
+        const normalizedDB = dbArray.map((item: any) => ({
+          id: item.listing_id,
+          title: item.title,
+          description: item.description,
+          type: item.type.toLowerCase(),
+          price: Number(item.price),
+          quantity:
+            item.produceListing?.quantity ||
+            item.warehouseListing?.capacity ||
+            1,
+          unit:
+            item.produceListing?.unit ||
+            item.transportListing?.vehicleType ||
+            "unit",
+          location: item.user?.location || "Unknown",
+          status: item.status.toLowerCase(),
+          images: [],
+          isDb: true
+        }))
+
+        const merged = [...normalizedDB, ...dummyListings]
+
+        setListings(merged)
+        setFilteredListings(merged)
+
+      } catch (err) {
+        console.log("API failed, using dummy only")
+
+        setListings(dummyListings)
+        setFilteredListings(dummyListings)
+
+      } finally {
+        setLoadingListings(false)
+      }
+    }
+
+    fetchListings()
+  }, [])
+
+  useEffect(() => {
     setLoading(true)
-    
+
     const timer = setTimeout(() => {
       let filtered = listings
 
@@ -77,18 +134,20 @@ function ListingsPageContent() {
       } else {
         // Search filter
         if (searchTerm) {
+          const term = searchTerm.toLowerCase()
+
           filtered = filtered.filter(listing =>
-            listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            listing.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            listing.category.toLowerCase().includes(searchTerm.toLowerCase())
+            (listing.title || '').toLowerCase().includes(term) ||
+            (listing.description || '').toLowerCase().includes(term) ||
+            (listing.category || '').toLowerCase().includes(term)
           )
         }
 
         // Type filter
         if (selectedType !== 'all') {
-          filtered = filtered.filter(listing => listing.type === selectedType)
+          filtered = filtered.filter(listing => listing.type.toLowerCase() === selectedType.toLowerCase())
         }
-
+        console.log("FINAL LISTINGS:", listings)
         // Status filter
         if (selectedStatus !== 'all') {
           filtered = filtered.filter(listing => listing.status === selectedStatus)
@@ -100,7 +159,7 @@ function ListingsPageContent() {
         }
 
         if (sidebarFilters.location !== 'all') {
-          filtered = filtered.filter(listing => 
+          filtered = filtered.filter(listing =>
             listing.location.toLowerCase().includes(sidebarFilters.location.toLowerCase())
           )
         }
@@ -120,14 +179,14 @@ function ListingsPageContent() {
             if (listing.type !== 'warehouse') {
               return false
             }
-            
+
             // Map filter values to keywords to search in title/description/storageTypes
             const typeMapping: { [key: string]: string[] } = {
               'cold': ['cold storage', 'temperature controlled', 'freeze'],
               'dry': ['dry grain', 'dry storage', 'silo', 'grain storage'],
               'climate': ['climate controlled', 'temperature controlled', 'humidity']
             }
-            
+
             return sidebarFilters.storageTypes.some(filterType => {
               const keywords = typeMapping[filterType] || []
               const searchText = `${listing.title} ${listing.description} ${(listing.storageTypes || []).join(' ')}`.toLowerCase()
@@ -169,6 +228,10 @@ function ListingsPageContent() {
     }
   }
 
+  if (loadingListings) {
+    return <div className="p-6">Loading marketplace...</div>
+  }
+
   return (
     <div className="bg-[#fcf9f5] min-h-screen pt-16">
 
@@ -184,13 +247,13 @@ function ListingsPageContent() {
                 <h1 className="text-3xl font-bold text-[#012d1d] tracking-tight mb-2 font-['Manrope']">Marketplace Listings</h1>
                 <p className="text-[#414844] text-sm">Real-time inventory and logistics exchange for modern agriculture.</p>
               </div>
-              
+
               {/* Search Field - Extreme Right */}
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#717973] text-sm material-symbols-outlined text-base">search</span>
-                <input 
-                  className="pl-10 pr-4 py-2 rounded-lg bg-white border border-gray-200 focus:ring-2 focus:ring-[#012d1d] focus:border-transparent text-sm w-64" 
-                  placeholder="Search listings..." 
+                <input
+                  className="pl-10 pr-4 py-2 rounded-lg bg-white border border-gray-200 focus:ring-2 focus:ring-[#012d1d] focus:border-transparent text-sm w-64"
+                  placeholder="Search listings..."
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -202,43 +265,39 @@ function ListingsPageContent() {
             <div className="flex justify-end mt-4">
               <div className="flex items-center gap-2 bg-[#f6f3ef] p-1.5 rounded-xl w-fit">
                 <span className="text-xs font-semibold px-3 text-[#717973] uppercase tracking-widest">Sort:</span>
-                <button 
+                <button
                   onClick={() => setSortBy('latest')}
-                  className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
-                    sortBy === 'latest' 
-                      ? 'bg-[#ffffff] text-[#012d1d] shadow-sm' 
-                      : 'text-[#414844] hover:bg-[#e5e2de]'
-                  }`}
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${sortBy === 'latest'
+                    ? 'bg-[#ffffff] text-[#012d1d] shadow-sm'
+                    : 'text-[#414844] hover:bg-[#e5e2de]'
+                    }`}
                 >
                   Latest
                 </button>
-                <button 
+                <button
                   onClick={() => setSortBy('price-low')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    sortBy === 'price-low' 
-                      ? 'bg-[#ffffff] text-[#012d1d] shadow-sm' 
-                      : 'text-[#414844] hover:bg-[#e5e2de]'
-                  }`}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${sortBy === 'price-low'
+                    ? 'bg-[#ffffff] text-[#012d1d] shadow-sm'
+                    : 'text-[#414844] hover:bg-[#e5e2de]'
+                    }`}
                 >
                   Price Low
                 </button>
-                <button 
+                <button
                   onClick={() => setSortBy('price-high')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    sortBy === 'price-high' 
-                      ? 'bg-[#ffffff] text-[#012d1d] shadow-sm' 
-                      : 'text-[#414844] hover:bg-[#e5e2de]'
-                  }`}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${sortBy === 'price-high'
+                    ? 'bg-[#ffffff] text-[#012d1d] shadow-sm'
+                    : 'text-[#414844] hover:bg-[#e5e2de]'
+                    }`}
                 >
                   Price High
                 </button>
-                <button 
+                <button
                   onClick={() => setSortBy('capacity')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    sortBy === 'capacity' 
-                      ? 'bg-[#ffffff] text-[#012d1d] shadow-sm' 
-                      : 'text-[#414844] hover:bg-[#e5e2de]'
-                  }`}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${sortBy === 'capacity'
+                    ? 'bg-[#ffffff] text-[#012d1d] shadow-sm'
+                    : 'text-[#414844] hover:bg-[#e5e2de]'
+                    }`}
                 >
                   Capacity
                 </button>
@@ -282,7 +341,7 @@ function ListingsPageContent() {
                 </div>
                 <h3 className="text-2xl font-bold text-[#012d1d] mb-2 font-['Manrope']">No matching listings</h3>
                 <p className="text-[#414844] max-w-sm">We couldn't find any listings that match your current filter selection. Try adjusting your search or filters.</p>
-                <button 
+                <button
                   onClick={() => {
                     setSearchTerm('')
                     setSelectedStatus('all')
