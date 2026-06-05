@@ -657,18 +657,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust Signals */}
-      <section className={`py-16 px-8 ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-700">
-          <span className={`text-xs font-bold uppercase tracking-[0.3em] ${isDark ? 'text-[#2eb5c2]' : 'text-[#666666]'}`}>Strategic Partners</span>
-          <div className="flex flex-wrap justify-center gap-12 items-center">
-            <span className={`font-headline text-2xl font-extrabold tracking-tighter ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>AGRI-FEDERAL</span>
-            <span className={`font-headline text-2xl font-extrabold tracking-tighter ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>LOGISTIX.IO</span>
-            <span className={`font-headline text-2xl font-extrabold tracking-tighter ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>EARTHSCAN</span>
-            <span className={`font-headline text-2xl font-extrabold tracking-tighter ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>SECURECUSTODY</span>
-          </div>
-        </div>
-      </section>
     </main>
   )
 }

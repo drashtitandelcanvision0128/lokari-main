@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AdminListing } from '@/types/admin'
-import { mockAdminListings } from '@/data/adminMock'
+// import { mockAdminListings } from '@/data/adminMock's
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
 
 interface ListingsPanelProps {
@@ -10,11 +10,83 @@ interface ListingsPanelProps {
 }
 
 export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
-  const [listings] = useState<AdminListing[]>(mockAdminListings)
+  // const [listings] = useState<AdminListing[]>(mockAdminListings)
+  const [listings, setListings] = useState<AdminListing[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedListing, setSelectedListing] = useState<AdminListing | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/listings')
+        const result = await response.json()
+
+        if (result.success) {
+          const formattedListings: AdminListing[] = result.data.map((item: any) => ({
+            id: item.listing_id,
+            title: item.title,
+            description: item.description || '',
+            category:
+              item.type === 'PRODUCE'
+                ? 'produce'
+                : item.type === 'WAREHOUSE'
+                  ? 'warehouse'
+                  : 'transport',
+
+            seller: {
+              id: item.user_id,
+              name: item.user?.name || 'Unknown User',
+              email: 'N/A',
+            },
+
+            price: Number(item.price),
+
+            unit:
+              item.produceListing?.unit ||
+              item.transportListing?.vehicleType ||
+              'unit',
+
+            quantity:
+              item.produceListing?.quantity ||
+              item.warehouseListing?.capacity ||
+              1,
+
+            location: item.location || 'N/A',
+
+            status:
+              item.status === 'ACTIVE'
+                ? 'active'
+                : item.status === 'PENDING'
+                  ? 'pending'
+                  : item.status === 'REJECTED'
+                    ? 'rejected'
+                    : 'expired',
+
+            createdAt: item.created_at,
+            expiresAt: item.expiryDate || item.expiry_date || item.created_at,
+
+            views: 0,
+            inquiries: 0,
+            reports: 0,
+            featured: false,
+
+            images: [],
+          }))
+
+          setListings(formattedListings)
+        }
+      } catch (error) {
+        console.error('Failed to fetch admin listings:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchListings()
+  }, [])
 
   const handleViewListing = (listing: AdminListing) => {
     setSelectedListing(listing)
@@ -26,13 +98,16 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
     setSelectedListing(null)
   }
 
+  if (loading) {
+    return <div className="p-6">Loading listings...</div>
+  }
   const filteredListings = listings.filter(listing => {
     const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         listing.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         listing.seller.name.toLowerCase().includes(searchQuery.toLowerCase())
+      listing.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      listing.seller.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || listing.category === selectedCategory
     const matchesStatus = selectedStatus === 'all' || listing.status === selectedStatus
-    
+
     return matchesSearch && matchesCategory && matchesStatus
   })
 
@@ -110,7 +185,7 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
               <option value="transport">Transport</option>
             </select>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-on-surface-variant">Status:</label>
             <select
@@ -155,9 +230,9 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                         <span className="material-symbols-outlined text-warning">star</span>
                       )}
                     </div>
-                    
+
                     <p className="text-on-surface-variant mb-3 line-clamp-2">{listing.description}</p>
-                    
+
                     <div className="flex flex-wrap gap-2 mb-3">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant capitalize">
                         {listing.category}
@@ -193,14 +268,14 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(listing.status)}`}>
                       {listing.status}
                     </span>
-                    
+
                     <div className="text-xs text-on-surface-variant text-right">
                       <div>Created {formatDate(listing.createdAt)}</div>
                       <div>Expires {formatDate(listing.expiresAt)}</div>
                     </div>
 
                     <div className="flex gap-2">
-                      <button 
+                      <button
                         onClick={() => handleViewListing(listing)}
                         className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white hover:bg-blue-100 hover:text-blue-900 transition-colors cursor-pointer"
                       >

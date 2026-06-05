@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { UsersPanel } from '@/components/admin/panels/UsersPanel'
 import { ListingsPanel } from '@/components/admin/panels/ListingsPanel'
@@ -10,6 +11,7 @@ import { AnalyticsPanel } from '@/components/admin/panels/AnalyticsPanel'
 import { AuditLogPanel } from '@/components/admin/panels/AuditLogPanel'
 import { adminMock } from '@/data/adminMock'
 import { TabType, AdminTabs } from '@/types/admin'
+import { isAdminAuthenticated, redirectIfNotAdmin } from '@/lib/adminAuth'
 
 // Tab component mapping
 const TAB_COMPONENTS = {
@@ -22,9 +24,18 @@ const TAB_COMPONENTS = {
 }
 
 export default function AdminPage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('users')
   const [adminTabs, setAdminTabs] = useState<AdminTabs | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Check admin authentication on component mount
+  useEffect(() => {
+    if (!isAdminAuthenticated()) {
+      router.push('/admin-login')
+      return
+    }
+  }, [router])
 
   // Simulate backend API call on component mount
   useEffect(() => {

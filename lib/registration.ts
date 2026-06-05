@@ -60,50 +60,51 @@ class RegistrationService {
 
   // User Management
   async createUser(data: RegistrationData): Promise<User> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      const response = await fetch('http://localhost:5000/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-    const existingUsers = this.getAllUsers()
-    
-    // Check for duplicate email/phone
-    if (data.email && existingUsers.some(u => u.email === data.email)) {
-      throw new Error('Email already registered')
+      const resData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(resData.error || resData.message || 'Registration failed');
+      }
+
+      const user: User = resData.data.user;
+
+      // Store in localStorage
+      localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user));
+      
+      // Keep existing array updated for compatibility
+      const existingUsers = this.getAllUsers();
+      const userIndex = existingUsers.findIndex(u => u.id === user.id);
+      if (userIndex !== -1) {
+        existingUsers[userIndex] = user;
+      } else {
+        existingUsers.push(user);
+      }
+      localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(existingUsers));
+
+      // Create user profile in localStorage for client-side state compatibility
+      const profile: UserProfile = {
+        userId: user.id,
+        kycStatus: 'not_started',
+        verificationLevel: 'basic',
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+      localStorage.setItem(this.STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+
+      return user;
+    } catch (error) {
+      console.error('Error during registration:', error);
+      throw error;
     }
-    if (data.phone && existingUsers.some(u => u.phone === data.phone)) {
-      throw new Error('Phone number already registered')
-    }
-
-    const user: User = {
-      id: this.generateId(),
-      fullName: data.fullName,
-      email: data.email,
-      phone: data.phone,
-      password: data.password,
-      role: data.role,
-      status: 'pending_kyc',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      location: data.location,
-      farmName: data.farmName,
-      companyName: data.companyName,
-      warehouseName: data.warehouseName,
-      vehicleType: data.vehicleType
-    }
-
-    // Store user
-    console.log('Creating user:', user)
-    console.log('Existing users before:', existingUsers)
-    
-    localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user))
-    existingUsers.push(user)
-    localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(existingUsers))
-    
-    console.log('Users after creation:', this.getAllUsers())
-
-    // Create profile
-    await this.createProfile(user.id)
-
-    return user
   }
 
   async activateUser(userId: string): Promise<void> {
@@ -286,35 +287,55 @@ class RegistrationService {
   }
 
   // Authenticate user with email and password
-  authenticateUser(email: string, password: string): User | null {
-    const users = this.getAllUsers()
-    
-    // First, try to find user with password field
-    let user = users.find(u => 
-      (u.email === email || u.phone === email) && u.password === password
-    )
-    
-    if (user) {
-      // Set current user session
-      this.setCurrentUser(user)
-      return user
+  async authenticateUser(email: string, password: string): Promise<User | null> {
+    try {
+      const response = await fetch('http://localhost:5000/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const resData = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          return null;
+        }
+        throw new Error(resData.error || resData.message || 'Login failed');
+      }
+
+      const user: User = resData.data.user;
+
+      // Store current user session
+      this.setCurrentUser(user);
+      
+      // Store in users array for compatibility
+      const existingUsers = this.getAllUsers();
+      const idx = existingUsers.findIndex(u => u.id === user.id);
+      if (idx !== -1) {
+        existingUsers[idx] = user;
+      } else {
+        existingUsers.push(user);
+      }
+      localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(existingUsers));
+
+      // Update/Create user profile in localStorage for client-side state compatibility
+      const profile: UserProfile = {
+        userId: user.id,
+        kycStatus: user.status === 'active' ? 'verified' : 'not_started',
+        verificationLevel: 'basic',
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+      localStorage.setItem(this.STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+
+      return user;
+    } catch (error) {
+      console.error('Error during authentication:', error);
+      throw error;
     }
-    
-    // If no user found, check if there's a user without password field (migration case)
-    const userWithoutPassword = users.find(u => 
-      (u.email === email || u.phone === email) && !u.password
-    )
-    
-    if (userWithoutPassword) {
-      // Migrate user to include password
-      const migratedUser = { ...userWithoutPassword, password }
-      this.updateUser(migratedUser)
-      this.setCurrentUser(migratedUser)
-      return migratedUser
-    }
-    
-        
-    return null
   }
 
   // Get dashboard URL based on user role

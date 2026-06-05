@@ -1,21 +1,55 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AdminUser } from '@/types/admin'
 import { mockAdminUsers } from '@/data/adminMock'
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
 import { useAdminSearch } from '@/hooks/useSearchFilter'
+import { EditUserModal } from './EditUserModal'
+import { AddUserModal } from './AddUserModal'
 
 interface UsersPanelProps {
   searchQuery?: string
 }
 
 export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
-  const [users] = useState<AdminUser[]>(mockAdminUsers)
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  
+  // Edit modal state
+  const [editUser, setEditUser] = useState<AdminUser | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  
+  // Add modal state
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+
   const [selectedRole, setSelectedRole] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true)
+      // Use local dev server URL for fetching
+      const response = await fetch('http://localhost:5000/admin/users')
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data.data || [])
+      } else {
+        alert('Failed to fetch users')
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      alert('Error connecting to backend')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
 
   const handleViewUser = (user: AdminUser) => {
     setSelectedUser(user)
@@ -25,6 +59,132 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
   const handleCloseDrawer = () => {
     setIsDrawerOpen(false)
     setSelectedUser(null)
+  }
+
+  const handleEditUser = (user: AdminUser) => {
+    setEditUser(user)
+    setIsEditModalOpen(true)
+  }
+
+  const handleSaveUser = async (userId: string, updatedData: any) => {
+    try {
+      const response = await fetch(`http://localhost:5000/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      })
+      if (response.ok) {
+        alert('User updated successfully')
+        fetchUsers() // Refresh list
+      } else {
+        alert('Failed to update user')
+      }
+    } catch (error) {
+      console.error('Error updating user:', error)
+      alert('Error updating user')
+    }
+  }
+
+  const handleCreateUser = async (userData: any) => {
+    try {
+      const response = await fetch(`http://localhost:5000/admin/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      })
+      if (response.ok) {
+        alert('User created successfully')
+        fetchUsers() // Refresh list
+      } else {
+        const errorData = await response.json()
+        alert(`Failed to create user: ${errorData.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error creating user:', error)
+      alert('Error creating user')
+    }
+  }
+
+  const handleToggleSuspend = async (userId: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/admin/users/${userId}/suspend`, {
+        method: 'PUT'
+      })
+      if (response.ok) {
+        alert('User status updated')
+        fetchUsers() // Refresh list
+        
+        // Also update the selected user in drawer if it's currently open
+        if (selectedUser && selectedUser.id === userId) {
+          const updatedData = await response.json()
+          setSelectedUser(updatedData.data)
+        }
+      } else {
+        alert('Failed to update status')
+      }
+    } catch (error) {
+      console.error('Error updating status:', error)
+      alert('Error updating status')
+    }
+  }
+
+  const handleToggleVerify = async (userId: string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/admin/users/${userId}/verify`, {
+        method: 'PUT'
+      })
+      if (response.ok) {
+        alert('User verification updated')
+        fetchUsers() // Refresh list
+        
+        // Also update the selected user in drawer if it's currently open
+        if (selectedUser && selectedUser.id === userId) {
+          const updatedData = await response.json()
+          setSelectedUser(updatedData.data)
+        }
+      } else {
+        alert('Failed to update verification')
+      }
+    } catch (error) {
+      console.error('Error updating verification:', error)
+      alert('Error updating verification')
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+    
+    try {
+      const response = await fetch(`http://localhost:5000/admin/users/${userId}`, {
+        method: 'DELETE'
+      })
+      if (response.ok) {
+        alert('User deleted successfully')
+        fetchUsers() // Refresh list
+        handleCloseDrawer() // Close the drawer
+      } else {
+        alert('Failed to delete user')
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      alert('Error deleting user')
+    }
+  }
+
+  const handleDrawerAction = (action: string, item: any) => {
+    if (action === 'toggle_ban') {
+      handleToggleSuspend(item.id)
+    } else if (action === 'toggle_verify') {
+      handleToggleVerify(item.id)
+    } else if (action === 'edit') {
+      handleEditUser(item)
+    } else if (action === 'delete') {
+      handleDeleteUser(item.id)
+    }
   }
 
   const filteredUsers = useAdminSearch(users, searchQuery, (user) => {
@@ -84,44 +244,57 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     <>
       <div className="p-6 space-y-6">
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-on-surface-variant">Role:</label>
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="px-3 py-1.5 text-sm border border-outline rounded-lg bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="all">All Roles</option>
-              <option value="farmer">Farmer</option>
-              <option value="trader">Trader</option>
-              <option value="warehouse">Warehouse</option>
-              <option value="transporter">Transporter</option>
-              <option value="admin">Admin</option>
-            </select>
+        <div className="flex flex-wrap gap-4 items-center justify-between">
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-on-surface-variant">Role:</label>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="px-3 py-1.5 text-sm border border-outline rounded-lg bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="all">All Roles</option>
+                <option value="farmer">Farmer</option>
+                <option value="trader">Trader</option>
+                <option value="warehouse">Warehouse</option>
+                <option value="transporter">Transporter</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-on-surface-variant">Status:</label>
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="px-3 py-1.5 text-sm border border-outline rounded-lg bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="banned">Banned</option>
+              </select>
+            </div>
+
+            <div className="text-sm text-on-surface-variant ml-2">
+              Showing {filteredUsers.length} of {users.length} users
+            </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-on-surface-variant">Status:</label>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3 py-1.5 text-sm border border-outline rounded-lg bg-surface text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="pending">Pending</option>
-              <option value="suspended">Suspended</option>
-              <option value="banned">Banned</option>
-            </select>
-          </div>
-
-          <div className="ml-auto text-sm text-on-surface-variant">
-            Showing {filteredUsers.length} of {users.length} users
-          </div>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+          >
+            <span className="material-symbols-outlined text-sm">add</span>
+            <span className="text-sm font-medium">Add User</span>
+          </button>
         </div>
 
         {/* Users Table */}
+        {loading ? (
+          <div className="flex justify-center p-12">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : (
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-outline-variant">
@@ -165,7 +338,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                         <div className="ml-4">
                           <div className="text-sm font-medium text-on-surface">{user.name}</div>
                           <div className="text-sm text-on-surface-variant">{user.email}</div>
-                          <div className="text-xs text-on-surface-variant">{user.location}</div>
+                          <div className="text-xs text-on-surface-variant">{user.location || 'Location not set'}</div>
                         </div>
                       </div>
                     </td>
@@ -202,17 +375,25 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                         <button 
                           onClick={() => handleViewUser(user)}
                           className="text-primary hover:text-primary-container transition-colors cursor-pointer"
+                          title="View Details"
                         >
                           <span className="material-symbols-outlined text-lg">visibility</span>
                         </button>
-                        <button className="text-on-surface hover:text-on-surface-variant transition-colors cursor-pointer">
+                        <button 
+                          onClick={() => handleEditUser(user)}
+                          className="text-on-surface hover:text-on-surface-variant transition-colors cursor-pointer"
+                          title="Edit User"
+                        >
                           <span className="material-symbols-outlined text-lg">edit</span>
                         </button>
-                        <button className="text-secondary hover:text-secondary-container transition-colors cursor-pointer">
-                          <span className="material-symbols-outlined text-lg">mail</span>
-                        </button>
-                        <button className="text-error hover:text-error-container transition-colors cursor-pointer">
-                          <span className="material-symbols-outlined text-lg">block</span>
+                        <button 
+                          onClick={() => handleToggleSuspend(user.id)}
+                          className={`${user.status === 'banned' ? 'text-green-600 hover:text-green-700' : 'text-error hover:text-error-container'} transition-colors cursor-pointer`}
+                          title={user.status === 'banned' ? 'Unban User' : 'Ban User'}
+                        >
+                          <span className="material-symbols-outlined text-lg">
+                            {user.status === 'banned' ? 'check_circle' : 'block'}
+                          </span>
                         </button>
                       </div>
                     </td>
@@ -222,6 +403,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
             </table>
           </div>
         </div>
+        )}
 
         {/* Empty State */}
         {filteredUsers.length === 0 && (
@@ -241,6 +423,22 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
         onClose={handleCloseDrawer}
         data={selectedUser}
         type="user"
+        onAction={handleDrawerAction}
+      />
+
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={editUser}
+        onSave={handleSaveUser}
+      />
+
+      {/* Add User Modal */}
+      <AddUserModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleCreateUser}
       />
     </>
   )

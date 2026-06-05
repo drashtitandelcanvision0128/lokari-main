@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# environment variables
+.env
+
+# build folders
+dist/
+build/
+.next/
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# prisma generated files (optional)
+prisma/generated/
+
+# vscode settings (optional)
+.vscode/
+
+# coverage
+coverage/
+/src/generated/prisma
