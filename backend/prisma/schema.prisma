@@ -1,15 +1,51 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  user_id     String       @id @default(uuid())
+  email       String       @unique
+  phone       String?       @unique
+  password    String
+  is_verified Boolean      @default(false)
+  is_active   Boolean      @default(true)
+  is_deleted  Boolean      @default(false)
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+  name        String?
+  addresses   Address[]
+  profile     UserProfile?
+}
+
+model UserProfile {
+  profile_id String    @id @default(uuid())
+  user_id    String    @unique
+  avatar_url String?
+  bio        String?
+  kyc_status KycStatus @default(PENDING)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  user       User      @relation(fields: [user_id], references: [user_id])
+}
+
+model Address {
+  address_id String   @id @default(uuid())
+  user_id    String
+  street     String
+  city       String
+  state      String
+  pincode    String
+  country    String
+  lat        Float?
+  lng        Float?
+  is_default Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User     @relation(fields: [user_id], references: [user_id])
 }
 
 enum UserRole {
@@ -23,150 +59,4 @@ enum KycStatus {
   PENDING
   VERIFIED
   REJECTED
-}
-
-// Listings Managaement : 
-enum ListingType {
-  PRODUCE
-  WAREHOUSE
-  TRANSPORT
-}
-
-enum ListingStatus {
-  DRAFT
-  ACTIVE
-  SOLD
-  EXPIRED
-}
-
-model User {
-  user_id     String       @id @default(uuid())
-  name        String?
-  email       String       @unique
-  phone       String?      @unique
-  password    String
-  role        UserRole     @default(FARMER)
-  is_verified Boolean      @default(false)
-  is_active   Boolean      @default(true)
-  is_deleted  Boolean      @default(false)
-  profile     UserProfile?
-  addresses   Address[]
-  created_at  DateTime     @default(now())
-  updated_at  DateTime     @updatedAt
-  listings    Listing[]
-}
-
-model UserProfile {
-  profile_id String @id @default(uuid())
-  user_id    String @unique
-
-  avatar_url String?
-  bio        String?
-  kyc_status KycStatus @default(PENDING)
-
-  // Role-specific fields
-  farm_name          String?
-  farm_location      String?
-  company_name       String?
-  business_type      String?
-  warehouse_name     String?
-  warehouse_location String?
-  capacity           String?
-  vehicle_type       String?
-  service_area       String?
-
-  user User @relation(fields: [user_id], references: [user_id])
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-}
-
-model Address {
-  address_id String @id @default(uuid())
-  user_id    String
-
-  street  String
-  city    String
-  state   String
-  pincode String
-  country String
-
-  lat Float?
-  lng Float?
-
-  is_default Boolean @default(false)
-
-  user User @relation(fields: [user_id], references: [user_id])
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-}
-
-// Listing management Tables 
-model Listing {
-  listing_id String @id @default(uuid())
-  user_id    String
-
-  type        ListingType
-  title       String
-  description String?
-  price       Decimal
-  price_type  String
-  status      ListingStatus @default(DRAFT)
-
-  is_deleted Boolean @default(false)
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  user User @relation(fields: [user_id], references: [user_id])
-
-  produceListing   ProduceListing?
-  warehouseListing WarehouseListing?
-  transportListing TransportListing?
-}
-
-model ProduceListing {
-  produce_listing_id String @id @default(uuid())
-  listing_id         String @unique
-
-  crop_type     String
-  quantity      Decimal
-  unit          String
-  harvest_date  DateTime?
-  expiry_date   DateTime?
-  quality_grade String?
-
-  listing Listing @relation(fields: [listing_id], references: [listing_id])
-}
-
-model WarehouseListing {
-  warehouse_listing_id String @id @default(uuid())
-  listing_id           String @unique
-
-  warehouse_id String?
-
-  capacity           Decimal
-  capacity_unit      String
-  available_from     DateTime?
-  available_to       DateTime?
-  climate_controlled Boolean   @default(false)
-
-  listing Listing @relation(fields: [listing_id], references: [listing_id])
-}
-
-model TransportListing {
-  transport_listing_id String @id @default(uuid())
-  listing_id           String @unique
-
-  vehicle_id String?
-
-  vehicle_type    String
-  capacity        Decimal
-  capacity_unit   String
-  available_from  DateTime?
-  available_to    DateTime?
-  is_refrigerated Boolean   @default(false)
-
-  listing Listing @relation(fields: [listing_id], references: [listing_id])
 }
