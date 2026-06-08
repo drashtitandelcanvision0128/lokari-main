@@ -80,6 +80,11 @@ export default function CreateListingPage() {
         // Transport fields
         vehicle_type: data.vehicleType || null,
         is_refrigerated: data.refrigeration || false,
+        // Auction fields
+        starting_bid: data.startingBid ? Number(data.startingBid) : undefined,
+        reserve_price: data.reservePrice ? Number(data.reservePrice) : undefined,
+        auction_start: data.auctionStart || undefined,
+        auction_end: data.auctionEnd || undefined,
       }
 
       console.log('📦 Submitting payload:', payload)

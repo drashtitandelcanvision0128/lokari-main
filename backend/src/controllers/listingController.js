@@ -34,6 +34,27 @@ export const getListingById = async (req, res) => {
                         name: true,
                         is_verified: true
                     }
+                },
+                auction: {
+                    include: {
+                        bids: {
+                            include: {
+                                bidder: {
+                                    select: {
+                                        name: true,
+                                        profile: {
+                                            select: {
+                                                user_id: true
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            orderBy: {
+                                amount: 'desc'
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -137,3 +158,82 @@ export const deleteListing = async (req, res) => {
         })
     }
 }
+
+export const placeBid = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { amount, user_id } = req.body;
+        const bidder_id = req.user?.user_id ?? user_id;
+
+        if (!bidder_id) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const numericAmount = Number(amount);
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            return res.status(400).json({ success: false, message: 'Invalid bid amount' });
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            const auction = await tx.auction.findUnique({
+                where: { listing_id: id },
+                include: { listing: true }
+            });
+
+            if (!auction) {
+                throw new Error('Auction not found for this listing');
+            }
+
+            if (auction.status !== 'LIVE') {
+                throw new Error('Auction is not live');
+            }
+
+            const now = new Date();
+            if (now < auction.start_time || now > auction.end_time) {
+                throw new Error('Auction has expired or not started yet');
+            }
+
+            if (auction.listing.user_id === bidder_id) {
+                throw new Error('Seller cannot bid on their own listing');
+            }
+
+            const currentHighest = auction.current_highest_bid || auction.starting_bid;
+            if (numericAmount <= currentHighest) {
+                throw new Error(`Bid amount must be greater than current highest bid (${currentHighest})`);
+            }
+
+            // Create bid
+            const bid = await tx.bid.create({
+                data: {
+                    auction_id: auction.auction_id,
+                    bidder_id: bidder_id,
+                    amount: numericAmount,
+                    status: 'ACTIVE'
+                }
+            });
+
+            // Update auction
+            await tx.auction.update({
+                where: { auction_id: auction.auction_id },
+                data: { current_highest_bid: numericAmount }
+            });
+
+            // Update previous bids to OUTBID
+            await tx.bid.updateMany({
+                where: { 
+                    auction_id: auction.auction_id, 
+                    bid_id: { not: bid.bid_id },
+                    status: 'ACTIVE'
+                },
+                data: { status: 'OUTBID' }
+            });
+
+            return bid;
+        });
+
+        res.status(201).json({ success: true, message: 'Bid placed successfully', data: result });
+    } catch (error) {
+        console.error('❌ PLACE BID ERROR:', error);
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
