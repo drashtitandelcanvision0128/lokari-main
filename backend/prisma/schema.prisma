@@ -39,6 +39,26 @@ enum ListingStatus {
   EXPIRED
 }
 
+// Enums for Bidding
+enum PriceType {
+  FIXED_PRICE
+  AUCTION
+}
+
+enum AuctionStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+  CANCELLED
+}
+
+enum BidStatus {
+  ACTIVE
+  OUTBID
+  WON
+  LOST
+}
+
 model User {
   user_id     String       @id @default(uuid())
   name        String?
@@ -54,6 +74,8 @@ model User {
   created_at  DateTime     @default(now())
   updated_at  DateTime     @updatedAt
   listings    Listing[]
+
+  bids Bid[]
 }
 
 model UserProfile {
@@ -111,7 +133,7 @@ model Listing {
   title       String
   description String?
   price       Decimal
-  price_type  String
+  price_type  PriceType     @default(FIXED_PRICE)
   status      ListingStatus @default(DRAFT)
 
   is_deleted Boolean @default(false)
@@ -124,6 +146,8 @@ model Listing {
   produceListing   ProduceListing?
   warehouseListing WarehouseListing?
   transportListing TransportListing?
+
+  auction Auction?
 }
 
 model ProduceListing {
@@ -169,4 +193,47 @@ model TransportListing {
   is_refrigerated Boolean   @default(false)
 
   listing Listing @relation(fields: [listing_id], references: [listing_id])
+}
+
+// Bidding Tables
+model Auction {
+  auction_id String @id @default(uuid())
+
+  listing_id String @unique
+
+  start_time DateTime
+  end_time   DateTime
+
+  reserve_price       Decimal?
+  starting_bid        Decimal
+  current_highest_bid Decimal?
+
+  status AuctionStatus @default(SCHEDULED)
+
+  winner_bid_id String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  listing Listing @relation(fields: [listing_id], references: [listing_id])
+
+  bids Bid[]
+}
+
+model Bid {
+  bid_id String @id @default(uuid())
+
+  auction_id String
+  bidder_id  String
+
+  amount Decimal
+
+  status BidStatus @default(ACTIVE)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  auction Auction @relation(fields: [auction_id], references: [auction_id])
+
+  bidder User @relation(fields: [bidder_id], references: [user_id])
 }

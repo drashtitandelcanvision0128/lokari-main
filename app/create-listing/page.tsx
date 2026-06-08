@@ -64,7 +64,7 @@ export default function CreateListingPage() {
         title: data.title,
         description: data.description,
         price: Number(data.price) || 0,
-        price_type: data.priceType?.toUpperCase() || 'FIXED',
+        price_type: data.priceType?.toUpperCase() === 'AUCTION' ? 'AUCTION' : 'FIXED_PRICE',
         // Produce fields
         crop_type: data.cropName || null,
         quantity: Number(data.quantity) || 0,
