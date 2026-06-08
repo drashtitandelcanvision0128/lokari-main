@@ -115,12 +115,25 @@ export const deleteListing = async (req, res) => {
     const { id } = req.params
 
     try {
-        await prisma.listing.delete({
-            where: { listing_id: id }
+        await prisma.listing.update({
+            where: {
+                listing_id: id
+            },
+            data: {
+                is_deleted: true
+            }
         })
 
-        res.json({ success: true })
+        res.json({
+            success: true
+        })
+
     } catch (err) {
-        res.status(500).json({ error: "Delete failed" })
+        console.error(err)
+
+        res.status(500).json({
+            success: false,
+            error: err.message
+        })
     }
 }
