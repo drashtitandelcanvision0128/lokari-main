@@ -129,12 +129,13 @@ model Listing {
   listing_id String @id @default(uuid())
   user_id    String
 
-  type        ListingType
-  title       String
-  description String?
-  price       Decimal
-  price_type  PriceType     @default(FIXED_PRICE)
-  status      ListingStatus @default(DRAFT)
+  type             ListingType
+  title            String
+  description      String?
+  listing_location String?
+  price            Decimal
+  price_type       PriceType     @default(FIXED_PRICE)
+  status           ListingStatus @default(DRAFT)
 
   is_deleted Boolean @default(false)
 
@@ -155,11 +156,15 @@ model ProduceListing {
   listing_id         String @unique
 
   crop_type     String
+  variety       String?
   quantity      Decimal
   unit          String
   harvest_date  DateTime?
   expiry_date   DateTime?
   quality_grade String?
+
+  storage_temperature String?
+  storage_humidity    String?
 
   listing Listing @relation(fields: [listing_id], references: [listing_id])
 }

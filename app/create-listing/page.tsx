@@ -63,15 +63,20 @@ export default function CreateListingPage() {
         type: typeMap[listingType],
         title: data.title,
         description: data.description,
+        listing_location: data.location || null,
         price: Number(data.price) || 0,
         price_type: data.priceType?.toUpperCase() === 'AUCTION' ? 'AUCTION' : 'FIXED_PRICE',
         // Produce fields
         crop_type: data.cropName || null,
+        variety: data.variety || null,
         quantity: Number(data.quantity) || 0,
         unit: data.unit || 'kg',
         harvest_date: data.harvestDate || null,
         expiry_date: data.expiryDate || null,
         quality_grade: data.qualityGrade || null,
+
+        storage_temperature: data.storageTemp || null,
+        storage_humidity: data.storageHumidity || null,
         // Warehouse fields
         capacity: Number(data.capacity) || null,
         capacity_unit: data.capacityUnit || 'sqft',
@@ -149,10 +154,10 @@ export default function CreateListingPage() {
           {['Basic Info', 'Details', 'Pricing', 'Review'].map((step, index) => (
             <div key={step} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${currentStep > index + 1
-                  ? 'bg-[#2eb5c2] text-white'
-                  : currentStep === index + 1
-                    ? 'bg-[#0b5d68] text-white'
-                    : 'bg-gray-200 text-gray-500'
+                ? 'bg-[#2eb5c2] text-white'
+                : currentStep === index + 1
+                  ? 'bg-[#0b5d68] text-white'
+                  : 'bg-gray-200 text-gray-500'
                 }`}>
                 {currentStep > index + 1 ? '✓' : index + 1}
               </div>

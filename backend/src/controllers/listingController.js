@@ -32,7 +32,12 @@ export const getListingById = async (req, res) => {
                 user: {
                     select: {
                         name: true,
-                        is_verified: true
+                        is_verified: true,
+                        profile: {
+                            select: {
+                                farm_location: true
+                            }
+                        }
                     }
                 },
                 auction: {
@@ -220,8 +225,8 @@ export const placeBid = async (req, res) => {
 
             // Update previous bids to OUTBID
             await tx.bid.updateMany({
-                where: { 
-                    auction_id: auction.auction_id, 
+                where: {
+                    auction_id: auction.auction_id,
                     bid_id: { not: bid.bid_id },
                     status: 'ACTIVE'
                 },
