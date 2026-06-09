@@ -111,8 +111,7 @@ export default function ListingDetailPage() {
 
   const handleBidSubmit = async (newBid: any) => {
     try {
-      const userStr = localStorage.getItem('user');
-      const token = localStorage.getItem('token');
+      const userStr = localStorage.getItem('currentUser');
       const user = userStr ? JSON.parse(userStr) : null;
       
       if (!user) {
@@ -124,7 +123,6 @@ export default function ListingDetailPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           amount: newBid.amount,
