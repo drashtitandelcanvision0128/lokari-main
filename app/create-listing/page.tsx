@@ -67,6 +67,7 @@ export default function CreateListingPage() {
         price_type: data.priceType?.toUpperCase() === 'AUCTION' ? 'AUCTION' : 'FIXED_PRICE',
         // Produce fields
         crop_type: data.cropName || null,
+        variety: data.variety || null,
         quantity: Number(data.quantity) || 0,
         unit: data.unit || 'kg',
         harvest_date: data.harvestDate || null,
@@ -149,10 +150,10 @@ export default function CreateListingPage() {
           {['Basic Info', 'Details', 'Pricing', 'Review'].map((step, index) => (
             <div key={step} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${currentStep > index + 1
-                  ? 'bg-[#2eb5c2] text-white'
-                  : currentStep === index + 1
-                    ? 'bg-[#0b5d68] text-white'
-                    : 'bg-gray-200 text-gray-500'
+                ? 'bg-[#2eb5c2] text-white'
+                : currentStep === index + 1
+                  ? 'bg-[#0b5d68] text-white'
+                  : 'bg-gray-200 text-gray-500'
                 }`}>
                 {currentStep > index + 1 ? '✓' : index + 1}
               </div>

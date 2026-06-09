@@ -155,6 +155,7 @@ model ProduceListing {
   listing_id         String @unique
 
   crop_type     String
+  variety       String?
   quantity      Decimal
   unit          String
   harvest_date  DateTime?

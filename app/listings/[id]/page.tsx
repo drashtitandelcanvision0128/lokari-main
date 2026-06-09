@@ -56,18 +56,26 @@ export default function ListingDetailPage() {
             name: d.user?.name || 'Seller',
             rating: 4.5,
             verified: d.user?.is_verified || false,
+            location: d.user?.profile?.farm_location || 'Location not available'
           },
           images: [],
           postedAt: d.created_at,
           category: d.produceListing?.crop_type || d.type || 'General',
+          cropName: d.produceListing?.crop_type,
+
+          variety: d.produceListing?.variety,
+
+          qualityGrade: d.produceListing?.quality_grade,
+
+          harvestDate: d.produceListing?.harvest_date,
           auctionEnd: d.auction?.end_time,
           reservePrice: d.auction?.reserve_price ? Number(d.auction?.reserve_price) : undefined,
           bids: d.auction?.bids?.map((b: any) => ({
-             amount: Number(b.amount),
-             bidder: { name: b.bidder?.name || 'Anonymous', rating: 4.5 },
-             status: b.status?.toLowerCase(),
-             createdAt: b.created_at,
-             message: 'Bid placed'
+            amount: Number(b.amount),
+            bidder: { name: b.bidder?.name || 'Anonymous', rating: 4.5 },
+            status: b.status?.toLowerCase(),
+            createdAt: b.created_at,
+            message: 'Bid placed'
           })) || [],
         })
       } catch (err) {
@@ -113,7 +121,7 @@ export default function ListingDetailPage() {
     try {
       const userStr = localStorage.getItem('currentUser');
       const user = userStr ? JSON.parse(userStr) : null;
-      
+
       if (!user) {
         alert('Please login to place a bid');
         return;
@@ -135,10 +143,10 @@ export default function ListingDetailPage() {
         alert(result.message || 'Failed to place bid');
         return;
       }
-      
+
       alert('Bid placed successfully!');
       window.location.reload();
-    } catch(err) {
+    } catch (err) {
       console.error(err);
       alert('Error placing bid');
     }

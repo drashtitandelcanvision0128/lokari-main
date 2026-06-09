@@ -10,6 +10,7 @@ export const createListingService = async (body) => {
         price,
         price_type,
         crop_type,
+        variety,
         quantity,
         unit,
         harvest_date,
@@ -37,6 +38,7 @@ export const createListingService = async (body) => {
                     produceListing: {
                         create: {
                             crop_type: crop_type ?? 'Unknown',
+                            variety: variety ?? null,
                             quantity: quantity ?? 0,
                             unit: unit ?? 'kg',
                             harvest_date: harvest_date ? new Date(harvest_date) : null,
