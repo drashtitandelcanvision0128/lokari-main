@@ -15,61 +15,84 @@ export const createListingService = async (body) => {
         harvest_date,
         expiry_date,
         quality_grade,
+        starting_bid,
+        reserve_price,
+        auction_start,
+        auction_end
     } = body;
 
-    const listing = await prisma.listing.create({
-        data: {
-            user_id,
-            type,           // must be "PRODUCE" | "WAREHOUSE" | "TRANSPORT"
-            title,
-            description,
-            price,
-            price_type,
-            status: 'ACTIVE',
+    const result = await prisma.$transaction(async (tx) => {
+        const listing = await tx.listing.create({
+            data: {
+                user_id,
+                type,           // must be "PRODUCE" | "WAREHOUSE" | "TRANSPORT"
+                title,
+                description,
+                price,
+                price_type,
+                status: 'ACTIVE',
 
-            // Nested create for the sub-listing type
-            ...(type === 'PRODUCE' && {
-                produceListing: {
-                    create: {
-                        crop_type: crop_type ?? 'Unknown',
-                        quantity: quantity ?? 0,
-                        unit: unit ?? 'kg',
-                        harvest_date: harvest_date ? new Date(harvest_date) : null,
-                        expiry_date: expiry_date ? new Date(expiry_date) : null,
-                        quality_grade: quality_grade ?? null,
+                // Nested create for the sub-listing type
+                ...(type === 'PRODUCE' && {
+                    produceListing: {
+                        create: {
+                            crop_type: crop_type ?? 'Unknown',
+                            quantity: quantity ?? 0,
+                            unit: unit ?? 'kg',
+                            harvest_date: harvest_date ? new Date(harvest_date) : null,
+                            expiry_date: expiry_date ? new Date(expiry_date) : null,
+                            quality_grade: quality_grade ?? null,
+                        },
                     },
-                },
-            }),
+                }),
 
-            ...(type === 'WAREHOUSE' && {
-                warehouseListing: {
-                    create: {
-                        capacity: body.capacity ?? 0,
-                        capacity_unit: body.capacity_unit ?? 'tons',
-                        available_from: body.available_from ? new Date(body.available_from) : null,
-                        available_to: body.available_to ? new Date(body.available_to) : null,
+                ...(type === 'WAREHOUSE' && {
+                    warehouseListing: {
+                        create: {
+                            capacity: body.capacity ?? 0,
+                            capacity_unit: body.capacity_unit ?? 'tons',
+                            available_from: body.available_from ? new Date(body.available_from) : null,
+                            available_to: body.available_to ? new Date(body.available_to) : null,
+                        },
                     },
-                },
-            }),
+                }),
 
-            ...(type === 'TRANSPORT' && {
-                transportListing: {
-                    create: {
-                        vehicle_type: body.vehicle_type ?? 'Unknown',
-                        capacity: body.capacity ?? 0,
-                        capacity_unit: body.capacity_unit ?? 'tons',
-                        available_from: body.available_from ? new Date(body.available_from) : null,
-                        available_to: body.available_to ? new Date(body.available_to) : null,
+                ...(type === 'TRANSPORT' && {
+                    transportListing: {
+                        create: {
+                            vehicle_type: body.vehicle_type ?? 'Unknown',
+                            capacity: body.capacity ?? 0,
+                            capacity_unit: body.capacity_unit ?? 'tons',
+                            available_from: body.available_from ? new Date(body.available_from) : null,
+                            available_to: body.available_to ? new Date(body.available_to) : null,
+                        },
                     },
-                },
-            }),
-        },
-        include: {
-            produceListing: true,
-            warehouseListing: true,
-            transportListing: true,
-        },
+                }),
+            },
+            include: {
+                produceListing: true,
+                warehouseListing: true,
+                transportListing: true,
+            },
+        });
+
+        if (price_type === 'AUCTION') {
+            const auction = await tx.auction.create({
+                data: {
+                    listing_id: listing.listing_id,
+                    start_time: auction_start ? new Date(auction_start) : new Date(),
+                    end_time: auction_end ? new Date(auction_end) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default 7 days
+                    starting_bid: starting_bid ? Number(starting_bid) : 0,
+                    reserve_price: reserve_price ? Number(reserve_price) : null,
+                    current_highest_bid: starting_bid ? Number(starting_bid) : 0,
+                    status: 'LIVE',
+                }
+            });
+            listing.auction = auction;
+        }
+
+        return listing;
     });
 
-    return listing;
+    return result;
 };

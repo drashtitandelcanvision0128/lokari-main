@@ -60,6 +60,15 @@ export default function ListingDetailPage() {
           images: [],
           postedAt: d.created_at,
           category: d.produceListing?.crop_type || d.type || 'General',
+          auctionEnd: d.auction?.end_time,
+          reservePrice: d.auction?.reserve_price ? Number(d.auction?.reserve_price) : undefined,
+          bids: d.auction?.bids?.map((b: any) => ({
+             amount: Number(b.amount),
+             bidder: { name: b.bidder?.name || 'Anonymous', rating: 4.5 },
+             status: b.status?.toLowerCase(),
+             createdAt: b.created_at,
+             message: 'Bid placed'
+          })) || [],
         })
       } catch (err) {
         console.error(err)
@@ -100,16 +109,41 @@ export default function ListingDetailPage() {
     )
   }
 
-  const handleBidSubmit = (newBid: any) => {
-    setListing((prev: any) => ({
-      ...prev,
-      bids: [...(prev.bids || []), {
-        ...newBid,
-        id: `b${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        status: 'pending'
-      }]
-    }))
+  const handleBidSubmit = async (newBid: any) => {
+    try {
+      const userStr = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+      const user = userStr ? JSON.parse(userStr) : null;
+      
+      if (!user) {
+        alert('Please login to place a bid');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/listings/${listing.id}/bid`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          amount: newBid.amount,
+          user_id: user.id || user.user_id
+        })
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        alert(result.message || 'Failed to place bid');
+        return;
+      }
+      
+      alert('Bid placed successfully!');
+      window.location.reload();
+    } catch(err) {
+      console.error(err);
+      alert('Error placing bid');
+    }
   }
 
   return (
