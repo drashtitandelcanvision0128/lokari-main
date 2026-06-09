@@ -7,6 +7,7 @@ export const createListingService = async (body) => {
         type,
         title,
         description,
+        listing_location,
         price,
         price_type,
         crop_type,
@@ -16,6 +17,9 @@ export const createListingService = async (body) => {
         harvest_date,
         expiry_date,
         quality_grade,
+
+        storage_temperature,
+        storage_humidity,
         starting_bid,
         reserve_price,
         auction_start,
@@ -29,6 +33,7 @@ export const createListingService = async (body) => {
                 type,           // must be "PRODUCE" | "WAREHOUSE" | "TRANSPORT"
                 title,
                 description,
+                listing_location,
                 price,
                 price_type,
                 status: 'ACTIVE',
@@ -44,6 +49,9 @@ export const createListingService = async (body) => {
                             harvest_date: harvest_date ? new Date(harvest_date) : null,
                             expiry_date: expiry_date ? new Date(expiry_date) : null,
                             quality_grade: quality_grade ?? null,
+
+                            storage_temperature: storage_temperature ?? null,
+                            storage_humidity: storage_humidity ?? null,
                         },
                     },
                 }),

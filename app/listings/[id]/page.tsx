@@ -45,13 +45,16 @@ export default function ListingDetailPage() {
           price: Number(d.price ?? 0),
           priceType: d.price_type?.toLowerCase(),
           status: d.status?.toLowerCase(),
-          location: '',
+          location: d.listing_location,
           quantity:
             d.produceListing?.quantity ||
             d.warehouseListing?.capacity ||
             d.transportListing?.capacity ||
             0,
           unit: d.produceListing?.unit || 'kg',
+
+          storageTemp: d.produceListing?.storage_temperature,
+          storageHumidity: d.produceListing?.storage_humidity,
           seller: {
             name: d.user?.name || 'Seller',
             rating: 4.5,

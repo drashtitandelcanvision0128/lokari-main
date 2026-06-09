@@ -63,6 +63,7 @@ export default function CreateListingPage() {
         type: typeMap[listingType],
         title: data.title,
         description: data.description,
+        listing_location: data.location || null,
         price: Number(data.price) || 0,
         price_type: data.priceType?.toUpperCase() === 'AUCTION' ? 'AUCTION' : 'FIXED_PRICE',
         // Produce fields
@@ -73,6 +74,9 @@ export default function CreateListingPage() {
         harvest_date: data.harvestDate || null,
         expiry_date: data.expiryDate || null,
         quality_grade: data.qualityGrade || null,
+
+        storage_temperature: data.storageTemp || null,
+        storage_humidity: data.storageHumidity || null,
         // Warehouse fields
         capacity: Number(data.capacity) || null,
         capacity_unit: data.capacityUnit || 'sqft',
