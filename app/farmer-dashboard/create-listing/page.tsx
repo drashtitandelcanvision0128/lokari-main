@@ -29,18 +29,55 @@ export default function FarmerDashboardCreateListingPage() {
   }
 
   const handleSubmit = async (data: any) => {
+    if (!currentUser) return
     setIsSubmitting(true)
+
     try {
-      const listingPayload = {
-        ...data,
-        role: userRole,
-        listingType: getListingType(),
-        userId: currentUser?.id,
-        createdAt: new Date().toISOString()
+      const payload = {
+        user_id: currentUser.id,
+        type: 'PRODUCE',
+        title: data.title,
+        description: data.description,
+        price: Number(data.price) || 0,
+        price_type: data.priceType?.toUpperCase() === 'AUCTION' ? 'AUCTION' : 'FIXED_PRICE',
+        // Produce fields
+        crop_type: data.cropName || null,
+        quantity: Number(data.quantity) || 0,
+        unit: data.unit || 'kg',
+        harvest_date: data.harvestDate || null,
+        expiry_date: data.expiryDate || null,
+        quality_grade: data.qualityGrade || null,
+        // Warehouse fields
+        capacity: Number(data.capacity) || null,
+        capacity_unit: data.capacityUnit || 'sqft',
+        available_from: data.availableFrom || null,
+        available_to: data.availableTo || null,
+        // Transport fields
+        vehicle_type: data.vehicleType || null,
+        is_refrigerated: data.refrigeration || false,
       }
+
+      const token = currentUser?.token
+
+      const response = await fetch('http://localhost:5000/listings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to create listing')
+      }
+
       router.push('/farmer-dashboard')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating listing:', error)
+      alert(`Failed to create listing: ${error.message}`)
     } finally {
       setIsSubmitting(false)
     }

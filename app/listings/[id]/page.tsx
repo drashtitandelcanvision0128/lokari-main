@@ -45,21 +45,41 @@ export default function ListingDetailPage() {
           price: Number(d.price ?? 0),
           priceType: d.price_type?.toLowerCase(),
           status: d.status?.toLowerCase(),
-          location: '',
+          location: d.listing_location,
           quantity:
             d.produceListing?.quantity ||
             d.warehouseListing?.capacity ||
             d.transportListing?.capacity ||
             0,
           unit: d.produceListing?.unit || 'kg',
+
+          storageTemp: d.produceListing?.storage_temperature,
+          storageHumidity: d.produceListing?.storage_humidity,
           seller: {
             name: d.user?.name || 'Seller',
             rating: 4.5,
             verified: d.user?.is_verified || false,
+            location: d.user?.profile?.farm_location || 'Location not available'
           },
           images: [],
           postedAt: d.created_at,
           category: d.produceListing?.crop_type || d.type || 'General',
+          cropName: d.produceListing?.crop_type,
+
+          variety: d.produceListing?.variety,
+
+          qualityGrade: d.produceListing?.quality_grade,
+
+          harvestDate: d.produceListing?.harvest_date,
+          auctionEnd: d.auction?.end_time,
+          reservePrice: d.auction?.reserve_price ? Number(d.auction?.reserve_price) : undefined,
+          bids: d.auction?.bids?.map((b: any) => ({
+            amount: Number(b.amount),
+            bidder: { name: b.bidder?.name || 'Anonymous', rating: 4.5 },
+            status: b.status?.toLowerCase(),
+            createdAt: b.created_at,
+            message: 'Bid placed'
+          })) || [],
         })
       } catch (err) {
         console.error(err)
@@ -100,16 +120,39 @@ export default function ListingDetailPage() {
     )
   }
 
-  const handleBidSubmit = (newBid: any) => {
-    setListing((prev: any) => ({
-      ...prev,
-      bids: [...(prev.bids || []), {
-        ...newBid,
-        id: `b${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        status: 'pending'
-      }]
-    }))
+  const handleBidSubmit = async (newBid: any) => {
+    try {
+      const userStr = localStorage.getItem('currentUser');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      if (!user) {
+        alert('Please login to place a bid');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/listings/${listing.id}/bid`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: newBid.amount,
+          user_id: user.id || user.user_id
+        })
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        alert(result.message || 'Failed to place bid');
+        return;
+      }
+
+      alert('Bid placed successfully!');
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('Error placing bid');
+    }
   }
 
   return (

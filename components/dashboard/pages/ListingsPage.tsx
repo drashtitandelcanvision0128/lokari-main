@@ -134,6 +134,28 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     )
   }
 
+  // Connecting delete action to UI
+  const handleDelete = async (listingId: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/listings/${listingId}`,
+        {
+          method: "DELETE",
+        }
+      )
+
+      const result = await response.json()
+
+      if (result.success) {
+        setListings(prev =>
+          prev.filter(listing => listing.id !== listingId)
+        )
+      }
+    } catch (error) {
+      console.error("Delete failed:", error)
+    }
+  }
+
   return (
     <div className="p-6 space-y-6 max-w-[1800px] mx-auto w-full">
       {/* Header Section with Filters */}
@@ -324,10 +346,12 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                     )}
                   </div>
 
-                  <Button variant="outline" size="sm" className="hover:border-[#d55b39] hover:text-[#d55b39] transition-colors">
-                    <Icon name="refresh" />
-                  </Button>
-                  <Button variant="outline" size="sm" className="hover:border-[#d55b39] hover:text-[#d55b39] transition-colors">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(listing.id)}
+                    className="hover:border-[#d55b39] hover:text-[#d55b39] transition-colors"
+                  >
                     <Icon name="delete" />
                   </Button>
                 </div>
