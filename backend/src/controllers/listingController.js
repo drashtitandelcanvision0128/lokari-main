@@ -164,6 +164,7 @@ export const deleteListing = async (req, res) => {
     }
 }
 
+// Bidding Controllers
 export const placeBid = async (req, res) => {
     try {
         const { id } = req.params;
@@ -240,5 +241,41 @@ export const placeBid = async (req, res) => {
     } catch (error) {
         console.error('❌ PLACE BID ERROR:', error);
         res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+export const getBidsByUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const bids = await prisma.bid.findMany({
+            where: {
+                bidder_id: userId
+            },
+            include: {
+                auction: {
+                    include: {
+                        listing: true,
+                        // bids: true
+                    }
+                }
+            },
+            orderBy: {
+                created_at: 'desc'
+            }
+        });
+
+        res.json({
+            success: true,
+            data: bids
+        });
+
+    } catch (error) {
+        console.error('❌ GET USER BIDS ERROR:', error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
