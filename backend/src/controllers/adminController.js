@@ -254,5 +254,4 @@ export const createUser = async (req, res) => {
     console.error('Create user error:', error);
     res.status(500).json({ error: 'Server error creating user' });
   }
-  z;
 };
