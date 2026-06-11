@@ -4,24 +4,34 @@
   - A unique constraint covering the columns `[phone]` on the table `User` will be added. If there are existing duplicate values, this will fail.
 
 */
--- CreateEnum
-CREATE TYPE "ListingType" AS ENUM ('PRODUCE', 'WAREHOUSE', 'TRANSPORT');
+-- CreateEnum (idempotent — may already exist from a previously failed run)
+DO $$ BEGIN
+    CREATE TYPE "ListingType" AS ENUM ('PRODUCE', 'WAREHOUSE', 'TRANSPORT');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE "ListingStatus" AS ENUM ('DRAFT', 'ACTIVE', 'SOLD', 'EXPIRED');
+DO $$ BEGIN
+    CREATE TYPE "ListingStatus" AS ENUM ('DRAFT', 'ACTIVE', 'SOLD', 'EXPIRED');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE "PriceType" AS ENUM ('FIXED_PRICE', 'AUCTION');
+DO $$ BEGIN
+    CREATE TYPE "PriceType" AS ENUM ('FIXED_PRICE', 'AUCTION');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE "AuctionStatus" AS ENUM ('SCHEDULED', 'LIVE', 'ENDED', 'CANCELLED');
+DO $$ BEGIN
+    CREATE TYPE "AuctionStatus" AS ENUM ('SCHEDULED', 'LIVE', 'ENDED', 'CANCELLED');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
--- CreateEnum
-CREATE TYPE "BidStatus" AS ENUM ('ACTIVE', 'OUTBID', 'WON', 'LOST');
+DO $$ BEGIN
+    CREATE TYPE "BidStatus" AS ENUM ('ACTIVE', 'OUTBID', 'WON', 'LOST');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- AlterTable
-ALTER TABLE "User" ADD COLUMN     "phone" TEXT,
-ADD COLUMN     "role" "UserRole" NOT NULL DEFAULT 'FARMER';
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "role" "UserRole" NOT NULL DEFAULT 'FARMER';
 
 -- AlterTable
 ALTER TABLE "UserProfile" ADD COLUMN     "business_type" TEXT,
@@ -135,9 +145,6 @@ CREATE UNIQUE INDEX "TransportListing_listing_id_key" ON "TransportListing"("lis
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Auction_listing_id_key" ON "Auction"("listing_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
 
 -- AddForeignKey
 ALTER TABLE "Listing" ADD CONSTRAINT "Listing_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
