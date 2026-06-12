@@ -65,26 +65,26 @@ export function DashboardLayout({
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Dashboard Topbar Section */}
-        <div className="h-16 px-8 flex justify-between items-center bg-background/80 backdrop-blur-md sticky top-16 z-40 border-b border-outline">
-          {/* User Info */}
-          <div className="flex items-center gap-4">
+        {/* <div className="h-16 px-8 flex justify-between items-center bg-background/80 backdrop-blur-md sticky top-16 z-40 border-b border-outline"> */}
+        {/* User Info */}
+        {/* <div className="flex items-center gap-4">
             <div className="flex flex-col">
               <span className="text-[10px] uppercase tracking-widest text-accent font-bold">
-                {role === 'farmer' ? 'Farmer Access' : 
-                 role === 'trader' ? 'Trader Access' :
-                 role === 'warehouse' ? 'Warehouse Access' :
-                 role === 'transporter' ? 'Transporter Access' : 'Dashboard Access'}
+                {role === 'farmer' ? 'Farmer Access' :
+                  role === 'trader' ? 'Trader Access' :
+                    role === 'warehouse' ? 'Warehouse Access' :
+                      role === 'transporter' ? 'Transporter Access' : 'Dashboard Access'}
               </span>
               <h2 className="font-headline font-bold text-primary text-lg">
                 {userName}
               </h2>
             </div>
-          </div>
+          </div> */}
 
-          {/* Right Section */}
-          <div className="flex items-center gap-6">
-            {/* Search Bar */}
-            <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline">
+        {/* Right Section */}
+        {/* <div className="flex items-center gap-6"> */}
+        {/* Search Bar */}
+        {/* <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline">
               <span className="material-symbols-outlined text-sm text-on-surface-variant">
                 search
               </span>
@@ -95,14 +95,14 @@ export function DashboardLayout({
                 value={localSearchQuery}
                 onChange={handleSearchInputChange}
               />
-            </form>
-            
-            {/* Notification Icon */}
-            <Link href={`/${role || 'farmer'}-dashboard/notifications`} className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
+            </form> */}
+
+        {/* Notification Icon */}
+        {/* <Link href={`/${role || 'farmer'}-dashboard/notifications`} className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
               <span className="material-symbols-outlined text-sm">notifications</span>
-            </Link>
-          </div>
-        </div>
+            </Link> */}
+        {/* </div> */}
+        {/* </div> */}
         {/* Page Content */}
         <div className="flex-1 overflow-auto">
           {children}

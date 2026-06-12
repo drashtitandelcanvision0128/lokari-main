@@ -17,18 +17,15 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // Debug: Check what users are stored
-      const allUsers = registrationService.getAllUsers()
-      console.log('All registered users:', allUsers)
-      console.log('Attempting login with:', { email, password })
-      
+
+
       // Validate credentials against registered users
       const user = await registrationService.authenticateUser(email, password)
-      
+
       if (user) {
         // User authenticated successfully
         console.log('Login successful:', user)
-        
+
         // Redirect to user's dashboard
         const dashboardUrl = registrationService.getDashboardUrl(user.role)
         window.location.href = dashboardUrl
@@ -76,7 +73,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Right Side - Login Form */}
       <div className="flex-1 lg:flex-none lg:w-1/2 bg-[#f9f9f7] flex items-center justify-center p-8">
         <div className="max-w-md w-full">
@@ -87,7 +84,7 @@ export default function LoginPage() {
             <h1 className="font-headline text-3xl font-bold text-[#0b5d68] mb-2">Welcome Back</h1>
             <p className="text-gray-600">Sign in to your Lokhari account</p>
           </div>
-          
+
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-[#0b5d68] mb-2">
@@ -108,7 +105,7 @@ export default function LoginPage() {
                 />
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-[#0b5d68] mb-2">
                 Password
@@ -128,7 +125,7 @@ export default function LoginPage() {
                 />
               </div>
             </div>
-            
+
             {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
@@ -136,7 +133,7 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            
+
             <button
               type="submit"
               disabled={isLoading}
@@ -155,7 +152,7 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-          
+
           <div className="text-center mt-8">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
@@ -164,33 +161,15 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-          
+
           <div className="text-center mt-4">
             <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 transition-colors flex items-center justify-center gap-1">
               <span className="material-symbols-outlined text-sm">home</span>
               Back to home
             </Link>
           </div>
-          
-          {/* Debug Section - Hidden in production */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-6 text-center">
-              <button 
-                onClick={() => setShowDebug(!showDebug)}
-                className="text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
-              >
-                {showDebug ? 'Hide' : 'Show'} Debug Info
-              </button>
-              {showDebug && (
-                <div className="mt-2 p-3 bg-gray-900 text-green-400 rounded-lg text-xs text-left font-mono max-h-40 overflow-auto">
-                  <p className="text-yellow-400 mb-2">Stored Users:</p>
-                  <pre className="whitespace-pre-wrap">
-                    {JSON.stringify(registrationService.getAllUsers(), null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          )}
+
+
         </div>
       </div>
     </div>

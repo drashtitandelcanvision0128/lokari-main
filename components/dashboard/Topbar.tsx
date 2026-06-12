@@ -11,7 +11,7 @@ export function Topbar({ userName, userAvatar }: TopbarProps) {
   return (
     <header className="h-16 px-8 flex justify-between items-center bg-[#fcf9f5]/80 backdrop-blur-md sticky top-0 z-50">
       {/* User Info */}
-      <div className="flex items-center gap-4">
+      {/* <div className="flex items-center gap-4">
         <div className="md:hidden flex items-center gap-2">
           <Icon name="menu" className="text-primary" />
         </div>
@@ -23,19 +23,19 @@ export function Topbar({ userName, userAvatar }: TopbarProps) {
             {userName}
           </h2>
         </div>
-      </div>
+      </div> */}
 
       {/* Right Section */}
       <div className="flex items-center gap-6">
         {/* Search Bar */}
-        <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-full">
+        {/* <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-full">
           <Icon name="search" className="text-sm text-stone-400" />
           <input
             className="bg-transparent border-none text-sm focus:ring-0 p-0 w-48 text-on-surface placeholder-stone-400"
             placeholder="Search marketplace..."
             type="text"
           />
-        </div>
+        </div> */}
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
@@ -46,9 +46,9 @@ export function Topbar({ userName, userAvatar }: TopbarProps) {
           <button className="text-stone-500 hover:text-primary transition-colors">
             <Icon name="help" />
           </button>
-          
+
           {/* Profile Avatar */}
-          <div className="h-8 w-8 rounded-full overflow-hidden bg-surface-container">
+          {/* <div className="h-8 w-8 rounded-full overflow-hidden bg-surface-container">
             {userAvatar ? (
               <img
                 src={userAvatar}
@@ -60,7 +60,7 @@ export function Topbar({ userName, userAvatar }: TopbarProps) {
                 {userName.charAt(0)}
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     </header>

@@ -36,7 +36,7 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
   }, [])
 
   return (
-    <aside 
+    <aside
       className={`
         hidden md:flex h-screen border-r border-outline bg-surface flex-col py-6 gap-2 sticky top-16 shrink-0
         transition-all duration-300 ease-in-out
@@ -46,7 +46,7 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
       {/* Logo Section */}
       <div className={`mb-8 transition-all duration-300 ease-in-out ${isCollapsed ? 'px-3' : 'px-6'}`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} mb-4`}>
-          <button 
+          <button
             onClick={onToggleCollapse}
             className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer group flex-shrink-0"
           >
@@ -60,7 +60,7 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
           </div>
         </div>
         {userRole !== 'trader' && !isCollapsed && (
-          <button 
+          <button
             onClick={navigateToCreateListing}
             className="w-full bg-[#e89151] text-white py-3 px-4 rounded-md font-body text-sm font-medium flex items-center justify-center gap-2 hover:bg-[#e89151]/90 transition-all active:scale-[0.98]"
           >
@@ -69,7 +69,7 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
           </button>
         )}
         {userRole !== 'trader' && isCollapsed && (
-          <button 
+          <button
             onClick={navigateToCreateListing}
             className="w-10 h-10 bg-[#e89151] text-white rounded-md font-body text-sm font-medium flex items-center justify-center hover:bg-[#e89151]/90 transition-all active:scale-[0.98]"
             title="Post Listing"
@@ -80,21 +80,23 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
       </div>
 
       {/* Navigation */}
-      <nav className={`flex-1 space-y-1 transition-all duration-300 ease-in-out ${isCollapsed ? 'px-2' : ''}`}>
+      {/* <nav className={`flex-1 space-y-1 transition-all duration-300 ease-in-out ${isCollapsed ? 'px-2' : ''}`}> */}
+      <nav className="flex-1 space-y-1 px-2">
         {Object.entries(dashboardTabs).map(([tab, isVisible]) => {
           if (!isVisible) return null
-          
+
           const tabKey = tab as TabType
           const config = tabConfig[tabKey]
           const isActive = activeTab === tabKey
-          
+
           return (
             <button
               key={tabKey}
               onClick={() => onTabChange(tabKey)}
               className={cn(
                 'flex items-center font-body text-sm font-medium transition-all rounded-md',
-                isCollapsed ? 'px-2 py-3 justify-center' : 'mx-2 px-4 py-3 gap-3',
+                // isCollapsed ? 'px-2 py-3 justify-center' : 'mx-2 px-4 py-3 gap-3',
+                isCollapsed ? 'w-full px-2 py-3 justify-center' : 'w-full px-4 py-3 gap-3',
                 isActive
                   ? 'bg-primary text-white'
                   : 'text-on-surface-variant hover:bg-accent/10'
@@ -102,9 +104,8 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
               title={isCollapsed ? config.label : undefined}
             >
               <Icon name={config.icon} />
-              <span className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
-              }`}>
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                }`}>
                 {config.label}
               </span>
             </button>

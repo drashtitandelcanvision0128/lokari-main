@@ -44,9 +44,11 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           return
         }
 
-        const response = await fetch('http://localhost:5000/listings')
+        // const response = await fetch('http://localhost:5000/listings')
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/listings`)
         const result = await response.json()
-        console.log(result.data[0])
+        // console.log(result.data[0])
+        console.log('Full result:', result)
 
         if (result.success) {
           const userListings = result.data
@@ -138,7 +140,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const handleDelete = async (listingId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/listings/${listingId}`,
+        // `http://localhost:5000/listings/${listingId}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/listings/${listingId}`,
         {
           method: "DELETE",
         }

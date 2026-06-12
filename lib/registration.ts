@@ -5,7 +5,7 @@ export interface User {
   fullName: string
   email?: string
   phone?: string
-  password: string
+  password?: string
   role: 'farmer' | 'trader' | 'warehouse' | 'transporter'
   status: 'pending_kyc' | 'active' | 'suspended'
   avatar?: string
@@ -55,7 +55,6 @@ class RegistrationService {
   private readonly STORAGE_KEYS = {
     USER: 'currentUser',
     PROFILE: 'userProfile',
-    USERS: 'allUsers'
   }
 
   private get apiUrl(): string {
@@ -80,20 +79,12 @@ class RegistrationService {
         throw new Error(resData.error || resData.message || 'Registration failed');
       }
 
-      const user: User = resData.data.user;
+      const rawUser = resData.data.user;
+      const { password, ...safeUser } = rawUser;
+      const user: User = { ...safeUser, id: rawUser.user_id };
 
-      // Store in localStorage
+      // Store only current user, without password
       localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user));
-
-      // Keep existing array updated for compatibility
-      const existingUsers = this.getAllUsers();
-      const userIndex = existingUsers.findIndex(u => u.id === user.id);
-      if (userIndex !== -1) {
-        existingUsers[userIndex] = user;
-      } else {
-        existingUsers.push(user);
-      }
-      localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(existingUsers));
 
       // Create user profile in localStorage for client-side state compatibility
       const profile: UserProfile = {
@@ -119,13 +110,13 @@ class RegistrationService {
       user.updatedAt = new Date().toISOString()
       localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user))
 
-      // Update in users array
-      const allUsers = this.getAllUsers()
-      const userIndex = allUsers.findIndex(u => u.id === userId)
-      if (userIndex !== -1) {
-        allUsers[userIndex] = user
-        localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(allUsers))
-      }
+      // // Update in users array
+      // const allUsers = this.getAllUsers()
+      // const userIndex = allUsers.findIndex(u => u.id === userId)
+      // if (userIndex !== -1) {
+      //   allUsers[userIndex] = user
+      //   localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(allUsers))
+      // }
     }
   }
 
@@ -145,22 +136,22 @@ class RegistrationService {
       localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user))
     }
 
-    // Update in users array
-    const allUsers = this.getAllUsers()
-    const userIndex = allUsers.findIndex(u => u.id === user.id)
-    if (userIndex !== -1) {
-      allUsers[userIndex] = user
-      localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(allUsers))
-    }
+    // // Update in users array
+    // const allUsers = this.getAllUsers()
+    // const userIndex = allUsers.findIndex(u => u.id === user.id)
+    // if (userIndex !== -1) {
+    //   allUsers[userIndex] = user
+    //   localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(allUsers))
+    // }
   }
 
-  getAllUsers(): User[] {
-    const usersData = localStorage.getItem(this.STORAGE_KEYS.USERS)
-    console.log('getAllUsers - storage key:', this.STORAGE_KEYS.USERS)
-    console.log('getAllUsers - raw data:', usersData)
-    console.log('getAllUsers - parsed data:', usersData ? JSON.parse(usersData) : [])
-    return usersData ? JSON.parse(usersData) : []
-  }
+  // getAllUsers(): User[] {
+  //   const usersData = localStorage.getItem(this.STORAGE_KEYS.USERS)
+  //   console.log('getAllUsers - storage key:', this.STORAGE_KEYS.USERS)
+  //   console.log('getAllUsers - raw data:', usersData)
+  //   console.log('getAllUsers - parsed data:', usersData ? JSON.parse(usersData) : [])
+  //   return usersData ? JSON.parse(usersData) : []
+  // }
 
   // Profile Management
   async createProfile(userId: string): Promise<UserProfile> {
@@ -312,20 +303,12 @@ class RegistrationService {
         throw new Error(resData.error || resData.message || 'Login failed');
       }
 
-      const user: User = resData.data.user;
+      const rawUser = resData.data.user;
+      const { password: _password, ...safeUser } = rawUser;
+      const user: User = { ...safeUser, id: rawUser.user_id };
 
-      // Store current user session
+      // Store only current user, without password
       this.setCurrentUser(user);
-
-      // Store in users array for compatibility
-      const existingUsers = this.getAllUsers();
-      const idx = existingUsers.findIndex(u => u.id === user.id);
-      if (idx !== -1) {
-        existingUsers[idx] = user;
-      } else {
-        existingUsers.push(user);
-      }
-      localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(existingUsers));
 
       // Update/Create user profile in localStorage for client-side state compatibility
       const profile: UserProfile = {
