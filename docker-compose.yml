@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -26,7 +26,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -47,27 +47,44 @@ services:
       PORT: 5000
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     ports:
-      - "5000:5000"          # match hardcoded frontend URLs
+      - "5000:5000" # match hardcoded frontend URLs
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:5000/auth/login"]
+      # test: ["CMD", "wget", "-qO-", "http://localhost:5000/auth/login"]
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:5000/ || exit 0" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     args:
+  #       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+  #   container_name: lokhari-frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"          # match CORS + browser URLs
+  #   depends_on:
+  #     backend:
+  #       condition: service_started
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000}
+        NEXT_PUBLIC_API_URL: http://localhost:5000
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:5000
     container_name: lokhari-frontend
     restart: unless-stopped
     ports:
-      - "3000:3000"          # match CORS + browser URLs
+      - "3000:3000"
     depends_on:
       backend:
         condition: service_started

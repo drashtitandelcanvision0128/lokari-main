@@ -58,10 +58,15 @@ class RegistrationService {
     USERS: 'allUsers'
   }
 
+  private get apiUrl(): string {
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  }
+
   // User Management
   async createUser(data: RegistrationData): Promise<User> {
     try {
-      const response = await fetch('http://localhost:5000/auth/register', {
+      // const response = await fetch('http://localhost:5000/auth/register', {
+      const response = await fetch(`${this.apiUrl}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +84,7 @@ class RegistrationService {
 
       // Store in localStorage
       localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user));
-      
+
       // Keep existing array updated for compatibility
       const existingUsers = this.getAllUsers();
       const userIndex = existingUsers.findIndex(u => u.id === user.id);
@@ -202,7 +207,7 @@ class RegistrationService {
   async sendOTP(contact: string): Promise<void> {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500))
-    
+
     // Store OTP session for demo purposes
     const otpSession = {
       contact,
@@ -289,7 +294,8 @@ class RegistrationService {
   // Authenticate user with email and password
   async authenticateUser(email: string, password: string): Promise<User | null> {
     try {
-      const response = await fetch('http://localhost:5000/auth/login', {
+      // const response = await fetch('http://localhost:5000/auth/login', {
+      const response = await fetch(`${this.apiUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -310,7 +316,7 @@ class RegistrationService {
 
       // Store current user session
       this.setCurrentUser(user);
-      
+
       // Store in users array for compatibility
       const existingUsers = this.getAllUsers();
       const idx = existingUsers.findIndex(u => u.id === user.id);
