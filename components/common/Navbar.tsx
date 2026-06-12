@@ -3,64 +3,58 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { getCurrentUser, getUserDisplayName } from '@/lib/auth'
-import { registrationService } from '@/lib/registration'
-import { WishlistService } from '@/lib/wishlist'
-import { useCartContext } from '@/contexts/CartContext'
+import { useAppSelector } from '@/lib/store/hooks'
+import {
+  selectCurrentUser,
+  selectIsAuthenticated,
+  selectUserDisplayName,
+  selectAuthHydrated,
+} from '@/lib/store/slices/authSlice'
+import { selectCartCount } from '@/lib/store/slices/cartSlice'
+import { selectWishlistCount } from '@/lib/store/slices/wishlistSlice'
 import ProfileDropdown from '@/components/ui/ProfileDropdown'
 import { isAdminAuthenticated } from '@/lib/adminAuth'
+import { useLogout } from '@/hooks/useLogout'
 
 const Navbar = () => {
   const pathname = usePathname()
   const currentRole = "farmer" // Hardcoded role as specified
   const [isDark, setIsDark] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  const [userName, setUserName] = useState('')
   const [kycBypassEnabled, setKycBypassEnabled] = useState(false)
-  const [wishlistCount, setWishlistCount] = useState(0)
-  const { count: cartCount } = useCartContext()
   const [isAdminSession, setIsAdminSession] = useState(false)
+
+  const isAuthHydrated = useAppSelector(selectAuthHydrated)
+  const isLoggedIn = useAppSelector(selectIsAuthenticated)
+  const currentUser = useAppSelector(selectCurrentUser)
+  const userName = useAppSelector(selectUserDisplayName)
+  const cartCount = useAppSelector(selectCartCount)
+  const wishlistCount = useAppSelector(selectWishlistCount)
+  const logout = useLogout()
 
   const checkAuthState = () => {
     const stored = localStorage.getItem('theme')
-    // Default to light mode, only use dark if explicitly set
     const shouldBeDark = stored === 'dark'
     setIsDark(shouldBeDark)
     if (shouldBeDark) {
       document.documentElement.classList.add('dark')
     }
 
-    // Check authentication state from registration service
     if (typeof window !== 'undefined') {
-      const adminAuth = isAdminAuthenticated()
-      setIsAdminSession(adminAuth)
-      
-      const user = getCurrentUser()
+      setIsAdminSession(isAdminAuthenticated())
+
+      const user = currentUser
       if (user) {
-        setIsLoggedIn(true)
-        setCurrentUser(user)
-        setUserName(getUserDisplayName())
-        
-        // Check KYC bypass status
         const bypassStatus = localStorage.getItem(`dev_kyc_bypass_${user.id}`)
         setKycBypassEnabled(bypassStatus === 'true')
-        
-        // Load wishlist count
-        setWishlistCount(WishlistService.getWishlistCount())
-        // Cart count is now handled by context
       } else {
-        setIsLoggedIn(false)
-        setCurrentUser(null)
-        setUserName('')
-        setWishlistCount(0)
-        // Cart count is now handled by context
+        setKycBypassEnabled(false)
       }
     }
   }
 
   useEffect(() => {
+    if (!isAuthHydrated) return
     checkAuthState()
 
     // Re-check auth state when window gets focus (handles back navigation)
@@ -98,7 +92,7 @@ const Navbar = () => {
       }
       window.removeEventListener('storage', handleStorageChange)
     }
-  }, [])
+  }, [isAuthHydrated, currentUser])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -107,29 +101,6 @@ const Navbar = () => {
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  useEffect(() => {
-    // Listen for wishlist changes
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'lokhari_wishlist') {
-        setWishlistCount(WishlistService.getWishlistCount())
-      }
-      // Cart count is now handled by context automatically
-    }
-
-    // Listen for custom admin session changes
-    const handleAdminSessionChange = () => {
-      checkAuthState()
-    }
-
-    window.addEventListener('storage', handleStorageChange)
-    window.addEventListener('adminSessionChanged', handleAdminSessionChange)
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      window.removeEventListener('adminSessionChanged', handleAdminSessionChange)
-    }
   }, [])
 
   const toggleDark = () => {
@@ -170,30 +141,22 @@ const Navbar = () => {
 
   const handleLogout = () => {
     if (isAdminSession) {
-      // Clear admin session
       localStorage.removeItem('adminSession')
       setIsAdminSession(false)
       window.location.href = '/'
     } else {
-      // Clear regular user session
-      localStorage.removeItem('currentUser')
-      localStorage.removeItem('userProfile')
-      localStorage.removeItem('otpSession')
-      setIsLoggedIn(false)
-      setCurrentUser(null)
-      setUserName('')
+      logout()
       window.location.href = '/'
     }
   }
 
   const toggleLoginState = () => {
     const newState = !isLoggedIn
-    setIsLoggedIn(newState)
     localStorage.setItem('isLoggedIn', newState ? 'true' : 'false')
     console.log(`Login state toggled to: ${newState ? 'LOGGED IN' : 'LOGGED OUT'}`)
-    
-    // If logging out and on a protected page, redirect to landing page
+
     if (!newState) {
+      logout()
       const protectedPages = ['/notifications', '/profile', '/dashboard']
       if (protectedPages.some(page => pathname.startsWith(page))) {
         window.location.href = '/'

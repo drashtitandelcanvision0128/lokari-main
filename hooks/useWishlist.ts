@@ -1,71 +1,64 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { WishlistService, WishlistItem } from '@/lib/wishlist'
+import { useCallback } from 'react'
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
+import {
+  addToWishlist,
+  removeFromWishlist,
+  toggleWishlist,
+  selectWishlistItems,
+  selectWishlistCount,
+  selectWishlistHydrated,
+  selectWishlistLoading,
+} from '@/lib/store/slices/wishlistSlice'
 import { Listing } from '@/lib/dummyData'
 
+export type { WishlistItem } from '@/lib/store/slices/wishlistSlice'
+
 export const useWishlist = () => {
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isHydrated, setIsHydrated] = useState(false)
+  const dispatch = useAppDispatch()
+  const wishlist = useAppSelector(selectWishlistItems)
+  const count = useAppSelector(selectWishlistCount)
+  const isHydrated = useAppSelector(selectWishlistHydrated)
+  const isLoading = useAppSelector(selectWishlistLoading)
 
-  useEffect(() => {
-    setIsHydrated(true)
-    // Load wishlist on mount
-    const loadWishlist = () => {
-      setWishlist(WishlistService.getWishlist())
-      setIsLoading(false)
-    }
+  const add = useCallback(
+    (listing: Listing) => {
+      dispatch(addToWishlist(listing))
+      return true
+    },
+    [dispatch]
+  )
 
-    loadWishlist()
+  const remove = useCallback(
+    (listingId: string) => {
+      dispatch(removeFromWishlist(listingId))
+      return true
+    },
+    [dispatch]
+  )
 
-    // Listen for storage changes (cross-tab sync)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'lokhari_wishlist') {
-        loadWishlist()
-      }
-    }
+  const toggle = useCallback(
+    (listing: Listing) => {
+      dispatch(toggleWishlist(listing))
+      return true
+    },
+    [dispatch]
+  )
 
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
-  }, [])
-
-  const addToWishlist = useCallback((listing: Listing) => {
-    const success = WishlistService.addToWishlist(listing)
-    if (success) {
-      setWishlist(WishlistService.getWishlist())
-    }
-    return success
-  }, [])
-
-  const removeFromWishlist = useCallback((listingId: string) => {
-    const success = WishlistService.removeFromWishlist(listingId)
-    if (success) {
-      setWishlist(WishlistService.getWishlist())
-    }
-    return success
-  }, [])
-
-  const isInWishlist = useCallback((listingId: string) => {
-    return WishlistService.isInWishlist(listingId)
-  }, [])
-
-  const toggleWishlist = useCallback((listing: Listing) => {
-    if (isInWishlist(listing.id)) {
-      return removeFromWishlist(listing.id)
-    } else {
-      return addToWishlist(listing)
-    }
-  }, [addToWishlist, isInWishlist, removeFromWishlist])
+  const isInWishlist = useCallback(
+    (listingId: string) => wishlist.some((item) => item.id === listingId),
+    [wishlist]
+  )
 
   return {
     wishlist,
     isLoading,
     isHydrated,
-    addToWishlist,
-    removeFromWishlist,
+    addToWishlist: add,
+    removeFromWishlist: remove,
+    toggleWishlist: toggle,
     isInWishlist,
-    toggleWishlist,
-    count: wishlist.length
+    count,
   }
 }

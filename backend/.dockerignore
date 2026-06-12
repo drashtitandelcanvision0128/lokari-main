@@ -1,0 +1,29 @@
+# Docker meta
+Dockerfile
+dockerfile
+.dockerignore
+
+# Dependencies (reinstalled in Dockerfile)
+node_modules
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Logs & tests
+*.log
+npm-debug.log*
+coverage
+.nyc_output
+
+# Git / docs / scratch
+.git
+.gitignore
+README.md
+scratch-fetch.js
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store

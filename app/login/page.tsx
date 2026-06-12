@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { registrationService } from '@/lib/registration'
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
+import { setUser } from '@/lib/store/slices/authSlice'
 
 export default function LoginPage() {
+  const dispatch = useAppDispatch()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -26,7 +29,7 @@ export default function LoginPage() {
       const user = await registrationService.authenticateUser(email, password)
       
       if (user) {
-        // User authenticated successfully
+        dispatch(setUser(user))
         console.log('Login successful:', user)
         
         // Redirect to user's dashboard

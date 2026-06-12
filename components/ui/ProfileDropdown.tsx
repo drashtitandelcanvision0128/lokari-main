@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { getCurrentUser } from '@/lib/auth'
+import { useLogout } from '@/hooks/useLogout'
 
 interface ProfileDropdownProps {
   userName?: string
@@ -14,6 +14,7 @@ const ProfileDropdown = ({ userName, userRole }: ProfileDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const logout = useLogout()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -28,20 +29,7 @@ const ProfileDropdown = ({ userName, userRole }: ProfileDropdownProps) => {
   }, [])
 
   const handleLogout = () => {
-    // Clear all user session data
-    localStorage.removeItem('currentUser')
-    localStorage.removeItem('lokhari_wishlist')
-    localStorage.removeItem('kycBypass')
-    localStorage.removeItem('loginState')
-    
-    // Clear any other user-related data
-    Object.keys(localStorage).forEach(key => {
-      if (key.includes('user') || key.includes('auth') || key.includes('session')) {
-        localStorage.removeItem(key)
-      }
-    })
-    
-    // Redirect to home page
+    logout()
     router.push('/')
     setIsOpen(false)
   }
