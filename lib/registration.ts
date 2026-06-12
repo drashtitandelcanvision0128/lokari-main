@@ -81,7 +81,7 @@ class RegistrationService {
 
       const rawUser = resData.data.user;
       const { password, ...safeUser } = rawUser;
-      const user: User = { ...safeUser, id: rawUser.user_id };
+      const user: User = { ...safeUser };
 
       // Store only current user, without password
       localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user));
@@ -295,6 +295,8 @@ class RegistrationService {
       });
 
       const resData = await response.json();
+      console.log('Login response:', resData);        // ← add this
+      console.log('rawUser:', resData.data?.user);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -305,7 +307,7 @@ class RegistrationService {
 
       const rawUser = resData.data.user;
       const { password: _password, ...safeUser } = rawUser;
-      const user: User = { ...safeUser, id: rawUser.user_id };
+      const user: User = { ...safeUser };
 
       // Store only current user, without password
       this.setCurrentUser(user);

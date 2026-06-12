@@ -21,6 +21,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(null)
   const statusDropdownRef = useRef<HTMLDivElement | null>(null)
 
+  const [localSearch, setLocalSearch] = useState('') // local state for search
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -109,12 +111,21 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       </div>
     )
   }
+  // const filteredListings = listings.filter(listing => {
+  //   const matchesFilter = filter === 'all' || listing.status === filter
+  //   const matchesTypeFilter = listingTypeFilter === 'all' || listing.listingType === listingTypeFilter
+  //   const matchesSearch = searchQuery === '' ||
+  //     listing.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     listing.description.toLowerCase().includes(searchQuery.toLowerCase())
+  //   return matchesFilter && matchesTypeFilter && matchesSearch
+  // })
+
   const filteredListings = listings.filter(listing => {
     const matchesFilter = filter === 'all' || listing.status === filter
     const matchesTypeFilter = listingTypeFilter === 'all' || listing.listingType === listingTypeFilter
-    const matchesSearch = searchQuery === '' ||
-      listing.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      listing.description.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = localSearch === '' ||
+      listing.product.toLowerCase().includes(localSearch.toLowerCase()) ||
+      listing.description.toLowerCase().includes(localSearch.toLowerCase())
     return matchesFilter && matchesTypeFilter && matchesSearch
   })
 
@@ -161,54 +172,45 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
   return (
     <div className="p-6 space-y-6 max-w-[1800px] mx-auto w-full">
-      {/* Header Section with Filters */}
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
-        {/* Left: Title and Description */}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-primary mb-2">My Listings</h1>
-          <p className="text-on-surface-variant">Manage your product listings and track bids</p>
+      {/* Header Section */}
+      <div className="flex items-center flex-wrap gap-4 w-full">
+        {/* Title */}
+        <div>
+          <h1 className="text-3xl font-bold text-primary mb-1">My Listings</h1>
+          <p className="text-on-surface-variant text-sm">Manage your product listings and track bids</p>
         </div>
 
-        {/* Right: Filters and Action - Vertically Stacked */}
-        <div className="flex flex-col gap-3 items-end">
-          {/* Status Filters - Top Row */}
-          <div className="flex flex-wrap gap-2 justify-end">
-            {(['all', 'live', 'reviewing', 'paused', 'sold', 'expired'] as const).map((status) => (
-              <Button
-                key={status}
-                variant={filter === status ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilter(status)}
-                className={`capitalize ${filter === status ? 'bg-[#2eb5c2] text-white border-[#2eb5c2]' : 'text-primary border-outline'}`}
-              >
-                {status}
-              </Button>
-            ))}
+        {/* Toolbar */}
+        <div className="flex items-center gap-3 flex-wrap ml-auto">
+          {/* Search Bar */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline">
+            <span className="material-symbols-outlined text-sm text-on-surface-variant">search</span>
+            <input
+              className="bg-transparent border-none text-sm focus:ring-0 p-0 w-48 text-on-surface placeholder-on-surface-variant outline-none"
+              placeholder="Search listings..."
+              type="text"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+            />
           </div>
 
-          {/* Listing Type Sub-filter - Bottom Row */}
-          <div className="flex flex-wrap gap-2 justify-end">
-            {(['all', 'produce', 'warehouse', 'transport'] as const).map((type) => (
-              <Button
-                key={type}
-                variant={listingTypeFilter === type ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setListingTypeFilter(type)}
-                className="capitalize"
-              >
-                {type === 'all' ? 'All Listings' : `${type} listings`}
-              </Button>
-            ))}
-          </div>
+          {/* Status Dropdown */}
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as typeof filter)}
+            className="px-4 py-2 rounded-full border border-outline bg-surface text-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Status</option>
+            <option value="live">Live</option>
+            <option value="reviewing">Reviewing</option>
+            <option value="paused">Paused</option>
+            <option value="sold">Sold</option>
+            <option value="expired">Expired</option>
+          </select>
 
-          {/* Post New Listing Button */}
-          <Button variant="primary" className="flex items-center gap-2">
-            <Icon name="add" />
-            Post New Listing
-          </Button>
+
         </div>
       </div>
-
       {/* Product Cards Grid */}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
