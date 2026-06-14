@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
+import { apiUrl } from '@/lib/api'
 import { useSearchParams } from 'next/navigation'
 import { dummyListings } from '@/lib/dummyData'
 import ListingGrid from '@/components/listings/ListingGrid'
@@ -68,7 +69,7 @@ function ListingsPageContent() {
       try {
         setLoadingListings(true)
 
-        const res = await fetch("http://localhost:5000/listings")
+        const res = await fetch(apiUrl('/listings'))
         const result = await res.json()
 
         console.log("DB listings:", result)

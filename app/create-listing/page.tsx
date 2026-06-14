@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth'
+import { apiUrl } from '@/lib/api'
 import DynamicForm from '@/components/forms/DynamicForm'
 
 export default function CreateListingPage() {
@@ -96,7 +97,7 @@ export default function CreateListingPage() {
 
       const token = currentUser?.token
 
-      const response = await fetch('http://localhost:5000/listings', {
+      const response = await fetch(apiUrl('/listings'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

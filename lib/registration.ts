@@ -1,5 +1,7 @@
 // Registration and KYC simulation utilities
 
+import { apiUrl } from './api'
+
 export interface User {
   id: string
   fullName: string
@@ -61,7 +63,7 @@ class RegistrationService {
   // User Management
   async createUser(data: RegistrationData): Promise<User> {
     try {
-      const response = await fetch('http://localhost:5000/auth/register', {
+      const response = await fetch(apiUrl('/auth/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -289,7 +291,7 @@ class RegistrationService {
   // Authenticate user with email and password
   async authenticateUser(email: string, password: string): Promise<User | null> {
     try {
-      const response = await fetch('http://localhost:5000/auth/login', {
+      const response = await fetch(apiUrl('/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

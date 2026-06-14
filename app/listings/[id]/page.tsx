@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { dummyListings } from '@/lib/dummyData'
+import { apiUrl } from '@/lib/api'
 import ListingDetails from '@/components/listings/ListingDetails'
 
 export default function ListingDetailPage() {
@@ -27,7 +28,7 @@ export default function ListingDetailPage() {
       }
 
       try {
-        const response = await fetch(`http://localhost:5000/listings/${id}`)
+        const response = await fetch(apiUrl(`/listings/${id}`))
         const result = await response.json()
 
         if (!result?.success || !result?.data) {
@@ -130,7 +131,7 @@ export default function ListingDetailPage() {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/listings/${listing.id}/bid`, {
+      const response = await fetch(apiUrl(`/listings/${listing.id}/bid`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

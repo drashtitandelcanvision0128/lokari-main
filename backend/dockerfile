@@ -13,8 +13,11 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package*.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
+COPY server.js ./
 COPY src ./src
 
+# Generate client at build time (dummy URL — generate does not connect to DB)
+ENV DATABASE_URL="postgresql://build:build@127.0.0.1:5432/build"
 RUN npx prisma generate
 
 EXPOSE 5000

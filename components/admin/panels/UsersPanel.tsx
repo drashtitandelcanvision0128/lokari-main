@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { AdminUser } from '@/types/admin'
 import { mockAdminUsers } from '@/data/adminMock'
+import { apiUrl } from '@/lib/api'
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
 import { useAdminSearch } from '@/hooks/useSearchFilter'
 import { EditUserModal } from './EditUserModal'
@@ -32,7 +33,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     try {
       setLoading(true)
       // Use local dev server URL for fetching
-      const response = await fetch('http://localhost:5000/admin/users')
+      const response = await fetch(apiUrl('/admin/users'))
       if (response.ok) {
         const data = await response.json()
         setUsers(data.data || [])
@@ -68,7 +69,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
 
   const handleSaveUser = async (userId: string, updatedData: any) => {
     try {
-      const response = await fetch(`http://localhost:5000/admin/users/${userId}`, {
+      const response = await fetch(apiUrl(`/admin/users/${userId}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -89,7 +90,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
 
   const handleCreateUser = async (userData: any) => {
     try {
-      const response = await fetch(`http://localhost:5000/admin/users`, {
+      const response = await fetch(apiUrl('/admin/users'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
 
   const handleToggleSuspend = async (userId: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/admin/users/${userId}/suspend`, {
+      const response = await fetch(apiUrl(`/admin/users/${userId}/suspend`), {
         method: 'PUT'
       })
       if (response.ok) {
@@ -134,7 +135,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
 
   const handleToggleVerify = async (userId: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/admin/users/${userId}/verify`, {
+      const response = await fetch(apiUrl(`/admin/users/${userId}/verify`), {
         method: 'PUT'
       })
       if (response.ok) {
@@ -159,7 +160,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
     
     try {
-      const response = await fetch(`http://localhost:5000/admin/users/${userId}`, {
+      const response = await fetch(apiUrl(`/admin/users/${userId}`), {
         method: 'DELETE'
       })
       if (response.ok) {

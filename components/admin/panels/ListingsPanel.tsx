@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { AdminListing } from '@/types/admin'
 // import { mockAdminListings } from '@/data/adminMock's
+import { apiUrl } from '@/lib/api'
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
 
 interface ListingsPanelProps {
@@ -21,7 +22,7 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const response = await fetch('http://localhost:5000/listings')
+        const response = await fetch(apiUrl('/listings'))
         const result = await response.json()
 
         if (result.success) {

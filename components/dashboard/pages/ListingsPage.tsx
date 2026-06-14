@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/Icon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Listing } from '@/types/dashboard'
 // import { mockListings } from '@/data/dashboardMock'
+import { apiUrl } from '@/lib/api'
 import { getCurrentUser } from '@/lib/auth'
 
 interface ListingsPageProps {
@@ -44,7 +45,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           return
         }
 
-        const response = await fetch('http://localhost:5000/listings')
+        const response = await fetch(apiUrl('/listings'))
         const result = await response.json()
         console.log(result.data[0])
 
@@ -137,9 +138,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   // Connecting delete action to UI
   const handleDelete = async (listingId: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:5000/listings/${listingId}`,
-        {
+      const response = await fetch(apiUrl(`/listings/${listingId}`), {
           method: "DELETE",
         }
       )
