@@ -35,9 +35,12 @@ connectDB();
 
 const app = express();
 
+/** Browser Origin headers never include a trailing slash — normalize env values. */
+const normalizeOrigin = (url) => url?.replace(/\/$/, '') ?? '';
+
 // Middlewares — FRONTEND_URL can be comma-separated for staging + prod
 const allowedOrigins = [
-  ...(process.env.FRONTEND_URL?.split(',').map((o) => o.trim()) ?? []),
+  ...(process.env.FRONTEND_URL?.split(',').map((o) => normalizeOrigin(o.trim())) ?? []),
   'http://localhost:3000',
   'http://127.0.0.1:3000',
 ].filter(Boolean);
@@ -53,7 +56,7 @@ app.use(
   cors({
     origin(origin, callback) {
       // Same-origin / curl / server-to-server
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
         return callback(null, true);
       }
       console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
