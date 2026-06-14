@@ -35,16 +35,30 @@ connectDB();
 
 const app = express();
 
-// Middlewares
+// Middlewares — FRONTEND_URL can be comma-separated for staging + prod
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  ...(process.env.FRONTEND_URL?.split(',').map((o) => o.trim()) ?? []),
   'http://localhost:3000',
   'http://127.0.0.1:3000',
 ].filter(Boolean);
 
+console.log('CORS allowed origins:', allowedOrigins.join(', ') || '(none — set FRONTEND_URL)');
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.originalUrl} origin=${req.headers.origin ?? '-'}`);
+  next();
+});
+
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin(origin, callback) {
+      // Same-origin / curl / server-to-server
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
+      return callback(null, false);
+    },
     credentials: true,
   }),
 );
