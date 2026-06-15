@@ -235,7 +235,12 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
                     />
                   </div>
                   <div>
-                    <Button variant="primary" size="sm">Change Photo</Button>
+                    <button
+                      type="button"
+                      className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-[#0a4e58] transition-colors cursor-pointer shadow-sm"
+                    >
+                      Change Photo
+                    </button>
                     <p className="text-xs text-stone-500 mt-1">JPG, PNG or GIF. Max 2MB.</p>
                   </div>
                 </div>
@@ -299,9 +304,21 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
                   />
                 </div>
 
-                <div className="flex gap-3">
-                  <Button variant="primary">Save Changes</Button>
-                  <Button variant="ghost">Cancel</Button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-[#0a4e58] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+                  >
+                    <Icon name="save" className="text-[16px]" />
+                    Save Changes
+                  </button>
+
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-lg text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer border border-outline"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </CardContent>
             </Card>
@@ -347,7 +364,13 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
                   </ul>
                 </div>
 
-                <Button variant="primary">Upload Additional Documents</Button>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-[#0a4e58] transition-colors cursor-pointer shadow-sm"
+                >
+                  <Icon name="upload_file" className="text-[16px]" />
+                  Upload Additional Documents
+                </button>
               </CardContent>
             </Card>
           )}
@@ -358,10 +381,13 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Address Management</CardTitle>
-                  <Button variant="primary" size="sm">
-                    <Icon name="add" className="mr-2" />
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-[#0a4e58] transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Icon name="add" className="text-[16px]" />
                     Add Address
-                  </Button>
+                  </button>
                 </div>
               </CardHeader>
               <CardContent>
