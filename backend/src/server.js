@@ -1,107 +1,113 @@
-// const express = require("express"); // type: commonjs
-import express from 'express'; // type: module
-import { config } from 'dotenv';
-import cors from 'cors';
+import 'dotenv/config';
+import express from 'express';
 import cookieParser from 'cookie-parser';
-import { connectDB, disconnectDB, prisma } from './config/db.js';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
-
-// Import Routes
+import { connectDB, disconnectDB } from './config/db.js';
+import { connectRedis, disconnectRedis } from './config/redis.js';
+import { runMigrations } from './config/migrate.js';
+import { createCorsMiddleware } from './config/cors.js';
+import { requestLogger } from './middleware/requestLogger.js';
+import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
+import apiRoutes from './routes/apiRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import listingRoutes from './routes/listingRoutes.js';
 
-config();
-
-// Run Prisma migrations on startup (only in production)
-const runMigrations = async () => {
-  if (process.env.NODE_ENV === 'production') {
-    try {
-      console.log('Running Prisma migrations...');
-      await execAsync('npx prisma migrate deploy');
-      console.log('Migrations completed successfully');
-    } catch (error) {
-      console.error('Migration failed:', error.message);
-      // Don't exit, let the server start anyway
-    }
-  }
-};
-
-await runMigrations();
-connectDB();
-
 const app = express();
 
-/** Browser Origin headers never include a trailing slash — normalize env values. */
-const normalizeOrigin = (url) => url?.replace(/\/$/, '') ?? '';
+app.use(requestLogger);
+app.use(createCorsMiddleware());
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Middlewares — FRONTEND_URL can be comma-separated for staging + prod
-const allowedOrigins = [
-  ...(process.env.FRONTEND_URL?.split(',').map((o) => normalizeOrigin(o.trim())) ?? []),
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-].filter(Boolean);
-
-console.log('CORS allowed origins:', allowedOrigins.join(', ') || '(none — set FRONTEND_URL)');
-
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.originalUrl} origin=${req.headers.origin ?? '-'}`);
-  next();
+app.get('/health', (_req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+  });
 });
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      // Same-origin / curl / server-to-server
-      if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
-        return callback(null, true);
-      }
-      console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
-      return callback(null, false);
-    },
-    credentials: true,
-  }),
-);
-app.use(cookieParser());
-app.use(express.json()); // to parse JSON body
-app.use(express.urlencoded({ extended: true })); // to parse URL-encoded data
+app.use('/api', apiRoutes);
 
-// API Routes
+// Legacy paths — same routers
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/listings', listingRoutes);
 
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-// Handle unhandled promise rejections (e.g. database connection error)
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Rejection:', err);
-  server.close(async () => {
-    await disconnectDB();
+function registerShutdownHandlers(server) {
+  let shuttingDown = false;
+
+  const shutdown = async (signal, exitCode = 0) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`${signal} received, shutting down gracefully`);
+    server.close(async () => {
+      await disconnectDB();
+      await disconnectRedis();
+      process.exit(exitCode);
+    });
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+
+  // Log only — exiting here kills the server on any stray async error
+  process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled Rejection (server kept running):', reason);
+  });
+
+  process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    shutdown('uncaughtException', 1);
+  });
+}
+
+async function startServer() {
+  try {
+    await runMigrations();
+  } catch (err) {
+    console.error('Startup aborted: database migration failed');
+    throw err;
+  }
+
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('Startup aborted: could not connect to database');
+    console.error('Check DATABASE_URL is reachable from this environment');
+    throw err;
+  }
+
+  await connectRedis();
+
+  const port = process.env.PORT || 5000;
+  const server = app.listen(port);
+
+  server.on('listening', () => {
+    console.log(`Server is running on port ${port}`);
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${port} is already in use.`);
+      console.error(
+        'Stop the other process (e.g. docker stop lokhari-backend) or run with PORT=5005 npm start',
+      );
+    } else {
+      console.error(`Failed to start server on port ${port}:`, err.message);
+    }
     process.exit(1);
   });
+
+  registerShutdownHandlers(server);
+}
+
+startServer().catch((err) => {
+  console.error('Failed to start server:', err?.message ?? err);
+  process.exit(1);
 });
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  server.close(async () => {
-    await disconnectDB();
-    process.exit(1);
-  });
-});
-
-// Graceful Shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shtting down gracefully');
-  server.close(async () => {
-    await disconnectDB();
-    process.exit(0);
-  });
-});
+export default app;

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { AdminUser } from '@/types/admin'
 import { mockAdminUsers } from '@/data/adminMock'
-import { apiUrl } from '@/lib/api'
+import { apiUrl, authHeaders } from '@/lib/api'
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
 import { useAdminSearch } from '@/hooks/useSearchFilter'
 import { EditUserModal } from './EditUserModal'
@@ -33,7 +33,9 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     try {
       setLoading(true)
       // Use local dev server URL for fetching
-      const response = await fetch(apiUrl('/admin/users'))
+      const response = await fetch(apiUrl('/admin/users'), {
+        headers: authHeaders(),
+      })
       if (response.ok) {
         const data = await response.json()
         setUsers(data.data || [])
@@ -71,9 +73,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     try {
       const response = await fetch(apiUrl(`/admin/users/${userId}`), {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: authHeaders(),
         body: JSON.stringify(updatedData),
       })
       if (response.ok) {
@@ -92,9 +92,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     try {
       const response = await fetch(apiUrl('/admin/users'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: authHeaders(),
         body: JSON.stringify(userData),
       })
       if (response.ok) {
@@ -113,7 +111,8 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
   const handleToggleSuspend = async (userId: string) => {
     try {
       const response = await fetch(apiUrl(`/admin/users/${userId}/suspend`), {
-        method: 'PUT'
+        method: 'PUT',
+        headers: authHeaders(),
       })
       if (response.ok) {
         alert('User status updated')
@@ -136,7 +135,8 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
   const handleToggleVerify = async (userId: string) => {
     try {
       const response = await fetch(apiUrl(`/admin/users/${userId}/verify`), {
-        method: 'PUT'
+        method: 'PUT',
+        headers: authHeaders(),
       })
       if (response.ok) {
         alert('User verification updated')
@@ -161,7 +161,8 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     
     try {
       const response = await fetch(apiUrl(`/admin/users/${userId}`), {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: authHeaders(),
       })
       if (response.ok) {
         alert('User deleted successfully')

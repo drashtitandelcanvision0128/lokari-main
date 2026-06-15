@@ -1,46 +1,54 @@
 import { prisma } from '../config/db.js';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../utils/generateToken.js';
+import { authCookieOptions } from '../middleware/authMiddleware.js';
+import { mapDbUserToFrontendUser, toDbRole } from '../utils/userMapper.js';
+import { buildProfileCreateData, userWithProfileInclude } from '../utils/profileFields.js';
+import { verifyOtp, consumeRegistrationVerified } from '../services/otpService.js';
 
-// Helper to map DB user and profile to frontend user interface format
-const mapDbUserToFrontendUser = (user, profile) => {
-  const roleMappingReverse = {
-    FARMER: 'farmer',
-    TRADER: 'trader',
-    WAREHOUSE_OWNER: 'warehouse',
-    TRANSPORTER: 'transporter',
-  };
+const findActiveUserByIdentifier = async (identifier) => {
+  const trimmed = identifier.trim();
+  const normalizedEmail = trimmed.toLowerCase();
 
-  let location = undefined;
-  if (user.role === 'FARMER') location = profile?.farm_location;
-  else if (user.role === 'WAREHOUSE_OWNER') location = profile?.warehouse_location;
-  else if (user.role === 'TRANSPORTER') location = profile?.service_area;
+  return prisma.user.findFirst({
+    where: {
+      is_deleted: false,
+      OR: [{ email: normalizedEmail }, { phone: trimmed }],
+    },
+    include: userWithProfileInclude,
+  });
+};
 
-  return {
-    id: user.user_id,
-    fullName: user.name,
-    email: user.email,
-    phone: user.phone || undefined,
-    role: roleMappingReverse[user.role] || 'farmer',
-    status: user.is_verified ? 'active' : 'pending_kyc',
-    createdAt: user.created_at.toISOString(),
-    updatedAt: user.updated_at.toISOString(),
-    location,
-    farmName: profile?.farm_name || undefined,
-    companyName: profile?.company_name || undefined,
-    warehouseName: profile?.warehouse_name || undefined,
-    vehicleType: profile?.vehicle_type || undefined,
-  };
+const sendAuthSuccess = (res, statusCode, user) => {
+  const token = generateToken(user, res);
+  return res.status(statusCode).json({
+    status: 'success',
+    data: {
+      user: mapDbUserToFrontendUser(user),
+      token,
+    },
+  });
 };
 
 const register = async (req, res) => {
   try {
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({
+        error: 'Request body is empty',
+        hint:
+          'In Postman: Body → raw → JSON, and set header Content-Type: application/json. Do not use form-data.',
+      });
+    }
+
     const {
-      fullName,
+      fullName: fullNameField,
+      name,
       email,
       phone,
       password,
       role,
+      otp: otpField,
+      otpCode,
       farmName,
       companyName,
       warehouseName,
@@ -50,19 +58,40 @@ const register = async (req, res) => {
       businessType,
     } = req.body;
 
-    if (!email || !password || !fullName || !role) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    const fullName = fullNameField || name;
+    const otp = otpField || otpCode;
+
+    const missing = [];
+    if (!fullName?.trim()) missing.push('fullName');
+    if (!email?.trim()) missing.push('email');
+    if (!password) missing.push('password');
+    if (!role?.trim()) missing.push('role');
+
+    if (missing.length > 0) {
+      return res.status(400).json({
+        error: `Missing required fields: ${missing.join(', ')}`,
+      });
     }
 
-    // Check if user already exists by email
+    const normalizedEmail = email.toLowerCase().trim();
+
+    try {
+      if (otp?.trim()) {
+        await verifyOtp(normalizedEmail, otp, 'register');
+      } else {
+        await consumeRegistrationVerified(normalizedEmail);
+      }
+    } catch (err) {
+      return res.status(err.statusCode || 400).json({ error: err.message });
+    }
+
     const userExists = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email: normalizedEmail },
     });
     if (userExists) {
       return res.status(400).json({ error: 'User already exists with this email' });
     }
 
-    // Check if user already exists by phone
     if (phone) {
       const phoneExists = await prisma.user.findUnique({
         where: { phone: phone.trim() },
@@ -72,56 +101,33 @@ const register = async (req, res) => {
       }
     }
 
-    // Hash Password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    const dbRole = toDbRole(role);
 
-    // Determine db role
-    const roleMapping = {
-      farmer: 'FARMER',
-      trader: 'TRADER',
-      warehouse: 'WAREHOUSE_OWNER',
-      transporter: 'TRANSPORTER',
-    };
-    const dbRole = roleMapping[role?.toLowerCase()] || 'FARMER';
-
-    // Create User and Profile
     const user = await prisma.user.create({
       data: {
         name: fullName.trim(),
-        email: email.toLowerCase().trim(),
+        email: normalizedEmail,
         phone: phone ? phone.trim() : null,
         password: hashedPassword,
         role: dbRole,
         profile: {
-          create: {
-            farm_name: farmName || null,
-            farm_location: dbRole === 'FARMER' ? location : null,
-            company_name: companyName || null,
-            business_type: dbRole === 'TRADER' ? businessType : null,
-            warehouse_name: warehouseName || null,
-            warehouse_location: dbRole === 'WAREHOUSE_OWNER' ? location : null,
-            capacity: dbRole === 'WAREHOUSE_OWNER' ? capacity : null,
-            vehicle_type: dbRole === 'TRANSPORTER' ? vehicleType : null,
-            service_area: dbRole === 'TRANSPORTER' ? location : null,
-          },
+          create: buildProfileCreateData(dbRole, {
+            farmName,
+            companyName,
+            warehouseName,
+            vehicleType,
+            location,
+            capacity,
+            businessType,
+          }),
         },
       },
-      include: {
-        profile: true,
-      },
+      include: userWithProfileInclude,
     });
 
-    // Generate JWT Token
-    const token = generateToken(user.user_id, res);
-
-    res.status(201).json({
-      status: 'success',
-      data: {
-        user: mapDbUserToFrontendUser(user, user.profile),
-        token,
-      },
-    });
+    return sendAuthSuccess(res, 201, user);
   } catch (error) {
     console.error('Register error:', error);
     res.status(500).json({ error: 'Server error during registration. Please try again.' });
@@ -132,41 +138,26 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (!email?.trim() || !password) {
       return res.status(400).json({ error: 'Please provide both email and password' });
     }
 
-    // Check if user exists by email or phone
-    const normalizedEmail = email.toLowerCase().trim();
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [{ email: normalizedEmail }, { phone: email.trim() }],
-      },
-      include: {
-        profile: true,
-      },
-    });
+    const user = await findActiveUserByIdentifier(email);
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Verify Password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Generate JWT Token
-    const token = generateToken(user.user_id, res);
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'Account suspended. Contact support.' });
+    }
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user: mapDbUserToFrontendUser(user, user.profile),
-        token,
-      },
-    });
+    return sendAuthSuccess(res, 200, user);
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error during login. Please try again.' });
@@ -176,12 +167,12 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
   try {
     res.cookie('jwt', '', {
-      httpOnly: true,
+      ...authCookieOptions,
       expires: new Date(0),
     });
     res.status(200).json({
       status: 'success',
-      message: 'Logout successfully',
+      message: 'Logged out successfully',
     });
   } catch (error) {
     console.error('Logout error:', error);

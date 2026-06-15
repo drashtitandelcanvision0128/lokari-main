@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { getCurrentUser, getUserRole } from '@/lib/auth'
-import { apiUrl } from '@/lib/api'
+import { apiUrl, authHeaders } from '@/lib/api'
 import Button from '@/components/common/Button'
 import DynamicForm from '@/components/forms/DynamicForm'
 
@@ -58,14 +58,9 @@ export default function WarehouseDashboardCreateListingPage() {
         is_refrigerated: data.refrigeration || false,
       }
 
-      const token = currentUser?.token
-
       const response = await fetch(apiUrl('/listings'), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
+        headers: authHeaders(),
         body: JSON.stringify(payload)
       })
 

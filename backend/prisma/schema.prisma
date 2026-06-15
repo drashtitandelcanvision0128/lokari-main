@@ -17,6 +17,7 @@ enum UserRole {
   WAREHOUSE_OWNER
   TRADER
   TRANSPORTER
+  ADMIN
 }
 
 enum KycStatus {

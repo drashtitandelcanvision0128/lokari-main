@@ -7,7 +7,7 @@ import { Icon } from '@/components/ui/Icon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Listing } from '@/types/dashboard'
 // import { mockListings } from '@/data/dashboardMock'
-import { apiUrl } from '@/lib/api'
+import { apiUrl, authHeaders } from '@/lib/api'
 import { getCurrentUser } from '@/lib/auth'
 
 interface ListingsPageProps {
@@ -139,9 +139,9 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const handleDelete = async (listingId: string) => {
     try {
       const response = await fetch(apiUrl(`/listings/${listingId}`), {
-          method: "DELETE",
-        }
-      )
+        method: 'DELETE',
+        headers: authHeaders(),
+      })
 
       const result = await response.json()
 

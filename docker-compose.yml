@@ -38,21 +38,30 @@ services:
     container_name: lokhari-backend
     restart: unless-stopped
     env_file:
-      - ./backend/.env
+      - .env
     environment:
       # Use Docker service name "postgres" — not localhost (localhost = this container)
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: production
+      ALLOW_DEV_OTP_LOG: ${ALLOW_DEV_OTP_LOG:-true}
       PORT: 5000
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      REDIS_URL: redis://redis:6379
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     ports:
       - "5000:5000"          # match hardcoded frontend URLs
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:5000/auth/login"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
       interval: 10s
       timeout: 5s
       retries: 5

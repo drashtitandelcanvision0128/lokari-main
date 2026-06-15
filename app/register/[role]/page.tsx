@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/components/common/Button'
 import Input from '@/components/common/Input'
+import OtpInput from '@/components/common/OtpInput'
 import { registrationService, type RegistrationData } from '@/lib/registration'
 import ProgressIndicator from '@/components/common/ProgressIndicator'
 import TransitionWrapper from '@/components/common/TransitionWrapper'
@@ -111,12 +112,13 @@ export default function RegisterRolePage() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/
 
-    if (!formData.email.trim() && !formData.phone.trim()) {
-      newErrors.email = 'Email or phone number is required'
-      newErrors.phone = 'Email or phone number is required'
-    } else if (formData.email.trim() && !emailRegex.test(formData.email)) {
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required for account verification'
+    } else if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address'
-    } else if (formData.phone.trim() && !phoneRegex.test(formData.phone)) {
+    }
+
+    if (formData.phone.trim() && !phoneRegex.test(formData.phone)) {
       newErrors.phone = 'Please enter a valid phone number'
     }
 
@@ -147,32 +149,12 @@ export default function RegisterRolePage() {
     setErrors({})
 
     try {
-      // Create user using registration service
-      const userData = await registrationService.createUser({
-        fullName: formData.fullName,
-        email: formData.email || undefined,
-        phone: formData.phone || undefined,
-        password: formData.password,
-        role: role as 'farmer' | 'trader' | 'warehouse' | 'transporter',
-        termsAccepted: formData.termsAccepted,
-        location: role === 'farmer' ? formData.farmLocation : 
-                 role === 'warehouse' ? formData.warehouseLocation : 
-                 role === 'transporter' ? formData.serviceArea : 
-                 undefined,
-        farmName: formData.farmName,
-        companyName: formData.companyName,
-        warehouseName: formData.warehouseName,
-        vehicleType: formData.vehicleType
-      })
-
-      // Simulate OTP sending
-      const contact = formData.email || formData.phone
-      await registrationService.sendOTP(contact || '')
-      setOtpSentTo(contact)
+      // Send OTP first — account is created only after verification
+      await registrationService.sendOTP(formData.email.trim(), 'register')
+      setOtpSentTo(formData.email.trim())
       setShowOTP(true)
-      
     } catch (error) {
-      setErrors({ general: error instanceof Error ? error.message : 'Registration failed. Please try again.' })
+      setErrors({ general: error instanceof Error ? error.message : 'Failed to send OTP. Please try again.' })
     } finally {
       setIsLoading(false)
     }
@@ -185,25 +167,57 @@ export default function RegisterRolePage() {
     }
 
     setIsLoading(true)
+    setErrors({})
 
     try {
-      // Verify OTP using registration service
-      const isValid = await registrationService.verifyOTP(otpValue)
-      
-      if (isValid) {
-        // Activate user
-        const currentUser = registrationService.getCurrentUser()
-        if (currentUser) {
-          await registrationService.activateUser(currentUser.id)
-        }
+      await registrationService.verifyOTP(otpValue, formData.email.trim(), 'register')
 
-        // Redirect to KYC step
-        router.push(`/register/${role}/kyc`)
-      } else {
-        setErrors({ general: 'Invalid OTP. Please try again.' })
-      }
+      registrationService.savePendingRegistration({
+        fullName: formData.fullName,
+        email: formData.email.trim(),
+        phone: formData.phone || undefined,
+        password: formData.password,
+        role: role as 'farmer' | 'trader' | 'warehouse' | 'transporter',
+        termsAccepted: formData.termsAccepted,
+        emailVerified: true,
+        location:
+          role === 'farmer'
+            ? formData.farmLocation
+            : role === 'warehouse'
+              ? formData.warehouseLocation
+              : role === 'transporter'
+                ? formData.serviceArea
+                : undefined,
+        farmName: formData.farmName,
+        companyName: formData.companyName,
+        warehouseName: formData.warehouseName,
+        vehicleType: formData.vehicleType,
+        capacity: formData.capacity,
+        businessType: formData.businessType,
+      })
+
+      router.push(`/register/${role}/kyc`)
     } catch (error) {
-      setErrors({ general: 'OTP verification failed. Please try again.' })
+      setErrors({
+        general: error instanceof Error ? error.message : 'Invalid OTP. Please try again.',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleResendOtp = async () => {
+    if (!formData.email.trim()) return
+    setIsLoading(true)
+    setErrors({})
+    try {
+      await registrationService.sendOTP(formData.email.trim(), 'register')
+      setOtpValue('')
+      setErrors({ general: 'A new OTP has been sent to your email.' })
+    } catch (error) {
+      setErrors({
+        general: error instanceof Error ? error.message : 'Failed to resend OTP',
+      })
     } finally {
       setIsLoading(false)
     }
@@ -543,11 +557,11 @@ export default function RegisterRolePage() {
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="material-symbols-outlined animate-spin">refresh</span>
-                    Creating Account...
+                    Sending OTP...
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
-                    Create Account
+                    Send OTP
                     <span className="material-symbols-outlined">arrow_forward</span>
                   </span>
                 )}
@@ -556,6 +570,17 @@ export default function RegisterRolePage() {
           </TransitionWrapper>
           <TransitionWrapper show={showOTP} animation="slideIn">
             <div className="space-y-4">
+              <div className="mb-4">
+                <ProgressIndicator
+                  currentStep={2}
+                  totalSteps={3}
+                  steps={[
+                    { label: 'Role', status: 'completed' },
+                    { label: 'Verify', status: 'active' },
+                    { label: 'KYC', status: 'pending' },
+                  ]}
+                />
+              </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-[#a5dce4] rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="material-symbols-outlined text-[#0b5d68] text-2xl">
@@ -571,19 +596,16 @@ export default function RegisterRolePage() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#0b5d68]">
+                <label className="block text-sm font-medium text-[#0b5d68] text-center">
                   Enter OTP
                 </label>
-                <input
-                  type="text"
-                  maxLength={6}
+                <OtpInput
                   value={otpValue}
-                  onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ''))}
-                  className="block w-full px-3 py-2 border border-[#e0e0e0] rounded-lg shadow-sm placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-[#0b5d68] focus:border-[#0b5d68] text-center text-lg font-mono"
-                  placeholder="000000"
+                  onChange={setOtpValue}
+                  disabled={isLoading}
                 />
-                <p className="text-xs text-[#666666]">
-                  Enter 6-digit code (use 123456 for demo)
+                <p className="text-xs text-[#666666] text-center">
+                  Enter the 6-digit code sent to your email
                 </p>
               </div>
 
@@ -600,17 +622,27 @@ export default function RegisterRolePage() {
                 className="w-full"
                 disabled={isLoading}
               >
-                {isLoading ? 'Verifying...' : 'Verify OTP'}
+                {isLoading ? 'Verifying...' : 'Continue to KYC'}
               </Button>
 
-              <div className="text-center">
+              <div className="text-center space-y-2">
                 <button
                   type="button"
-                  className="text-sm text-[#0b5d68] hover:underline"
-                  onClick={() => setShowOTP(false)}
+                  className="text-sm text-[#0b5d68] hover:underline disabled:opacity-50"
+                  onClick={handleResendOtp}
+                  disabled={isLoading}
                 >
-                  Back to Registration
+                  Resend OTP
                 </button>
+                <div>
+                  <button
+                    type="button"
+                    className="text-sm text-[#666666] hover:underline"
+                    onClick={() => setShowOTP(false)}
+                  >
+                    Back to Registration
+                  </button>
+                </div>
               </div>
             </div>
           </TransitionWrapper>

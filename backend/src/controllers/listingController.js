@@ -3,11 +3,7 @@ import { createListingService } from '../services/listingService.js';
 
 export const createListing = async (req, res) => {
     try {
-        const user_id = req.user?.user_id ?? req.body.user_id;
-
-        if (!user_id) {
-            return res.status(401).json({ success: false, message: 'Unauthorized' });
-        }
+        const user_id = req.user.user_id;
 
         const data = await createListingService({ ...req.body, user_id });
 
@@ -35,10 +31,11 @@ export const getListingById = async (req, res) => {
                         is_verified: true,
                         profile: {
                             select: {
-                                farm_location: true
-                            }
-                        }
-                    }
+                                farm_location: true,
+                                warehouse_location: true,
+                            },
+                        },
+                    },
                 },
                 auction: {
                     include: {
@@ -167,12 +164,8 @@ export const deleteListing = async (req, res) => {
 export const placeBid = async (req, res) => {
     try {
         const { id } = req.params;
-        const { amount, user_id } = req.body;
-        const bidder_id = req.user?.user_id ?? user_id;
-
-        if (!bidder_id) {
-            return res.status(401).json({ success: false, message: 'Unauthorized' });
-        }
+        const { amount } = req.body;
+        const bidder_id = req.user.user_id;
 
         const numericAmount = Number(amount);
         if (isNaN(numericAmount) || numericAmount <= 0) {

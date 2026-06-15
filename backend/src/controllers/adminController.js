@@ -1,34 +1,35 @@
 import { prisma } from '../config/db.js';
 import bcrypt from 'bcryptjs';
+import { buildProfileCreateData, userWithProfileInclude } from '../utils/profileFields.js';
 
-// Helper to map DB user and profile to frontend AdminUser interface format
-const mapDbUserToAdminUser = (user, profile) => {
+const mapDbUserToAdminUser = (user) => {
+  const profile = user.profile;
+
   const roleMappingReverse = {
     FARMER: 'farmer',
     TRADER: 'trader',
     WAREHOUSE_OWNER: 'warehouse',
     TRANSPORTER: 'transporter',
+    ADMIN: 'admin',
   };
 
-  let location = undefined;
+  let location;
   if (user.role === 'FARMER') location = profile?.farm_location;
   else if (user.role === 'WAREHOUSE_OWNER') location = profile?.warehouse_location;
   else if (user.role === 'TRANSPORTER') location = profile?.service_area;
-
-  let status = user.is_active ? 'active' : 'banned';
 
   return {
     id: user.user_id,
     name: user.name || 'Unknown',
     email: user.email,
     role: roleMappingReverse[user.role] || 'farmer',
-    status: status,
+    status: user.is_active ? 'active' : 'banned',
     joinedAt: user.created_at.toISOString(),
     createdAt: user.created_at.toISOString(),
     lastActive: user.updated_at.toISOString(),
-    listings: 0, // Placeholder until listings are implemented
-    orders: 0, // Placeholder until orders are implemented
-    revenue: '$0', // Placeholder until payments are implemented
+    listings: 0,
+    orders: 0,
+    revenue: '$0',
     verificationStatus: user.is_verified ? 'verified' : 'unverified',
     phone: user.phone || undefined,
     location: location || 'Not specified',
@@ -41,15 +42,13 @@ export const getAllUsers = async (req, res) => {
       where: {
         is_deleted: false,
       },
-      include: {
-        profile: true,
-      },
+      include: userWithProfileInclude,
       orderBy: {
         created_at: 'desc',
       },
     });
 
-    const adminUsers = users.map((u) => mapDbUserToAdminUser(u, u.profile));
+    const adminUsers = users.map((u) => mapDbUserToAdminUser(u));
 
     res.status(200).json({
       status: 'success',
@@ -83,12 +82,12 @@ export const updateUser = async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { user_id: id },
       data: updateData,
-      include: { profile: true },
+      include: userWithProfileInclude,
     });
 
     res.status(200).json({
       status: 'success',
-      data: mapDbUserToAdminUser(updatedUser, updatedUser.profile),
+      data: mapDbUserToAdminUser(updatedUser),
     });
   } catch (error) {
     console.error('Error updating user:', error);
@@ -108,12 +107,12 @@ export const toggleUserStatus = async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { user_id: id },
       data: { is_active: !user.is_active },
-      include: { profile: true },
+      include: userWithProfileInclude,
     });
 
     res.status(200).json({
       status: 'success',
-      data: mapDbUserToAdminUser(updatedUser, updatedUser.profile),
+      data: mapDbUserToAdminUser(updatedUser),
     });
   } catch (error) {
     console.error('Error toggling user status:', error);
@@ -133,12 +132,12 @@ export const toggleUserVerification = async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { user_id: id },
       data: { is_verified: !user.is_verified },
-      include: { profile: true },
+      include: userWithProfileInclude,
     });
 
     res.status(200).json({
       status: 'success',
-      data: mapDbUserToAdminUser(updatedUser, updatedUser.profile),
+      data: mapDbUserToAdminUser(updatedUser),
     });
   } catch (error) {
     console.error('Error toggling user verification:', error);
@@ -228,27 +227,23 @@ export const createUser = async (req, res) => {
         role: dbRole,
         is_verified: true, // Auto verify when created by admin
         profile: {
-          create: {
-            farm_name: farmName || null,
-            farm_location: dbRole === 'FARMER' ? location : null,
-            company_name: companyName || null,
-            business_type: dbRole === 'TRADER' ? businessType : null,
-            warehouse_name: warehouseName || null,
-            warehouse_location: dbRole === 'WAREHOUSE_OWNER' ? location : null,
-            capacity: dbRole === 'WAREHOUSE_OWNER' ? capacity : null,
-            vehicle_type: dbRole === 'TRANSPORTER' ? vehicleType : null,
-            service_area: dbRole === 'TRANSPORTER' ? location : null,
-          },
+          create: buildProfileCreateData(dbRole, {
+            farmName,
+            companyName,
+            warehouseName,
+            vehicleType,
+            location,
+            capacity,
+            businessType,
+          }),
         },
       },
-      include: {
-        profile: true,
-      },
+      include: userWithProfileInclude,
     });
 
     res.status(201).json({
       status: 'success',
-      data: mapDbUserToAdminUser(user, user.profile),
+      data: mapDbUserToAdminUser(user),
     });
   } catch (error) {
     console.error('Create user error:', error);

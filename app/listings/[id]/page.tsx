@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { dummyListings } from '@/lib/dummyData'
-import { apiUrl } from '@/lib/api'
+import { apiUrl, authHeaders } from '@/lib/api'
 import ListingDetails from '@/components/listings/ListingDetails'
 
 export default function ListingDetailPage() {
@@ -60,7 +60,11 @@ export default function ListingDetailPage() {
             name: d.user?.name || 'Seller',
             rating: 4.5,
             verified: d.user?.is_verified || false,
-            location: d.user?.profile?.farm_location || 'Location not available'
+            location:
+              d.user?.profile?.farm_location ||
+              d.user?.profile?.warehouse_location ||
+              d.listing_location ||
+              'Location not available',
           },
           images: [],
           postedAt: d.created_at,
@@ -133,13 +137,10 @@ export default function ListingDetailPage() {
 
       const response = await fetch(apiUrl(`/listings/${listing.id}/bid`), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           amount: newBid.amount,
-          user_id: user.id || user.user_id
-        })
+        }),
       });
 
       const result = await response.json();

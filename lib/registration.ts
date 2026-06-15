@@ -1,14 +1,17 @@
 // Registration and KYC simulation utilities
 
-import { apiUrl } from './api'
+import { apiUrl } from '@/lib/api'
+import { loginWithCredentials } from './auth/api'
+import { sendEmailOtp, verifyEmailOtp, type OtpPurpose } from './auth/otp'
+import { persistUserSession, getDashboardUrl as roleDashboardUrl } from './auth/session'
 
 export interface User {
   id: string
   fullName: string
   email?: string
   phone?: string
-  password: string
-  role: 'farmer' | 'trader' | 'warehouse' | 'transporter'
+  password?: string
+  role: 'farmer' | 'trader' | 'warehouse' | 'transporter' | 'admin'
   status: 'pending_kyc' | 'active' | 'suspended'
   avatar?: string
   createdAt: string
@@ -38,12 +41,21 @@ export interface RegistrationData {
   password: string
   role: 'farmer' | 'trader' | 'warehouse' | 'transporter'
   termsAccepted: boolean
+  otp?: string
   location?: string
   farmName?: string
   companyName?: string
   warehouseName?: string
   vehicleType?: string
+  capacity?: string
+  businessType?: string
 }
+
+export type PendingRegistration = RegistrationData & {
+  emailVerified: true
+}
+
+const PENDING_REGISTRATION_KEY = 'pendingRegistration'
 
 export interface KYCData {
   aadhaarNumber: string
@@ -61,50 +73,79 @@ class RegistrationService {
   }
 
   // User Management
+  savePendingRegistration(data: PendingRegistration): void {
+    if (typeof window === 'undefined') return
+    localStorage.setItem(PENDING_REGISTRATION_KEY, JSON.stringify(data))
+  }
+
+  getPendingRegistration(): PendingRegistration | null {
+    if (typeof window === 'undefined') return null
+    const raw = localStorage.getItem(PENDING_REGISTRATION_KEY)
+    return raw ? JSON.parse(raw) : null
+  }
+
+  clearPendingRegistration(): void {
+    if (typeof window === 'undefined') return
+    localStorage.removeItem(PENDING_REGISTRATION_KEY)
+  }
+
+  /** Finish signup after OTP + KYC (or skip). Uses prior OTP verification on the server. */
+  async completePendingRegistration(): Promise<User> {
+    const pending = this.getPendingRegistration()
+    if (!pending) {
+      throw new Error('No pending registration. Please start again.')
+    }
+    const { emailVerified: _verified, otp: _otp, ...payload } = pending
+    const user = await this.createUser(payload)
+    this.clearPendingRegistration()
+    await this.createProfile(user.id)
+    return user
+  }
+
   async createUser(data: RegistrationData): Promise<User> {
     try {
+      const body: Record<string, unknown> = { ...data }
+      if (!data.otp?.trim()) {
+        delete body.otp
+      }
+
       const response = await fetch(apiUrl('/auth/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
       });
 
-      const resData = await response.json();
+      let resData: { error?: string; message?: string; data?: { user: User; token: string } } = {};
+      try {
+        resData = await response.json();
+      } catch {
+        throw new Error(
+          `Cannot reach API at ${apiUrl('/auth/register')}. Is the backend running?`,
+        );
+      }
 
       if (!response.ok) {
         throw new Error(resData.error || resData.message || 'Registration failed');
       }
 
-      const user: User = resData.data.user;
-
-      // Store in localStorage
-      localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user));
-      
-      // Keep existing array updated for compatibility
-      const existingUsers = this.getAllUsers();
-      const userIndex = existingUsers.findIndex(u => u.id === user.id);
-      if (userIndex !== -1) {
-        existingUsers[userIndex] = user;
+      const user: User = resData.data!.user;
+      const token: string = resData.data!.token;
+      if (token) {
+        persistUserSession(user, token)
       } else {
-        existingUsers.push(user);
+        localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user))
       }
-      localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(existingUsers));
 
-      // Create user profile in localStorage for client-side state compatibility
-      const profile: UserProfile = {
-        userId: user.id,
-        kycStatus: 'not_started',
-        verificationLevel: 'basic',
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-      };
-      localStorage.setItem(this.STORAGE_KEYS.PROFILE, JSON.stringify(profile));
-
-      return user;
+      return user
     } catch (error) {
       console.error('Error during registration:', error);
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error(
+          `Cannot reach API at ${apiUrl('/auth/register')}. Start backend: cd backend && npm run dev`,
+        );
+      }
       throw error;
     }
   }
@@ -200,32 +241,40 @@ class RegistrationService {
     localStorage.setItem(this.STORAGE_KEYS.PROFILE, JSON.stringify(profile))
   }
 
-  // OTP Simulation
-  async sendOTP(contact: string): Promise<void> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    // Store OTP session for demo purposes
-    const otpSession = {
-      contact,
-      generatedAt: new Date().toISOString(),
-      attempts: 0
+  // Email OTP (via backend + Redis)
+  async sendOTP(email: string, purpose: OtpPurpose = 'register'): Promise<void> {
+    if (!email?.includes('@')) {
+      throw new Error('A valid email address is required for verification')
     }
-    localStorage.setItem('otpSession', JSON.stringify(otpSession))
+
+    await sendEmailOtp(email, purpose)
+
+    localStorage.setItem(
+      'otpSession',
+      JSON.stringify({
+        email: email.trim().toLowerCase(),
+        purpose,
+        generatedAt: new Date().toISOString(),
+      }),
+    )
   }
 
-  async verifyOTP(otp: string): Promise<boolean> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+  async verifyOTP(
+    otp: string,
+    email?: string,
+    purpose: OtpPurpose = 'register',
+  ): Promise<boolean> {
+    const sessionRaw = localStorage.getItem('otpSession')
+    const session = sessionRaw ? JSON.parse(sessionRaw) : null
+    const targetEmail = email?.trim() || session?.email
 
-    // Mock OTP verification - accept 123456 or random success
-    const isValid = otp === '123456' || Math.random() > 0.1
-
-    if (isValid) {
-      localStorage.removeItem('otpSession')
+    if (!targetEmail) {
+      throw new Error('Email is required for OTP verification')
     }
 
-    return isValid
+    await verifyEmailOtp(targetEmail, otp, purpose)
+    localStorage.removeItem('otpSession')
+    return true
   }
 
   // KYC Document Simulation
@@ -288,68 +337,23 @@ class RegistrationService {
     }
   }
 
-  // Authenticate user with email and password
+  // Authenticate user with email/phone and password via API
   async authenticateUser(email: string, password: string): Promise<User | null> {
     try {
-      const response = await fetch(apiUrl('/auth/login'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const resData = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          return null;
-        }
-        throw new Error(resData.error || resData.message || 'Login failed');
-      }
-
-      const user: User = resData.data.user;
-
-      // Store current user session
-      this.setCurrentUser(user);
-      
-      // Store in users array for compatibility
-      const existingUsers = this.getAllUsers();
-      const idx = existingUsers.findIndex(u => u.id === user.id);
-      if (idx !== -1) {
-        existingUsers[idx] = user;
-      } else {
-        existingUsers.push(user);
-      }
-      localStorage.setItem(this.STORAGE_KEYS.USERS, JSON.stringify(existingUsers));
-
-      // Update/Create user profile in localStorage for client-side state compatibility
-      const profile: UserProfile = {
-        userId: user.id,
-        kycStatus: user.status === 'active' ? 'verified' : 'not_started',
-        verificationLevel: 'basic',
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-      };
-      localStorage.setItem(this.STORAGE_KEYS.PROFILE, JSON.stringify(profile));
-
-      return user;
+      const { user, token } = await loginWithCredentials({ email, password })
+      persistUserSession(user, token)
+      return user
     } catch (error) {
-      console.error('Error during authentication:', error);
-      throw error;
+      if (error instanceof Error && error.message === 'Invalid email or password') {
+        return null
+      }
+      console.error('Error during authentication:', error)
+      throw error
     }
   }
 
-  // Get dashboard URL based on user role
   getDashboardUrl(role: string): string {
-    const dashboardMap: Record<string, string> = {
-      farmer: '/farmer-dashboard',
-      trader: '/trader-dashboard',
-      warehouse: '/warehouse-dashboard',
-      transporter: '/transporter-dashboard',
-      admin: '/admin'
-    }
-    return dashboardMap[role] || '/dashboard'
+    return roleDashboardUrl(role)
   }
 
   // Utility to generate random IDs
@@ -363,6 +367,7 @@ class RegistrationService {
       localStorage.removeItem(key)
     })
     localStorage.removeItem('otpSession')
+    localStorage.removeItem(PENDING_REGISTRATION_KEY)
   }
 }
 
