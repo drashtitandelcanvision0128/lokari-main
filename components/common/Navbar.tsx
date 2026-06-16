@@ -112,10 +112,10 @@ const Navbar = () => {
 
   const toggleKycBypass = () => {
     if (!currentUser) return
-    
+
     const newStatus = !kycBypassEnabled
     setKycBypassEnabled(newStatus)
-    
+
     if (newStatus) {
       // Enable KYC bypass
       localStorage.setItem(`dev_kyc_bypass_${currentUser.id}`, 'true')
@@ -132,7 +132,7 @@ const Navbar = () => {
       localStorage.removeItem(`kyc_${currentUser.id}`)
       console.log('KYC bypass DISABLED - real KYC verification required')
     }
-    
+
     // Force page refresh to re-evaluate verification status
     setTimeout(() => {
       window.location.reload()
@@ -167,64 +167,59 @@ const Navbar = () => {
   const isActive = (path: string) => pathname === path
 
   return (
-    <nav className={`fixed top-0 w-full z-50 h-16 transition-all duration-300 ${
-      isScrolled 
-        ? isDark ? 'bg-gray-900/80 backdrop-blur-md' : 'bg-[#f9f9f7]/80 backdrop-blur-md'
-        : isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'
-    }`}>
+    <nav className={`fixed top-0 w-full z-50 h-16 transition-all duration-300 ${isScrolled
+      ? isDark ? 'bg-gray-900/80 backdrop-blur-md' : 'bg-[#f9f9f7]/80 backdrop-blur-md'
+      : isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'
+      }`}>
       <div className="flex justify-between items-center w-full px-8 h-full max-w-full">
         <div className="flex items-center gap-8">
-          <Link href="/" className={`flex items-center gap-3 text-xl font-bold font-headline ${
-            isDark ? 'text-white' : 'text-[#0b5d68]'
-          }`}>
+          <Link href="/" className={`flex items-center gap-3 text-xl font-bold font-headline ${isDark ? 'text-white' : 'text-[#0b5d68]'
+            }`}>
             <img src="/AgriwareLogo.svg" alt="Lokhari Logo" className="w-8 h-8" />
             Lokhari
           </Link>
           <div className="hidden md:flex items-center gap-6 font-headline font-semibold tracking-tight">
             {/* Hide Marketplace, Services, and Insights tabs on all dashboard and admin pages */}
-            {!pathname.startsWith('/dashboard') && 
-             !pathname.startsWith('/farmer-dashboard') && 
-             !pathname.startsWith('/trader-dashboard') && 
-             !pathname.startsWith('/transporter-dashboard') && 
-             !pathname.startsWith('/warehouse-dashboard') && 
-             !pathname.startsWith('/admin') && (
-              <>
-                <Link
-                  href="/listings"
-                  className={`border-b-2 pb-1 transition-colors ${
-                    isActive('/listings')
+            {!pathname.startsWith('/dashboard') &&
+              !pathname.startsWith('/farmer-dashboard') &&
+              !pathname.startsWith('/trader-dashboard') &&
+              !pathname.startsWith('/transporter-dashboard') &&
+              !pathname.startsWith('/warehouse-dashboard') &&
+              !pathname.startsWith('/admin') && (
+                <>
+                  <Link
+                    href="/listings"
+                    className={`border-b-2 pb-1 transition-colors ${isActive('/listings')
                       ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
                       : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-                  }`}
-                >
-                  Marketplace
-                </Link>
-                <Link
-                  href="/insights"
-                  className={`border-b-2 pb-1 transition-colors ${
-                    isActive('/insights')
+                      }`}
+                  >
+                    Marketplace
+                  </Link>
+                  <Link
+                    href="/insights"
+                    className={`border-b-2 pb-1 transition-colors ${isActive('/insights')
                       ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
                       : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-                  }`}
-                >
-                  Insights
-                </Link>
-                <Link
-                  href="/about"
-                  className={`border-b-2 pb-1 transition-colors ${
-                    isActive('/about')
+                      }`}
+                  >
+                    Insights
+                  </Link>
+                  <Link
+                    href="/about"
+                    className={`border-b-2 pb-1 transition-colors ${isActive('/about')
                       ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
                       : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-                  }`}
-                >
-                  About Us
-                </Link>
-              </>
-            )}
+                      }`}
+                  >
+                    About Us
+                  </Link>
+                </>
+              )}
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={toggleDark}
             className={`p-2 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
           >
@@ -232,37 +227,34 @@ const Navbar = () => {
               {isDark ? 'light_mode' : 'dark_mode'}
             </span>
           </button>
-          
+
           {/* KYC Bypass Toggle - Development Only */}
           {process.env.NODE_ENV === 'development' && isLoggedIn && (
             <div className="relative">
-              <button 
+              <button
                 onClick={toggleKycBypass}
-                className={`p-2 rounded-lg transition-colors ${
-                  kycBypassEnabled 
-                    ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                className={`p-2 rounded-lg transition-colors ${kycBypassEnabled
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 title={`KYC Bypass: ${kycBypassEnabled ? 'Enabled' : 'Disabled'}`}
               >
                 <span className="material-symbols-outlined text-sm">
                   {kycBypassEnabled ? 'verified_user' : 'gpp_maybe'}
                 </span>
               </button>
-              <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${
-                kycBypassEnabled ? 'bg-green-500' : 'bg-gray-400'
-              }`} />
+              <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${kycBypassEnabled ? 'bg-green-500' : 'bg-gray-400'
+                }`} />
             </div>
           )}
-          
+
           {isAdminSession ? (
             <>
               {/* Admin-specific options */}
-              <button 
+              <button
                 onClick={handleLogout}
-                className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
-                  isDark ? 'text-white bg-[#d55b39] hover:bg-[#c44928]' : 'text-white bg-[#d55b39] hover:bg-[#c44928]'
-                }`}
+                className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDark ? 'text-white bg-[#d55b39] hover:bg-[#c44928]' : 'text-white bg-[#d55b39] hover:bg-[#c44928]'
+                  }`}
               >
                 <span className="material-symbols-outlined text-sm">logout</span>
                 <span>Admin Logout</span>
@@ -289,7 +281,7 @@ const Navbar = () => {
                   </span>
                 )}
               </Link>
-              <ProfileDropdown userName={userName} userRole={currentUser?.role} />
+
               <div className="hidden md:flex items-center gap-2 ml-4">
                 <span className="text-sm text-on-surface-variant">Welcome,</span>
                 <span className="text-sm font-medium text-[#2eb5c2] font-headline">
@@ -304,7 +296,8 @@ const Navbar = () => {
                   </>
                 )}
               </div>
-              <button 
+              <ProfileDropdown userName={userName} userRole={currentUser?.role} />
+              {/* <button 
                 onClick={handleLogout}
                 className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
                   isDark ? 'text-white bg-[#e89151] hover:bg-[#d67a3a]' : 'text-white bg-[#e89151] hover:bg-[#d67a3a]'
@@ -312,19 +305,17 @@ const Navbar = () => {
               >
                 <span className="material-symbols-outlined text-sm">logout</span>
                 <span>Logout</span>
-              </button>
+              </button> */}
             </>
           ) : (
             <>
-              <Link href="/login" className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
-                isDark ? 'text-white bg-[#e89151] hover:bg-[#d67a3a]' : 'text-white bg-[#e89151] hover:bg-[#d67a3a]'
-              }`}>
+              <Link href="/login" className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDark ? 'text-white bg-[#e89151] hover:bg-[#d67a3a]' : 'text-white bg-[#e89151] hover:bg-[#d67a3a]'
+                }`}>
                 <span className="material-symbols-outlined text-sm">login</span>
                 <span>Login</span>
               </Link>
-              <Link href="/register" className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
-                isDark ? 'text-white bg-[#d55b39] hover:bg-[#c44928]' : 'text-white bg-[#d55b39] hover:bg-[#c44928]'
-              }`}>
+              <Link href="/register" className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDark ? 'text-white bg-[#d55b39] hover:bg-[#c44928]' : 'text-white bg-[#d55b39] hover:bg-[#c44928]'
+                }`}>
                 <span className="material-symbols-outlined text-sm">person_add</span>
                 <span>Register</span>
               </Link>
