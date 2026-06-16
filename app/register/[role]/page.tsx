@@ -9,6 +9,7 @@ import OtpInput from '@/components/common/OtpInput'
 import { registrationService, type RegistrationData } from '@/lib/registration'
 import ProgressIndicator from '@/components/common/ProgressIndicator'
 import TransitionWrapper from '@/components/common/TransitionWrapper'
+import { useGuestGuard } from '@/lib/authGuard'
 
 interface FormData {
   fullName: string
@@ -69,6 +70,7 @@ export default function RegisterRolePage() {
   const router = useRouter()
   const params = useParams()
   const role = params.role as string
+  const canRender = useGuestGuard()
 
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
@@ -223,7 +225,7 @@ export default function RegisterRolePage() {
     }
   }
 
-  if (!config) {
+  if (!config || !canRender) {
     return null
   }
 

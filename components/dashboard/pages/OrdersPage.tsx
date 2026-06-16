@@ -67,12 +67,13 @@ export function OrdersPage({ searchQuery = '' }: OrdersPageProps) {
   const [orders, setOrders] = useState<Order[]>(mockOrders)
   const [activeTab, setActiveTab] = useState<'all' | 'buying' | 'selling'>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [localSearch, setLocalSearch] = useState('')
 
   const filteredOrders = orders.filter(order => {
     const matchesTab = activeTab === 'all' || order.type === activeTab
-    const matchesSearch = searchQuery === '' || 
-      order.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = localSearch === '' ||
+      order.product.toLowerCase().includes(localSearch.toLowerCase()) ||
+      order.orderNumber.toLowerCase().includes(localSearch.toLowerCase())
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter
     return matchesTab && matchesSearch && matchesStatus
   })
@@ -104,18 +105,17 @@ export function OrdersPage({ searchQuery = '' }: OrdersPageProps) {
         </div>
       )
     }
-    
+
     const progressSteps = ['pending', 'confirmed', 'preparing', 'shipped', 'delivered'] as const
     const currentIndex = progressSteps.indexOf(status)
-    
+
     return (
       <div className="flex items-center gap-2">
         {progressSteps.map((step, index) => (
           <div
             key={step}
-            className={`flex-1 h-1 rounded-full ${
-              index <= currentIndex ? 'bg-primary' : 'bg-stone-200'
-            }`}
+            className={`flex-1 h-1 rounded-full ${index <= currentIndex ? 'bg-primary' : 'bg-stone-200'
+              }`}
           />
         ))}
       </div>
@@ -125,52 +125,52 @@ export function OrdersPage({ searchQuery = '' }: OrdersPageProps) {
   return (
     <div className="p-8 space-y-8 max-w-[1600px] mx-auto w-full">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center flex-wrap gap-4 w-full">
         <div>
           <h1 className="text-2xl font-bold text-primary">Orders</h1>
           <p className="text-on-surface-variant mt-1">Track and manage your buying and selling orders</p>
         </div>
-        <Button variant="primary" className="flex items-center gap-2">
-          <Icon name="add" />
-          New Order
-        </Button>
-      </div>
 
-      {/* Order Type Tabs */}
-      <div className="flex gap-2">
-        {(['all', 'buying', 'selling'] as const).map((tab) => (
-          <Button
-            key={tab}
-            variant={activeTab === tab ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab(tab)}
-            className="capitalize"
-          >
-            {tab === 'all' ? 'All Orders' : `${tab} orders`}
-          </Button>
-        ))}
-      </div>
+        {/* Toolbar */}
+        <div className="flex items-center gap-3 flex-wrap ml-auto">
+          {/* Search Bar */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline">
+            <span className="material-symbols-outlined text-sm text-on-surface-variant">search</span>
+            <input
+              className="bg-transparent border-none text-sm focus:ring-0 p-0 w-48 text-on-surface placeholder-on-surface-variant outline-none"
+              placeholder="Search orders..."
+              type="text"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+            />
+          </div>
 
-      {/* Status Filter */}
-      <div className="flex gap-2 flex-wrap">
-        <Button
-          variant={statusFilter === 'all' ? 'secondary' : 'ghost'}
-          size="sm"
-          onClick={() => setStatusFilter('all')}
-        >
-          All Status
-        </Button>
-        {(['pending', 'confirmed', 'preparing', 'shipped', 'delivered', 'cancelled'] as const).map((status) => (
-          <Button
-            key={status}
-            variant={statusFilter === status ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setStatusFilter(status)}
-            className="capitalize"
+          {/* Order Type Dropdown */}
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
+            className="px-4 py-2 rounded-full border border-outline bg-surface text-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
           >
-            {status}
-          </Button>
-        ))}
+            <option value="all">All Orders</option>
+            <option value="buying">Buying</option>
+            <option value="selling">Selling</option>
+          </select>
+
+          {/* Status Dropdown */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2 rounded-full border border-outline bg-surface text-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="preparing">Preparing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
       </div>
 
       {/* Orders List */}
@@ -195,8 +195,8 @@ export function OrdersPage({ searchQuery = '' }: OrdersPageProps) {
                         const listing = mockListings.find(l => l.product === order.product)
                         if (listing?.image) {
                           return (
-                            <img 
-                              src={listing.image} 
+                            <img
+                              src={listing.image}
                               alt={order.product}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
@@ -232,7 +232,7 @@ export function OrdersPage({ searchQuery = '' }: OrdersPageProps) {
                       <div className="flex justify-between items-center mb-3">
                         <span className="text-sm text-[#666666]">Order #{order.orderNumber}</span>
                       </div>
-                      
+
                       <div className="flex justify-between items-center py-2 border-y border-[#f0f0f0]">
                         <div>
                           <p className="text-xs text-[#666666] mb-1">Quantity</p>
@@ -394,7 +394,7 @@ export function OrdersPage({ searchQuery = '' }: OrdersPageProps) {
             No orders found
           </h3>
           <p className="text-stone-500">
-            {activeTab === 'all' 
+            {activeTab === 'all'
               ? 'No orders match your current filters.'
               : `No ${activeTab} orders found.`
             }

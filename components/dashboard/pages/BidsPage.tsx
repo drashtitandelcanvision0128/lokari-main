@@ -1,21 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Bid } from '@/types/dashboard'
 import { mockBids, mockListings } from '@/data/dashboardMock'
+import { getCurrentUser } from '@/lib/auth'
 
 interface BidsPageProps {
   searchQuery?: string
 }
 
+
+
 export function BidsPage({ searchQuery = '' }: BidsPageProps) {
-  const [bids, setBids] = useState<Bid[]>(mockBids)
+  // const [bids, setBids] = useState<Bid[]>(mockBids)
+  const [bids, setBids] = useState<Bid[]>([])
+  const [loading, setLoading] = useState(true)
   const [auctionStateTab, setAuctionStateTab] = useState<'all' | 'active' | 'won' | 'lost'>('all')
   const [positionFilter, setPositionFilter] = useState<'all' | 'leading' | 'outbid'>('all')
+  const [localSearch, setLocalSearch] = useState('')
+
 
   const getPositionBadge = (position: Bid['currentPosition']) => {
     const statusConfig = {
@@ -27,7 +34,6 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
       leading: 'Leading',
       outbid: 'Outbid'
     }
-
     const config = statusConfig[position]
 
     return (
@@ -62,61 +68,151 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
   const formatTimeLeft = (timeLeft: string) => {
     const [hours, minutes, seconds] = timeLeft.split(':').map(Number)
     const totalSeconds = hours * 3600 + minutes * 60 + seconds
-    
+
     if (totalSeconds < 3600) {
       return `${minutes}m ${seconds}s`
     }
-    
+
     return `${hours}h ${minutes}m`
+  }
+
+
+  useEffect(() => {
+    const fetchBids = async () => {
+      try {
+        const currentUser = getCurrentUser()
+
+        if (!currentUser?.id) {
+          setBids([])
+          return
+        }
+
+        const response = await fetch(
+          `http://localhost:5000/listings/bids/user/${currentUser.id}`
+        )
+
+        const result = await response.json()
+
+        if (result.success) {
+          const mappedBids = result.data.map((bid: any) => {
+            const auction = bid.auction
+            const listing = auction?.listing
+
+            const highestBid =
+              auction?.current_highest_bid ||
+              auction?.starting_bid ||
+              bid.amount
+
+            const endTime = new Date(auction?.end_time)
+            const now = new Date()
+
+            const diff = Math.max(
+              0,
+              Math.floor((endTime.getTime() - now.getTime()) / 1000)
+            )
+
+            const hours = Math.floor(diff / 3600)
+            const minutes = Math.floor((diff % 3600) / 60)
+            const seconds = diff % 60
+
+            const timeLeft =
+              `${String(hours).padStart(2, '0')}:` +
+              `${String(minutes).padStart(2, '0')}:` +
+              `${String(seconds).padStart(2, '0')}`
+
+            return {
+              id: bid.bid_id,
+              product: listing?.title || 'Unknown Listing',
+              currentBid: String(bid.amount),
+              highestBid: String(highestBid),
+              timeLeft,
+
+              auctionState:
+                bid.status === 'WON'
+                  ? 'won'
+                  : bid.status === 'LOST'
+                    ? 'lost'
+                    : 'active',
+
+              currentPosition:
+                bid.status === 'OUTBID'
+                  ? 'outbid'
+                  : 'leading',
+
+              isHighPotential:
+                bid.status === 'ACTIVE',
+
+              listingId: listing?.listing_id,
+              listingTitle: listing?.title || ''
+            }
+          })
+
+          setBids(mappedBids)
+        }
+      } catch (error) {
+        console.error('Failed to fetch bids:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBids()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <p>Loading bids...</p>
+      </div>
+    )
   }
 
   return (
     <div className="p-6 space-y-6 max-w-[1800px] mx-auto w-full">
-      {/* Header Section with Filters */}
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
-        {/* Left: Title and Description */}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-primary mb-2">My Bids</h1>
-          <p className="text-on-surface-variant">Track your bidding activity and competition</p>
+      {/* Header Section */}
+      <div className="flex items-center flex-wrap gap-4 w-full">
+        {/* Title */}
+        <div>
+          <h1 className="text-3xl font-bold text-primary mb-1">My Bids</h1>
+          <p className="text-on-surface-variant text-sm">Track your bidding activity and competition</p>
         </div>
-        
-        {/* Right: Filters and Action - Vertically Stacked */}
-        <div className="flex flex-col gap-3 items-end">
-          {/* Auction State Tabs - Top Row */}
-          <div className="flex flex-wrap gap-2 justify-end">
-            {(['all', 'active', 'won', 'lost'] as const).map((tab) => (
-              <Button
-                key={tab}
-                variant={auctionStateTab === tab ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setAuctionStateTab(tab)}
-                className={`capitalize ${auctionStateTab === tab ? 'bg-[#2eb5c2] text-white border-[#2eb5c2]' : 'text-primary border-outline'}`}
-              >
-                {tab}
-              </Button>
-            ))}
+
+        {/* Toolbar */}
+        <div className="flex items-center gap-3 flex-wrap ml-auto">
+          {/* Search Bar */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline">
+            <span className="material-symbols-outlined text-sm text-on-surface-variant">search</span>
+            <input
+              className="bg-transparent border-none text-sm focus:ring-0 p-0 w-48 text-on-surface placeholder-on-surface-variant outline-none"
+              placeholder="Search bids..."
+              type="text"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+            />
           </div>
 
-          {/* Position Filters - Bottom Row */}
-          <div className="flex flex-wrap gap-2 justify-end">
-            {(['all', 'leading', 'outbid'] as const).map((position) => (
-              <Button
-                key={position}
-                variant={positionFilter === position ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setPositionFilter(position)}
-                className="capitalize"
-              >
-                {position === 'all' ? 'All Positions' : `${position} bids`}
-              </Button>
-            ))}
-          </div>
+          {/* Auction State Dropdown */}
+          <select
+            value={auctionStateTab}
+            onChange={(e) => setAuctionStateTab(e.target.value as typeof auctionStateTab)}
+            className="px-4 py-2 rounded-full border border-outline bg-surface text-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="won">Won</option>
+            <option value="lost">Lost</option>
+          </select>
 
-          {/* Browse Listings Button */}
-          <Button variant="primary" className="flex items-center gap-2">
-            <Icon name="search" />
-            Browse Listings
-          </Button>
+          {/* Position Dropdown */}
+          <select
+            value={positionFilter}
+            onChange={(e) => setPositionFilter(e.target.value as typeof positionFilter)}
+            className="px-4 py-2 rounded-full border border-outline bg-surface text-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Positions</option>
+            <option value="leading">Leading</option>
+            <option value="outbid">Outbid</option>
+          </select>
         </div>
       </div>
 
@@ -125,15 +221,15 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold text-[#0b5d68]">High Potential Bids</h2>
           <div className="text-sm text-[#666666]">
-            {mockBids.filter(bid => {
-              const matchesSearch = searchQuery === '' || 
-                bid.product.toLowerCase().includes(searchQuery.toLowerCase())
+            {bids.filter(bid => {
+              const matchesSearch = localSearch === '' ||
+                bid.product.toLowerCase().includes(localSearch.toLowerCase())
               const matchesAuctionState = auctionStateTab === 'all' || bid.auctionState === auctionStateTab
               const matchesPosition = positionFilter === 'all' || bid.currentPosition === positionFilter
               return bid.isHighPotential && matchesSearch && matchesAuctionState && matchesPosition
-            }).length} {mockBids.filter(bid => {
-              const matchesSearch = searchQuery === '' || 
-                bid.product.toLowerCase().includes(searchQuery.toLowerCase())
+            }).length} {bids.filter(bid => {
+              const matchesSearch = localSearch === '' ||
+                bid.product.toLowerCase().includes(localSearch.toLowerCase())
               const matchesAuctionState = auctionStateTab === 'all' || bid.auctionState === auctionStateTab
               const matchesPosition = positionFilter === 'all' || bid.currentPosition === positionFilter
               return bid.isHighPotential && matchesSearch && matchesAuctionState && matchesPosition
@@ -142,9 +238,9 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {mockBids.filter(bid => {
-            const matchesSearch = searchQuery === '' || 
-              bid.product.toLowerCase().includes(searchQuery.toLowerCase())
+          {bids.filter(bid => {
+            const matchesSearch = localSearch === '' ||
+              bid.product.toLowerCase().includes(localSearch.toLowerCase())
             const matchesAuctionState = auctionStateTab === 'all' || bid.auctionState === auctionStateTab
             const matchesPosition = positionFilter === 'all' || bid.currentPosition === positionFilter
             return bid.isHighPotential && matchesSearch && matchesAuctionState && matchesPosition
@@ -156,8 +252,8 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
                   const listing = mockListings.find(l => l.id === bid.listingId)
                   if (listing?.image) {
                     return (
-                      <img 
-                        src={listing.image} 
+                      <img
+                        src={listing.image}
                         alt={bid.product}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -193,16 +289,15 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
                 <div>
                   <h3 className="font-bold text-lg text-[#0b5d68] mb-2 leading-tight">{bid.product}</h3>
                   <div className="flex justify-between items-center">
-                    <span className={`flex items-center gap-1 text-xs font-bold ${
-                      bid.timeLeft === '00:00:00' ? 'text-[#d55b39]' : 'text-[#e89151]'
-                    }`}>
+                    <span className={`flex items-center gap-1 text-xs font-bold ${bid.timeLeft === '00:00:00' ? 'text-[#d55b39]' : 'text-[#e89151]'
+                      }`}>
                       <Icon name="timer" className="text-sm" />
                       {formatTimeLeft(bid.timeLeft)}
                     </span>
                     {bid.auctionState === 'active' && getPositionBadge(bid.currentPosition)}
                   </div>
                 </div>
-                
+
                 {/* Bid Amounts */}
                 <div className="flex justify-between items-center py-3 border-y border-[#f0f0f0]">
                   <div>
@@ -242,14 +337,14 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
             {bids.filter(bid => {
               const matchesAuctionState = auctionStateTab === 'all' || bid.auctionState === auctionStateTab
               const matchesPosition = positionFilter === 'all' || bid.currentPosition === positionFilter
-              const matchesSearch = searchQuery === '' || 
-                bid.product.toLowerCase().includes(searchQuery.toLowerCase())
+              const matchesSearch = localSearch === '' ||
+                bid.product.toLowerCase().includes(localSearch.toLowerCase())
               return matchesAuctionState && matchesPosition && matchesSearch
             }).length} {bids.filter(bid => {
               const matchesAuctionState = auctionStateTab === 'all' || bid.auctionState === auctionStateTab
               const matchesPosition = positionFilter === 'all' || bid.currentPosition === positionFilter
-              const matchesSearch = searchQuery === '' || 
-                bid.product.toLowerCase().includes(searchQuery.toLowerCase())
+              const matchesSearch = localSearch === '' ||
+                bid.product.toLowerCase().includes(localSearch.toLowerCase())
               return matchesAuctionState && matchesPosition && matchesSearch
             }).length === 1 ? 'bid' : 'bids'} found
           </div>
@@ -259,8 +354,8 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
           {bids.filter(bid => {
             const matchesAuctionState = auctionStateTab === 'all' || bid.auctionState === auctionStateTab
             const matchesPosition = positionFilter === 'all' || bid.currentPosition === positionFilter
-            const matchesSearch = searchQuery === '' || 
-              bid.product.toLowerCase().includes(searchQuery.toLowerCase())
+            const matchesSearch = localSearch === '' ||
+              bid.product.toLowerCase().includes(localSearch.toLowerCase())
             return matchesAuctionState && matchesPosition && matchesSearch
           }).map((bid) => (
             <div key={bid.id} className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-[#f0f0f0]">
@@ -270,8 +365,8 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
                   const listing = mockListings.find(l => l.id === bid.listingId)
                   if (listing?.image) {
                     return (
-                      <img 
-                        src={listing.image} 
+                      <img
+                        src={listing.image}
                         alt={bid.product}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -307,16 +402,15 @@ export function BidsPage({ searchQuery = '' }: BidsPageProps) {
                 <div>
                   <h3 className="font-bold text-lg text-[#0b5d68] mb-2 leading-tight">{bid.product}</h3>
                   <div className="flex justify-between items-center">
-                    <span className={`flex items-center gap-1 text-xs font-bold ${
-                      bid.timeLeft === '00:00:00' ? 'text-[#d55b39]' : 'text-[#e89151]'
-                    }`}>
+                    <span className={`flex items-center gap-1 text-xs font-bold ${bid.timeLeft === '00:00:00' ? 'text-[#d55b39]' : 'text-[#e89151]'
+                      }`}>
                       <Icon name="timer" className="text-sm" />
                       {formatTimeLeft(bid.timeLeft)}
                     </span>
                     {bid.auctionState === 'active' && getPositionBadge(bid.currentPosition)}
                   </div>
                 </div>
-                
+
                 {/* Bid Amounts */}
                 <div className="flex justify-between items-center py-3 border-y border-[#f0f0f0]">
                   <div>

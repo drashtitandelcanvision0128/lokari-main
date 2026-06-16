@@ -1,6 +1,13 @@
+'use client'
+
 import Link from 'next/link'
+import { useGuestGuard } from '@/lib/authGuard'
 
 export default function ChooseRolePage() {
+  const canRender = useGuestGuard()
+
+  if (!canRender) return null
+
   const roles = [
     {
       id: 'farmer',

@@ -1,46 +1,50 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { registrationService } from '@/lib/registration'
-import { buildProfileFromUser } from '@/lib/auth/session'
-import { useAppDispatch } from '@/lib/store/hooks'
-import { setUser, setProfile } from '@/lib/store/slices/authSlice'
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { registrationService } from '@/lib/registration';
+import { buildProfileFromUser } from '@/lib/auth/session';
+import { useAppDispatch } from '@/lib/store/hooks';
+import { setUser, setProfile } from '@/lib/store/slices/authSlice';
+import { useGuestGuard } from '@/lib/authGuard';
 
 export default function LoginPage() {
-  const router = useRouter()
-  const dispatch = useAppDispatch()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const canRender = useGuestGuard();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (!canRender) return null;
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setIsLoading(true)
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
 
     try {
-      const user = await registrationService.authenticateUser(email, password)
+      const user = await registrationService.authenticateUser(email, password);
 
       if (!user) {
-        setError('Invalid email or password')
-        return
+        setError('Invalid email or password');
+        return;
       }
 
-      const profile = buildProfileFromUser(user)
-      dispatch(setUser(user))
-      dispatch(setProfile(profile))
+      const profile = buildProfileFromUser(user);
+      dispatch(setUser(user));
+      dispatch(setProfile(profile));
 
-      router.push(registrationService.getDashboardUrl(user.role))
+      router.push(registrationService.getDashboardUrl(user.role));
     } catch (err) {
-      console.error('Login error:', err)
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
+      console.error('Login error:', err);
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#f9f9f7] flex">
@@ -54,7 +58,8 @@ export default function LoginPage() {
             </div>
             <h1 className="text-4xl font-bold mb-4">Lokhari</h1>
             <p className="text-xl text-white/90 leading-relaxed">
-              Connecting farmers, traders, and logistics providers in a transparent agricultural marketplace
+              Connecting farmers, traders, and logistics providers in a transparent agricultural
+              marketplace
             </p>
           </div>
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -152,19 +157,34 @@ export default function LoginPage() {
                 </span>
               )}
             </button>
+
+            <div className="text-center -mt-2">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-[#2eb5c2] hover:text-[#0b5d68] font-medium transition-colors"
+              >
+                Forgot Password?
+              </Link>
+            </div>
           </form>
 
           <div className="text-center mt-8">
             <p className="text-sm text-gray-600">
               Don&apos;t have an account?{' '}
-              <Link href="/register" className="text-[#2eb5c2] font-semibold hover:text-[#0b5d68] transition-colors">
+              <Link
+                href="/register"
+                className="text-[#2eb5c2] font-semibold hover:text-[#0b5d68] transition-colors"
+              >
                 Choose your role to get started
               </Link>
             </p>
           </div>
 
           <div className="text-center mt-4">
-            <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 transition-colors flex items-center justify-center gap-1">
+            <Link
+              href="/"
+              className="text-sm text-gray-500 hover:text-gray-700 transition-colors flex items-center justify-center gap-1"
+            >
               <span className="material-symbols-outlined text-sm">home</span>
               Back to home
             </Link>
@@ -172,5 +192,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

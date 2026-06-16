@@ -49,7 +49,7 @@ export function AdminSidebar({ activeTab, onTabChange, adminTabs, isCollapsed, o
   }
 
   return (
-    <aside 
+    <aside
       className={`
         bg-surface-container border-r border-outline flex flex-col
         transition-all duration-300 ease-in-out
@@ -59,7 +59,7 @@ export function AdminSidebar({ activeTab, onTabChange, adminTabs, isCollapsed, o
       {/* Admin Header */}
       <div className={`border-b border-outline transition-all duration-300 ease-in-out ${isCollapsed ? 'p-3' : 'p-4'}`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-          <button 
+          <button
             onClick={onToggleCollapse}
             className="w-10 h-10 bg-error rounded-lg flex items-center justify-center hover:bg-error/90 transition-colors cursor-pointer group flex-shrink-0"
           >
@@ -97,24 +97,22 @@ export function AdminSidebar({ activeTab, onTabChange, adminTabs, isCollapsed, o
               title={isCollapsed ? getTabLabel(tab) : undefined}
             >
               <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                <span className={`material-symbols-outlined ${
-                  isActive ? 'text-on-primary-container' : 'text-on-surface-variant group-hover:text-on-surface'
-                }`}>
+                <span className={`material-symbols-outlined ${isActive ? 'text-on-primary-container' : 'text-on-surface-variant group-hover:text-on-surface'
+                  }`}>
                   {getTabIcon(tab)}
                 </span>
-                <span className={`font-medium transition-all duration-300 ease-in-out overflow-hidden ${
-                  isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
-                }`}>
+                <span className={`font-medium transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                  }`}>
                   {getTabLabel(tab)}
                 </span>
               </div>
-              
+
               {!isCollapsed && badge !== null && badge > 0 && (
-                <span className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ease-in-out ${
-                  isActive
+                <span className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ease-in-out ${isActive
                     ? 'bg-on-primary-container text-primary-container'
-                    : 'bg-error text-on-error'
-                }`}>
+                    // : 'bg-error text-on-error'
+                    : 'bg-error text-white'
+                  }`}>
                   {badge}
                 </span>
               )}
@@ -128,9 +126,8 @@ export function AdminSidebar({ activeTab, onTabChange, adminTabs, isCollapsed, o
         <div className="bg-surface-container-high rounded-lg transition-all duration-300 ease-in-out">
           <div className={`flex items-center gap-2 ${isCollapsed ? 'p-2 justify-center' : 'p-3'}`}>
             <span className="material-symbols-outlined text-sm text-tertiary">security</span>
-            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-              isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
-            }`}>
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+              }`}>
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-medium text-tertiary">Security Status</span>
                 <div className="flex items-center gap-2">

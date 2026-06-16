@@ -180,4 +180,43 @@ const logout = async (req, res) => {
   }
 };
 
-export { register, login, logout };
+// Change Password
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Please provide current and new password." });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: "New password must be at least 8 characters." });
+    }
+
+    const user = await prisma.user.findUnique({ where: { user_id: userId } });
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Current password is incorrect." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await prisma.user.update({
+      where: { user_id: userId },
+      data: { password: hashedPassword },
+    });
+
+    res.status(200).json({ status: "success", message: "Password updated successfully." });
+  } catch (error) {
+    console.error("Change password error:", error);
+    res.status(500).json({ error: "Server error while changing password." });
+  }
+};
+
+export { register, login, logout, changePassword };

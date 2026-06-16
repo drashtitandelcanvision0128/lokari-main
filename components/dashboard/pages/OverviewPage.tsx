@@ -14,7 +14,7 @@ interface OverviewPageProps {
 export function OverviewPage({ searchQuery = '' }: OverviewPageProps) {
   // Filter notifications based on search query
   const filteredNotifications = useDashboardSearch(mockNotifications, searchQuery)
-  
+
   const stats = [
     {
       title: 'Active Listings',
@@ -198,20 +198,18 @@ export function OverviewPage({ searchQuery = '' }: OverviewPageProps) {
               {mockBids.filter(bid => bid.isHighPotential).map((bid) => (
                 <div
                   key={bid.id}
-                  className={`bg-surface-container rounded-xl p-4 border-l-4 ${
-                    bid.currentPosition === 'leading' ? 'border-accent' : 'border-orange'
-                  }`}
+                  className={`bg-surface-container rounded-xl p-4 border-l-4 ${bid.currentPosition === 'leading' ? 'border-accent' : 'border-orange'
+                    }`}
                 >
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-bold text-on-surface-variant uppercase tracking-tighter">
                       {bid.product}
                     </p>
-                    <span className={`flex items-center gap-1 text-xs font-bold ${
-                        bid.timeLeft === '00:00:00' ? 'text-[#d55b39]' : 'text-[#e89151]'
+                    <span className={`flex items-center gap-1 text-xs font-bold ${bid.timeLeft === '00:00:00' ? 'text-[#d55b39]' : 'text-[#e89151]'
                       }`}>
-                        <Icon name="timer" className="text-sm" />
-                        {bid.timeLeft}
-                      </span>
+                      <Icon name="timer" className="text-sm" />
+                      {bid.timeLeft}
+                    </span>
                   </div>
                   <div className="flex justify-between items-end">
                     <div>

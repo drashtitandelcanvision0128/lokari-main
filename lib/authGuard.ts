@@ -1,7 +1,31 @@
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { getCurrentUser, getUserRole } from './auth'
+import { useEffect, useState } from 'react'
+import { getCurrentUser } from './auth'
 import { registrationService } from './registration'
+import { useAppSelector } from '@/lib/store/hooks'
+import { selectAuthHydrated, selectCurrentUser } from '@/lib/store/slices/authSlice'
+
+/** Redirect authenticated users away from guest-only routes (login, register). */
+export function useGuestGuard(): boolean {
+  const router = useRouter()
+  const isHydrated = useAppSelector(selectAuthHydrated)
+  const currentUser = useAppSelector(selectCurrentUser)
+  const [canRender, setCanRender] = useState(false)
+
+  useEffect(() => {
+    if (!isHydrated) return
+
+    if (currentUser) {
+      router.replace(registrationService.getDashboardUrl(currentUser.role))
+      setCanRender(false)
+      return
+    }
+
+    setCanRender(true)
+  }, [isHydrated, currentUser, router])
+
+  return canRender
+}
 
 export function useRoleGuard(requiredRole: string) {
   const router = useRouter()

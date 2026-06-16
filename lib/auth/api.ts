@@ -25,20 +25,32 @@ interface AuthApiResponse {
 export async function loginWithCredentials(
   credentials: LoginCredentials,
 ): Promise<AuthPayload> {
-  const response = await fetch(apiUrl('/auth/login'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: credentials.email.trim(),
-      password: credentials.password,
-    }),
-  })
+  let response: Response
+  try {
+    response = await fetch(apiUrl('/auth/login'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: credentials.email.trim(),
+        password: credentials.password,
+      }),
+    })
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        `Cannot reach API at ${apiUrl('/auth/login')}. Start backend: cd backend && npm run dev`,
+      )
+    }
+    throw error
+  }
 
   let body: AuthApiResponse = {}
   try {
     body = await response.json()
   } catch {
-    throw new Error('Invalid response from server')
+    throw new Error(
+      `Cannot reach API at ${apiUrl('/auth/login')}. Is the backend running?`,
+    )
   }
 
   if (!response.ok) {

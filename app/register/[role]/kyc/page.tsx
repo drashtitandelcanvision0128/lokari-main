@@ -7,6 +7,7 @@ import Input from '@/components/common/Input';
 import { registrationService, type KYCData } from '@/lib/registration';
 import ProgressIndicator from '@/components/common/ProgressIndicator';
 import TransitionWrapper from '@/components/common/TransitionWrapper';
+import { useGuestGuard } from '@/lib/authGuard';
 
 interface LocalKYCData {
   aadhaarNumber: string;
@@ -46,6 +47,7 @@ export default function KYCPage() {
   const router = useRouter();
   const params = useParams();
   const role = params.role as string;
+  const canRender = useGuestGuard();
 
   const [kycData, setKycData] = useState<LocalKYCData>({
     aadhaarNumber: '',
@@ -277,7 +279,7 @@ export default function KYCPage() {
     }
   };
 
-  if (!config) {
+  if (!config || !canRender) {
     return null;
   }
 

@@ -1,53 +1,58 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect } from 'react'
-import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
-import { Icon } from '@/components/ui/Icon'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Listing } from '@/types/dashboard'
+import { useState, useRef, useEffect } from 'react';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Icon } from '@/components/ui/Icon';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Listing } from '@/types/dashboard';
 // import { mockListings } from '@/data/dashboardMock'
-import { apiUrl, authHeaders } from '@/lib/api'
-import { getCurrentUser } from '@/lib/auth'
+import { apiUrl, authHeaders } from '@/lib/api';
+import { getCurrentUser } from '@/lib/auth';
 
 interface ListingsPageProps {
-  searchQuery?: string
+  searchQuery?: string;
 }
 
 export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   // const [listings, setListings] = useState<Listing[]>(mockListings)
-  const [listings, setListings] = useState<Listing[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | 'live' | 'reviewing' | 'paused' | 'sold' | 'expired'>('all')
-  const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(null)
-  const statusDropdownRef = useRef<HTMLDivElement | null>(null)
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<
+    'all' | 'live' | 'reviewing' | 'paused' | 'sold' | 'expired'
+  >('all');
+  const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(null);
+  const statusDropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const [localSearch, setLocalSearch] = useState(''); // local state for search
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target as Node)) {
-        setOpenStatusDropdown(null)
+        setOpenStatusDropdown(null);
       }
     }
     if (openStatusDropdown) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleClickOutside);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [openStatusDropdown])
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openStatusDropdown]);
 
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const currentUser = getCurrentUser()
+        const currentUser = getCurrentUser();
 
         if (!currentUser?.id) {
-          setListings([])
-          return
+          setListings([]);
+          return;
         }
 
-        const response = await fetch(apiUrl('/listings'))
-        const result = await response.json()
-        console.log(result.data[0])
+        const response = await fetch(apiUrl('/listings'));
+        const result = await response.json();
+        // console.log(result.data[0])
+        console.log('Full result:', result);
 
         if (result.success) {
           const userListings = result.data
@@ -79,43 +84,54 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
               price: `₹${item.price}`,
               image: '',
               createdAt: item.created_at,
-            }))
+            }));
 
-          setListings(userListings)
+          setListings(userListings);
         }
       } catch (error) {
-        console.error('Failed to fetch listings:', error)
+        console.error('Failed to fetch listings:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchListings()
-  }, [])
+    fetchListings();
+  }, []);
 
   const handleStatusChange = (listingId: string, newStatus: 'live' | 'paused') => {
-    setListings(prev =>
-      prev.map(l => l.id === listingId ? { ...l, status: newStatus } : l)
-    )
-    setOpenStatusDropdown(null)
-  }
-  const [listingTypeFilter, setListingTypeFilter] = useState<'all' | 'produce' | 'warehouse' | 'transport'>('all')
+    setListings((prev) => prev.map((l) => (l.id === listingId ? { ...l, status: newStatus } : l)));
+    setOpenStatusDropdown(null);
+  };
+  const [listingTypeFilter, setListingTypeFilter] = useState<
+    'all' | 'produce' | 'warehouse' | 'transport'
+  >('all');
 
   if (loading) {
     return (
       <div className="p-6">
         <p>Loading listings...</p>
       </div>
-    )
+    );
   }
-  const filteredListings = listings.filter(listing => {
-    const matchesFilter = filter === 'all' || listing.status === filter
-    const matchesTypeFilter = listingTypeFilter === 'all' || listing.listingType === listingTypeFilter
-    const matchesSearch = searchQuery === '' ||
-      listing.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      listing.description.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesFilter && matchesTypeFilter && matchesSearch
-  })
+  // const filteredListings = listings.filter(listing => {
+  //   const matchesFilter = filter === 'all' || listing.status === filter
+  //   const matchesTypeFilter = listingTypeFilter === 'all' || listing.listingType === listingTypeFilter
+  //   const matchesSearch = searchQuery === '' ||
+  //     listing.product.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     listing.description.toLowerCase().includes(searchQuery.toLowerCase())
+  //   return matchesFilter && matchesTypeFilter && matchesSearch
+  // })
+
+  const filteredListings = listings.filter((listing) => {
+    const matchesFilter = filter === 'all' || listing.status === filter;
+    const matchesTypeFilter =
+      listingTypeFilter === 'all' || listing.listingType === listingTypeFilter;
+    const matchesSearch =
+      localSearch === '' ||
+      listing.product.toLowerCase().includes(localSearch.toLowerCase()) ||
+      listing.description.toLowerCase().includes(localSearch.toLowerCase());
+    return matchesFilter && matchesTypeFilter && matchesSearch;
+  });
 
   const getStatusBadge = (status: Listing['status']) => {
     const statusConfig = {
@@ -123,17 +139,19 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       reviewing: { color: 'text-[#e89151]', bg: 'bg-[#fef9f5]', border: 'border-[#e89151]/20' },
       paused: { color: 'text-[#d55b39]', bg: 'bg-[#fef5f3]', border: 'border-[#d55b39]/20' },
       sold: { color: 'text-[#0b5d68]', bg: 'bg-[#f5f9f9]', border: 'border-[#0b5d68]/20' },
-      expired: { color: 'text-[#666666]', bg: 'bg-[#f8f8f8]', border: 'border-[#666666]/20' }
-    } as const
+      expired: { color: 'text-[#666666]', bg: 'bg-[#f8f8f8]', border: 'border-[#666666]/20' },
+    } as const;
 
-    const config = statusConfig[status]
+    const config = statusConfig[status];
 
     return (
-      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.color} ${config.bg} ${config.border} border backdrop-blur-sm`}>
+      <span
+        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.color} ${config.bg} ${config.border} border backdrop-blur-sm`}
+      >
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
-    )
-  }
+    );
+  };
 
   // Connecting delete action to UI
   const handleDelete = async (listingId: string) => {
@@ -141,70 +159,61 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       const response = await fetch(apiUrl(`/listings/${listingId}`), {
         method: 'DELETE',
         headers: authHeaders(),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success) {
-        setListings(prev =>
-          prev.filter(listing => listing.id !== listingId)
-        )
+        setListings((prev) => prev.filter((listing) => listing.id !== listingId));
       }
     } catch (error) {
-      console.error("Delete failed:", error)
+      console.error('Delete failed:', error);
     }
-  }
+  };
 
   return (
     <div className="p-6 space-y-6 max-w-[1800px] mx-auto w-full">
-      {/* Header Section with Filters */}
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
-        {/* Left: Title and Description */}
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-primary mb-2">My Listings</h1>
-          <p className="text-on-surface-variant">Manage your product listings and track bids</p>
+      {/* Header Section */}
+      <div className="flex items-center flex-wrap gap-4 w-full">
+        {/* Title */}
+        <div>
+          <h1 className="text-3xl font-bold text-primary mb-1">My Listings</h1>
+          <p className="text-on-surface-variant text-sm">
+            Manage your product listings and track bids
+          </p>
         </div>
 
-        {/* Right: Filters and Action - Vertically Stacked */}
-        <div className="flex flex-col gap-3 items-end">
-          {/* Status Filters - Top Row */}
-          <div className="flex flex-wrap gap-2 justify-end">
-            {(['all', 'live', 'reviewing', 'paused', 'sold', 'expired'] as const).map((status) => (
-              <Button
-                key={status}
-                variant={filter === status ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilter(status)}
-                className={`capitalize ${filter === status ? 'bg-[#2eb5c2] text-white border-[#2eb5c2]' : 'text-primary border-outline'}`}
-              >
-                {status}
-              </Button>
-            ))}
+        {/* Toolbar */}
+        <div className="flex items-center gap-3 flex-wrap ml-auto">
+          {/* Search Bar */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline">
+            <span className="material-symbols-outlined text-sm text-on-surface-variant">
+              search
+            </span>
+            <input
+              className="bg-transparent border-none text-sm focus:ring-0 p-0 w-48 text-on-surface placeholder-on-surface-variant outline-none"
+              placeholder="Search listings..."
+              type="text"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
+            />
           </div>
 
-          {/* Listing Type Sub-filter - Bottom Row */}
-          <div className="flex flex-wrap gap-2 justify-end">
-            {(['all', 'produce', 'warehouse', 'transport'] as const).map((type) => (
-              <Button
-                key={type}
-                variant={listingTypeFilter === type ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setListingTypeFilter(type)}
-                className="capitalize"
-              >
-                {type === 'all' ? 'All Listings' : `${type} listings`}
-              </Button>
-            ))}
-          </div>
-
-          {/* Post New Listing Button */}
-          <Button variant="primary" className="flex items-center gap-2">
-            <Icon name="add" />
-            Post New Listing
-          </Button>
+          {/* Status Dropdown */}
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as typeof filter)}
+            className="px-4 py-2 rounded-full border border-outline bg-surface text-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="all">All Status</option>
+            <option value="live">Live</option>
+            <option value="reviewing">Reviewing</option>
+            <option value="paused">Paused</option>
+            <option value="sold">Sold</option>
+            <option value="expired">Expired</option>
+          </select>
         </div>
       </div>
-
       {/* Product Cards Grid */}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -218,8 +227,9 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           {filteredListings.map((listing) => (
             <div
               key={listing.id}
-              className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-[#f0f0f0] ${listing.status === 'paused' ? 'opacity-70 grayscale-[0.3] bg-[#fcfcfc]' : ''
-                }`}
+              className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-[#f0f0f0] ${
+                listing.status === 'paused' ? 'opacity-70 grayscale-[0.3] bg-[#fcfcfc]' : ''
+              }`}
             >
               {/* Product Image */}
               <div className="h-56 relative bg-gradient-to-br from-[#f9f9f7] to-[#f5f5f3]">
@@ -238,9 +248,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                   </div>
                 )}
                 {/* Status Badge */}
-                <div className="absolute top-4 right-4">
-                  {getStatusBadge(listing.status)}
-                </div>
+                <div className="absolute top-4 right-4">{getStatusBadge(listing.status)}</div>
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
@@ -249,7 +257,9 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
               <div className="p-6 space-y-4">
                 {/* Product Name and Description */}
                 <div>
-                  <h3 className="font-bold text-lg text-[#0b5d68] mb-2 leading-tight">{listing.product}</h3>
+                  <h3 className="font-bold text-lg text-[#0b5d68] mb-2 leading-tight">
+                    {listing.product}
+                  </h3>
                   <p className="text-sm text-[#666666] leading-relaxed">{listing.description}</p>
                 </div>
 
@@ -285,19 +295,27 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
                 {/* Action Buttons */}
                 <div className="grid grid-cols-4 gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors"
+                  >
                     <Icon name="edit" />
                   </Button>
 
                   {/* Eye / Status Toggle Button */}
-                  <div className="relative" ref={openStatusDropdown === listing.id ? statusDropdownRef : undefined}>
+                  <div
+                    className="relative"
+                    ref={openStatusDropdown === listing.id ? statusDropdownRef : undefined}
+                  >
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`w-full hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''
-                        }`}
+                      className={`w-full hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${
+                        openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''
+                      }`}
                       onClick={() =>
-                        setOpenStatusDropdown(prev => prev === listing.id ? null : listing.id)
+                        setOpenStatusDropdown((prev) => (prev === listing.id ? null : listing.id))
                       }
                       title="Change status"
                     >
@@ -313,13 +331,17 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                         <div className="p-1.5 space-y-0.5">
                           <button
                             onClick={() => handleStatusChange(listing.id, 'live')}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${listing.status === 'live'
-                              ? 'bg-[#2eb5c2]/10 text-[#2eb5c2]'
-                              : 'text-[#0b5d68] hover:bg-[#f5fafa] hover:text-[#2eb5c2]'
-                              }`}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                              listing.status === 'live'
+                                ? 'bg-[#2eb5c2]/10 text-[#2eb5c2]'
+                                : 'text-[#0b5d68] hover:bg-[#f5fafa] hover:text-[#2eb5c2]'
+                            }`}
                           >
-                            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#cccccc]'
-                              }`} />
+                            <span
+                              className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
+                                listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#cccccc]'
+                              }`}
+                            />
                             Active
                             {listing.status === 'live' && (
                               <Icon name="check" className="ml-auto text-[#2eb5c2] text-base" />
@@ -328,13 +350,17 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
                           <button
                             onClick={() => handleStatusChange(listing.id, 'paused')}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${listing.status === 'paused'
-                              ? 'bg-[#d55b39]/10 text-[#d55b39]'
-                              : 'text-[#0b5d68] hover:bg-[#fef5f3] hover:text-[#d55b39]'
-                              }`}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                              listing.status === 'paused'
+                                ? 'bg-[#d55b39]/10 text-[#d55b39]'
+                                : 'text-[#0b5d68] hover:bg-[#fef5f3] hover:text-[#d55b39]'
+                            }`}
                           >
-                            <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'paused' ? 'bg-[#d55b39]' : 'bg-[#cccccc]'
-                              }`} />
+                            <span
+                              className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
+                                listing.status === 'paused' ? 'bg-[#d55b39]' : 'bg-[#cccccc]'
+                              }`}
+                            />
                             Inactive
                             {listing.status === 'paused' && (
                               <Icon name="check" className="ml-auto text-[#d55b39] text-base" />
@@ -360,5 +386,5 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
