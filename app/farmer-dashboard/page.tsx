@@ -13,6 +13,7 @@ import { TabType } from '@/types/dashboard'
 import { getCurrentUser, getUserDisplayName } from '@/lib/auth'
 import { type User } from '@/lib/registration'
 import { useRoleGuard } from '@/lib/authGuard'
+import { SettingsProvider } from '@/backend/src/context/SettingsContext'
 
 // Tab component mapping for Farmer
 const FARMER_TAB_COMPONENTS = {
@@ -53,13 +54,13 @@ function FarmerDashboardContent() {
   // Set dashboard tabs from farmer config
   useEffect(() => {
     setDashboardTabs(farmerDashboardConfig.tabs)
-    
+
     // Set default active tab to first available one (only if no tab parameter)
     if (!searchParams.get('tab')) {
       const availableTabs = Object.entries(farmerDashboardConfig.tabs)
         .filter(([_, isVisible]) => isVisible)
         .map(([tab]) => tab as TabType)
-      
+
       if (availableTabs.length > 0) {
         setActiveTab(availableTabs[0])
       }
@@ -70,17 +71,19 @@ function FarmerDashboardContent() {
   const ActiveComponent = FARMER_TAB_COMPONENTS[activeTab as keyof typeof FARMER_TAB_COMPONENTS]
 
   return (
-    <DashboardLayout
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      dashboardTabs={dashboardTabs}
-      userName={userName}
-      userAvatar={currentUser?.avatar || farmerDashboardConfig.user.avatar}
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
-    >
-      <ActiveComponent searchQuery={searchQuery} />
-    </DashboardLayout>
+    <SettingsProvider>
+      <DashboardLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        dashboardTabs={dashboardTabs}
+        userName={userName}
+        userAvatar={currentUser?.avatar || farmerDashboardConfig.user.avatar}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      >
+        <ActiveComponent searchQuery={searchQuery} />
+      </DashboardLayout>
+    </SettingsProvider>
   )
 }
 

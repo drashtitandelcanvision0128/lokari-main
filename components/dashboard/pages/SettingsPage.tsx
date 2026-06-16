@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/Icon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { getCurrentUser, changePassword } from '@/lib/auth'
 import { useDashboardSearch } from '@/hooks/useSearchFilter'
+import { useSettings } from '@/backend/src/context/SettingsContext'
 
 interface Address {
   id: string
@@ -44,7 +45,8 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
-  const [activeSection, setActiveSection] = useState<'profile' | 'kyc' | 'addresses' | 'notifications' | 'security'>('profile')
+  // const [activeSection, setActiveSection] = useState<'profile' | 'kyc' | 'addresses' | 'notifications' | 'security'>('profile')
+  const { activeSection } = useSettings()
   const [addresses] = useState<Address[]>(mockAddresses)
 
   // Filter addresses based on search query using the new search hook
@@ -191,9 +193,10 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-4 gap-8"> */}
+      <div>
         {/* Sidebar */}
-        <div className="lg:col-span-1">
+        {/* <div className="lg:col-span-1">
           <nav className="space-y-2">
             {[
               { id: 'profile', label: 'Profile', icon: 'person' },
@@ -215,10 +218,11 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
               </button>
             ))}
           </nav>
-        </div>
+        </div> */}
 
         {/* Content */}
-        <div className="lg:col-span-3">
+        {/* <div className="lg:col-span-3"> */}
+        <div>
           {/* Profile Section */}
           {activeSection === 'profile' && (
             <Card>

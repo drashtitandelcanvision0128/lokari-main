@@ -13,6 +13,7 @@ import { TabType } from '@/types/dashboard'
 import { getCurrentUser, getUserDisplayName } from '@/lib/auth'
 import { type User } from '@/lib/registration'
 import { useRoleGuard } from '@/lib/authGuard'
+import { SettingsProvider } from '@/backend/src/context/SettingsContext'
 
 // Tab component mapping for Transporter
 const TRANSPORTER_TAB_COMPONENTS = {
@@ -53,13 +54,13 @@ function TransporterDashboardContent() {
   // Set dashboard tabs from transporter config
   useEffect(() => {
     setDashboardTabs(transporterDashboardConfig.tabs)
-    
+
     // Set default active tab to first available one (only if no tab parameter)
     if (!searchParams.get('tab')) {
       const availableTabs = Object.entries(transporterDashboardConfig.tabs)
         .filter(([_, isVisible]) => isVisible)
         .map(([tab]) => tab as TabType)
-      
+
       if (availableTabs.length > 0) {
         setActiveTab(availableTabs[0])
       }
@@ -70,18 +71,20 @@ function TransporterDashboardContent() {
   const ActiveComponent = TRANSPORTER_TAB_COMPONENTS[activeTab as keyof typeof TRANSPORTER_TAB_COMPONENTS]
 
   return (
-    <DashboardLayout
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      dashboardTabs={transporterDashboardConfig.tabs}
-      userName={userName}
-      userAvatar={currentUser?.avatar}
-      role="transporter"
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
-    >
-      <ActiveComponent searchQuery={searchQuery} />
-    </DashboardLayout>
+    <SettingsProvider>
+      <DashboardLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        dashboardTabs={transporterDashboardConfig.tabs}
+        userName={userName}
+        userAvatar={currentUser?.avatar}
+        role="transporter"
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      >
+        <ActiveComponent searchQuery={searchQuery} />
+      </DashboardLayout>
+    </SettingsProvider>
   )
 }
 

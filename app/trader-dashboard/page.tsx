@@ -13,6 +13,7 @@ import { TabType } from '@/types/dashboard'
 import { getCurrentUser, getUserDisplayName } from '@/lib/auth'
 import { type User } from '@/lib/registration'
 import { useRoleGuard } from '@/lib/authGuard'
+import { SettingsProvider } from '@/backend/src/context/SettingsContext'
 
 // Tab component mapping for Trader
 const TRADER_TAB_COMPONENTS = {
@@ -53,13 +54,13 @@ function TraderDashboardContent() {
   // Set dashboard tabs from trader config
   useEffect(() => {
     setDashboardTabs(traderDashboardConfig.tabs)
-    
+
     // Set default active tab to first available one (only if no tab parameter)
     if (!searchParams.get('tab')) {
       const availableTabs = Object.entries(traderDashboardConfig.tabs)
         .filter(([_, isVisible]) => isVisible)
         .map(([tab]) => tab as TabType)
-      
+
       if (availableTabs.length > 0) {
         setActiveTab(availableTabs[0])
       }
@@ -68,21 +69,23 @@ function TraderDashboardContent() {
 
   // Get active component based on current tab
   return (
-    <DashboardLayout
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      dashboardTabs={traderDashboardConfig.tabs}
-      userName={userName}
-      userAvatar={currentUser?.avatar}
-      role="trader"
-    >
-      {/* Tab Content */}
-      {activeTab === 'overview' && <OverviewPage />}
-      {activeTab === 'bids' && <BidsPage />}
-      {activeTab === 'orders' && <OrdersPage />}
-      {activeTab === 'transactions' && <TransactionsPage />}
-      {activeTab === 'settings' && <SettingsPage />}
-    </DashboardLayout>
+    <SettingsProvider>
+      <DashboardLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        dashboardTabs={traderDashboardConfig.tabs}
+        userName={userName}
+        userAvatar={currentUser?.avatar}
+        role="trader"
+      >
+        {/* Tab Content */}
+        {activeTab === 'overview' && <OverviewPage />}
+        {activeTab === 'bids' && <BidsPage />}
+        {activeTab === 'orders' && <OrdersPage />}
+        {activeTab === 'transactions' && <TransactionsPage />}
+        {activeTab === 'settings' && <SettingsPage />}
+      </DashboardLayout>
+    </SettingsProvider>
   )
 }
 

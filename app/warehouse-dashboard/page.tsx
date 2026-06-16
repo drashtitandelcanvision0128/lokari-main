@@ -13,6 +13,7 @@ import { TabType } from '@/types/dashboard'
 import { getCurrentUser, getUserDisplayName } from '@/lib/auth'
 import { type User } from '@/lib/registration'
 import { useRoleGuard } from '@/lib/authGuard'
+import { SettingsProvider } from '@/backend/src/context/SettingsContext'
 
 // Tab component mapping for Warehouse Owner
 const WAREHOUSE_TAB_COMPONENTS = {
@@ -53,13 +54,13 @@ function WarehouseDashboardContent() {
   // Set dashboard tabs from warehouse config
   useEffect(() => {
     setDashboardTabs(warehouseDashboardConfig.tabs)
-    
+
     // Set default active tab to first available one (only if no tab parameter)
     if (!searchParams.get('tab')) {
       const availableTabs = Object.entries(warehouseDashboardConfig.tabs)
         .filter(([_, isVisible]) => isVisible)
         .map(([tab]) => tab as TabType)
-      
+
       if (availableTabs.length > 0) {
         setActiveTab(availableTabs[0])
       }
@@ -70,18 +71,20 @@ function WarehouseDashboardContent() {
   const ActiveComponent = WAREHOUSE_TAB_COMPONENTS[activeTab as keyof typeof WAREHOUSE_TAB_COMPONENTS]
 
   return (
-    <DashboardLayout
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      dashboardTabs={warehouseDashboardConfig.tabs}
-      userName={userName}
-      userAvatar={currentUser?.avatar}
-      role="warehouse"
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
-    >
-      <ActiveComponent searchQuery={searchQuery} />
-    </DashboardLayout>
+    <SettingsProvider>
+      <DashboardLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        dashboardTabs={warehouseDashboardConfig.tabs}
+        userName={userName}
+        userAvatar={currentUser?.avatar}
+        role="warehouse"
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      >
+        <ActiveComponent searchQuery={searchQuery} />
+      </DashboardLayout>
+    </SettingsProvider>
   )
 }
 

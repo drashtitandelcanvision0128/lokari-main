@@ -183,7 +183,8 @@ const logout = async (req, res) => {
 // Change Password
 const changePassword = async (req, res) => {
   try {
-    const userId = req.user.id;
+    // const userId = req.user.id;
+    const userId = req.user.user_id;
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {

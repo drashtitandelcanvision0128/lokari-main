@@ -29,6 +29,7 @@ export async function loginWithCredentials(
   try {
     response = await fetch(apiUrl('/auth/login'), {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: credentials.email.trim(),
