@@ -55,6 +55,7 @@ export type AdminListing = {
     id: string
     name: string
     email: string
+    location: string
   }
   price: number
   unit: string

@@ -281,6 +281,10 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
             <span className="text-on-surface-variant">Email</span>
             <span className="text-on-surface">{listing.seller.email}</span>
           </div>
+          {/* <div className="flex justify-between">
+            <span className="text-on-surface-variant">Location</span>
+            <span className="text-on-surface">{listing.seller.location || 'N/A'}</span>
+          </div> */}
         </div>
       </div>
 
@@ -516,10 +520,10 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
     switch (type) {
       case 'user':
         const user = data as AdminUser
-        specificActions = user.status === 'active' 
+        specificActions = user.status === 'active'
           ? [{ label: 'Ban', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_ban' }]
           : [{ label: 'Unban', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_ban' }]
-        
+
         // Add verification button
         if (user.verificationStatus === 'verified') {
           specificActions.push({ label: 'Unverify', color: 'bg-[#e89151] hover:bg-[#d55b39] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_verify' })
@@ -531,10 +535,10 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
         const listing = data as AdminListing
         specificActions = listing.status === 'pending'
           ? [
-              { label: 'Approve', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
-              { label: 'Reject', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
-              { label: 'Flag', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' }
-            ]
+            { label: 'Approve', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
+            { label: 'Reject', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
+            { label: 'Flag', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' }
+          ]
           : [{ label: 'Flag', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' }]
         break
       case 'order':
@@ -547,12 +551,12 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
         const dispute = data as AdminDispute
         specificActions = dispute.status === 'open'
           ? [
-              { label: 'Start Investigation', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200' },
-              { label: 'Escalate', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200' }
-            ]
+            { label: 'Start Investigation', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200' },
+            { label: 'Escalate', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200' }
+          ]
           : dispute.status === 'investigating'
-          ? [{ label: 'Resolve', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200' }]
-          : []
+            ? [{ label: 'Resolve', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200' }]
+            : []
         break
     }
 
@@ -722,19 +726,18 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
   if (!isOpen) return null
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex"
       onClick={handleOverlayClick}
     >
       {/* Enhanced Overlay */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
-      
+
       {/* Premium Drawer */}
-      <div 
+      <div
         ref={drawerRef}
-        className={`absolute right-0 top-0 h-full w-full max-w-2xl bg-[#f9f9f7] shadow-2xl transform transition-all duration-300 ease-out flex flex-col ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`absolute right-0 top-0 h-full w-full max-w-2xl bg-[#f9f9f7] shadow-2xl transform transition-all duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Enhanced Header */}

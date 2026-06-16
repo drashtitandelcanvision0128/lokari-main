@@ -26,56 +26,68 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
         const result = await response.json()
 
         if (result.success) {
-          const formattedListings: AdminListing[] = result.data.map((item: any) => ({
-            id: item.listing_id,
-            title: item.title,
-            description: item.description || '',
-            category:
-              item.type === 'PRODUCE'
-                ? 'produce'
-                : item.type === 'WAREHOUSE'
-                  ? 'warehouse'
-                  : 'transport',
+          const formattedListings: AdminListing[] = result.data.map((item: any) => {
+            // Build seller location from their default address
+            const addr = item.user?.addresses?.[0]
+            const sellerLocation = addr
+              ? [addr.city, addr.state].filter(Boolean).join(', ')
+              : 'N/A'
 
-            seller: {
-              id: item.user_id,
-              name: item.user?.name || 'Unknown User',
-              email: 'N/A',
-            },
+            return {
+              id: item.listing_id,
+              title: item.title,
+              description: item.description || '',
+              category:
+                item.type === 'PRODUCE'
+                  ? 'produce'
+                  : item.type === 'WAREHOUSE'
+                    ? 'warehouse'
+                    : 'transport',
 
-            price: Number(item.price),
+              seller: {
+                id: item.user_id,
+                name: item.user?.name || 'Unknown User',
+                email: item.user?.email || 'N/A',       // ✅ now real
+                location: sellerLocation,                // ✅ now real
+              },
 
-            unit:
-              item.produceListing?.unit ||
-              item.transportListing?.vehicleType ||
-              'unit',
+              price: Number(item.price),
 
-            quantity:
-              item.produceListing?.quantity ||
-              item.warehouseListing?.capacity ||
-              1,
+              unit:
+                item.produceListing?.unit ||
+                item.transportListing?.vehicleType ||
+                'unit',
 
-            location: item.location || 'N/A',
+              quantity:
+                item.produceListing?.quantity ||
+                item.warehouseListing?.capacity ||
+                1,
 
-            status:
-              item.status === 'ACTIVE'
-                ? 'active'
-                : item.status === 'PENDING'
-                  ? 'pending'
-                  : item.status === 'REJECTED'
-                    ? 'rejected'
-                    : 'expired',
+              location: item.listing_location || 'N/A', // ✅ was item.location (wrong key)
 
-            createdAt: item.created_at,
-            expiresAt: item.expiryDate || item.expiry_date || item.created_at,
+              status:
+                item.status === 'ACTIVE'
+                  ? 'active'
+                  : item.status === 'PENDING'
+                    ? 'pending'
+                    : item.status === 'REJECTED'
+                      ? 'rejected'
+                      : 'expired',
 
-            views: 0,
-            inquiries: 0,
-            reports: 0,
-            featured: false,
+              createdAt: item.created_at,
+              expiresAt:
+                item.produceListing?.expiry_date ||
+                item.warehouseListing?.available_to ||
+                item.transportListing?.available_to ||
+                item.created_at,
 
-            images: [],
-          }))
+              views: 0,
+              inquiries: 0,
+              reports: 0,
+              featured: false,
+              images: [],
+            }
+          })
 
           setListings(formattedListings)
         }

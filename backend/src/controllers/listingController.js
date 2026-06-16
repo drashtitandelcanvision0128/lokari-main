@@ -84,7 +84,16 @@ export const getAllListings = async (req, res) => {
                 user: {
                     select: {
                         name: true,
-                        is_verified: true
+                        email: true,
+                        is_verified: true,
+                        addresses: {
+                            where: { is_default: true },
+                            select: {
+                                city: true,
+                                state: true,
+                            },
+                            take: 1,
+                        }
                     }
                 }
             },
