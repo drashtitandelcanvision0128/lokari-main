@@ -144,7 +144,7 @@ export default function RegisterRolePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
 
     setIsLoading(true)
@@ -238,41 +238,44 @@ export default function RegisterRolePage() {
             <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
               <span className="material-symbols-outlined text-3xl">warehouse</span>
             </div>
-            <h1 className="text-3xl font-bold mb-2">Warehouse Registration</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              {config.title}
+            </h1>
+
             <p className="text-white/90">
-              Join our network of trusted warehouse providers and digitize your storage receipts
+              {config.description}
             </p>
           </div>
         </div>
       </div>
-      
+
       {/* Registration Form */}
       <div className="max-w-2xl mx-auto px-8 py-12">
-          {/* Progress Indicator */}
-          <div className="mb-8">
-            <ProgressIndicator
-              currentStep={2}
-              totalSteps={3}
-              steps={[
-                { label: 'Role', status: 'completed' },
-                { label: 'Details', status: 'active' },
-                { label: 'KYC', status: 'pending' }
-              ]}
-            />
-          </div>
+        {/* Progress Indicator */}
+        <div className="mb-8">
+          <ProgressIndicator
+            currentStep={2}
+            totalSteps={3}
+            steps={[
+              { label: 'Role', status: 'completed' },
+              { label: 'Details', status: 'active' },
+              { label: 'KYC', status: 'pending' }
+            ]}
+          />
+        </div>
 
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-10">
-            <div className="text-center mb-6">
-              <div className="lg:hidden w-16 h-16 bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <span className="material-symbols-outlined text-3xl text-white">warehouse</span>
-              </div>
-              <h1 className="font-headline text-2xl font-bold text-[#0b5d68] mb-2">
-                {config.title}
-              </h1>
-              <p className="text-gray-600 text-sm">
-                {config.description}
-              </p>
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-10">
+          <div className="text-center mb-6">
+            <div className="lg:hidden w-16 h-16 bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <span className="material-symbols-outlined text-3xl text-white">warehouse</span>
             </div>
+            <h1 className="font-headline text-2xl font-bold text-[#0b5d68] mb-2">
+              {config.title}
+            </h1>
+            <p className="text-gray-600 text-sm">
+              {config.description}
+            </p>
+          </div>
 
           <TransitionWrapper show={!showOTP} animation="slideIn">
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -440,7 +443,7 @@ export default function RegisterRolePage() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-[#0b5d68]">
                       Warehouse Location
@@ -458,7 +461,7 @@ export default function RegisterRolePage() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-[#0b5d68]">
                       Storage Capacity
