@@ -25,7 +25,7 @@ const TAB_COMPONENTS = {
 }
 
 export default function AdminPage() {
-  console.log('ADMIN PAGE RENDERED');
+  // console.log('ADMIN PAGE RENDERED'); 
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('users')
   const [adminTabs, setAdminTabs] = useState<AdminTabs | null>(null)

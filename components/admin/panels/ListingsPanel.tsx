@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { AdminListing } from '@/types/admin'
 // import { mockAdminListings } from '@/data/adminMock's
-import { apiUrl } from '@/lib/api'
+import { apiUrl, authHeaders } from '@/lib/api'
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
+import { EditListingModal } from './EditListingModal'
 
 interface ListingsPanelProps {
   searchQuery?: string
@@ -16,6 +17,8 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   const [loading, setLoading] = useState(true)
   const [selectedListing, setSelectedListing] = useState<AdminListing | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editListingData, setEditListingData] = useState<AdminListing | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
 
@@ -99,6 +102,53 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   const handleAction = (action: string, item: any) => {
     if (action === 'block_toggled') {
       fetchListings()
+    } else if (action === 'edit') {
+      setEditListingData(item)
+      setIsEditModalOpen(true)
+    } else if (action === 'delete') {
+      handleDeleteListing(item.id)
+    }
+  }
+
+  const handleSaveListing = async (listingId: string, updatedData: any) => {
+    try {
+      const response = await fetch(apiUrl(`/listings/${listingId}`), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders()
+        },
+        body: JSON.stringify(updatedData)
+      })
+      if (response.ok) {
+        alert('Listing updated successfully')
+        fetchListings()
+      } else {
+        alert('Failed to update listing')
+      }
+    } catch (error) {
+      console.error('Error updating listing:', error)
+      alert('Error updating listing')
+    }
+  }
+
+  const handleDeleteListing = async (listingId: string) => {
+    if (!confirm('Are you sure you want to delete this listing?')) return;
+    try {
+      const response = await fetch(apiUrl(`/listings/${listingId}`), {
+        method: 'DELETE',
+        headers: authHeaders()
+      })
+      if (response.ok) {
+        alert('Listing deleted successfully')
+        fetchListings()
+        handleCloseDrawer()
+      } else {
+        alert('Failed to delete listing')
+      }
+    } catch (error) {
+      console.error('Error deleting listing:', error)
+      alert('Error deleting listing')
     }
   }
 
@@ -337,6 +387,14 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
         data={selectedListing}
         type="listing"
         onAction={handleAction}
+      />
+
+      {/* Edit Listing Modal */}
+      <EditListingModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        listing={editListingData}
+        onSave={handleSaveListing}
       />
     </>
   )

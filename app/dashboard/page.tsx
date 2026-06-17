@@ -28,7 +28,7 @@ const TAB_COMPONENTS = {
 }
 
 export default function Dashboard() {
-  console.log('DASHBOARD PAGE RENDERED');
+  // console.log('DASHBOARD PAGE RENDERED');
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [dashboardTabs, setDashboardTabs] = useState<DashboardTabs | null>(null)
   const [searchQuery, setSearchQuery] = useState('')

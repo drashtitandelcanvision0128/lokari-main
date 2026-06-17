@@ -173,6 +173,37 @@ export const toggleBlockListing = async (req, res) => {
     }
 }
 
+export const updateListing = async (req, res) => {
+    const { id } = req.params;
+    const { title, description, price, status } = req.body;
+
+    try {
+        const listing = await prisma.marketplace.findUnique({
+            where: { listing_id: id }
+        });
+
+        if (!listing) {
+            return res.status(404).json({ success: false, message: 'Listing not found' });
+        }
+
+        const updateData = {};
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (price !== undefined) updateData.price = price;
+        if (status !== undefined) updateData.status = status;
+
+        const updatedListing = await prisma.marketplace.update({
+            where: { listing_id: id },
+            data: updateData
+        });
+
+        res.json({ success: true, data: updatedListing });
+    } catch (err) {
+        console.error('❌ UPDATE LISTING ERROR:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 export const placeBid = async (req, res) => {
     try {
         const { id } = req.params;

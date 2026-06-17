@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { AdminUser, AdminListing, AdminOrder, AdminDispute, AuditLogEntry } from '@/types/admin'
+import { apiUrl, authHeaders } from '@/lib/api'
 
 type DetailType = 'user' | 'listing' | 'order' | 'dispute' | 'auditLog'
 
@@ -214,6 +215,11 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(listing.status, 'listing')}`}>
                 {listing.status}
               </span>
+              {listing.isBlocked && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#d55b39] text-white shadow-sm">
+                  Blocked
+                </span>
+              )}
               {listing.featured && (
                 <span className="material-symbols-outlined text-warning text-sm">star</span>
               )}
@@ -562,9 +568,12 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
               : 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer',
             onClick: async () => {
               try {
-                const response = await fetch(`/api/listings/${listing.id}/block`, {
+                const response = await fetch(apiUrl(`/listings/${listing.id}/block`), {
                   method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...authHeaders()
+                  },
                 })
                 const result = await response.json()
                 if (result.success) {
