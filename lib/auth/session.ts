@@ -15,6 +15,7 @@ export function buildProfileFromUser(user: User): UserProfile {
 }
 
 export function persistUserSession(user: User, token: string): UserProfile {
+  // console.log('🔐 persistUserSession called with token:', token)
   setAuthToken(token)
   localStorage.setItem(USER_KEY, JSON.stringify(user))
   const profile = buildProfileFromUser(user)

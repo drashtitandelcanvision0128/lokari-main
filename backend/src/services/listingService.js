@@ -1,36 +1,19 @@
-// services/listingService.js
 import { prisma } from '../config/db.js';
 
 export const createListingService = async (body) => {
     const {
-        user_id,
-        type,
-        title,
-        description,
-        listing_location,
-        price,
-        price_type,
-        crop_type,
-        variety,
-        quantity,
-        unit,
-        harvest_date,
-        expiry_date,
-        quality_grade,
-
-        storage_temperature,
-        storage_humidity,
-        starting_bid,
-        reserve_price,
-        auction_start,
-        auction_end
+        user_id, type, title, description, listing_location,
+        price, price_type, crop_type, variety, quantity, unit,
+        harvest_date, expiry_date, quality_grade,
+        storage_temperature, storage_humidity,
+        starting_bid, reserve_price, auction_start, auction_end
     } = body;
 
     const result = await prisma.$transaction(async (tx) => {
-        const listing = await tx.listing.create({
+        const listing = await tx.marketplace.create({
             data: {
                 user_id,
-                type,           // must be "PRODUCE" | "WAREHOUSE" | "TRANSPORT"
+                type,
                 title,
                 description,
                 listing_location,
@@ -38,9 +21,8 @@ export const createListingService = async (body) => {
                 price_type,
                 status: 'ACTIVE',
 
-                // Nested create for the sub-listing type
                 ...(type === 'PRODUCE' && {
-                    produceListing: {
+                    farmerProduce: {
                         create: {
                             crop_type: crop_type ?? 'Unknown',
                             variety: variety ?? null,
@@ -49,7 +31,6 @@ export const createListingService = async (body) => {
                             harvest_date: harvest_date ? new Date(harvest_date) : null,
                             expiry_date: expiry_date ? new Date(expiry_date) : null,
                             quality_grade: quality_grade ?? null,
-
                             storage_temperature: storage_temperature ?? null,
                             storage_humidity: storage_humidity ?? null,
                         },
@@ -57,7 +38,7 @@ export const createListingService = async (body) => {
                 }),
 
                 ...(type === 'WAREHOUSE' && {
-                    warehouseListing: {
+                    warehouse: {
                         create: {
                             capacity: body.capacity ?? 0,
                             capacity_unit: body.capacity_unit ?? 'tons',
@@ -68,7 +49,7 @@ export const createListingService = async (body) => {
                 }),
 
                 ...(type === 'TRANSPORT' && {
-                    transportListing: {
+                    transport: {
                         create: {
                             vehicle_type: body.vehicle_type ?? 'Unknown',
                             capacity: body.capacity ?? 0,
@@ -80,9 +61,9 @@ export const createListingService = async (body) => {
                 }),
             },
             include: {
-                produceListing: true,
-                warehouseListing: true,
-                transportListing: true,
+                farmerProduce: true,
+                warehouse: true,
+                transport: true,
             },
         });
 
@@ -91,7 +72,7 @@ export const createListingService = async (body) => {
                 data: {
                     listing_id: listing.listing_id,
                     start_time: auction_start ? new Date(auction_start) : new Date(),
-                    end_time: auction_end ? new Date(auction_end) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default 7 days
+                    end_time: auction_end ? new Date(auction_end) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                     starting_bid: starting_bid ? Number(starting_bid) : 0,
                     reserve_price: reserve_price ? Number(reserve_price) : null,
                     current_highest_bid: starting_bid ? Number(starting_bid) : 0,

@@ -19,87 +19,88 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
 
-  useEffect(() => {
-    const fetchListings = async () => {
-      try {
-        const response = await fetch(apiUrl('/listings'))
-        const result = await response.json()
+  const fetchListings = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(apiUrl('/listings'))
+      const result = await response.json()
+      if (result.success) {
+        const formattedListings: AdminListing[] = result.data.map((item: any) => {
+          const addr = item.user?.addresses?.[0]
+          const profile = item.user?.profile
+          const sellerLocation = addr
+            ? [addr.city, addr.state].filter(Boolean).join(', ')
+            : profile?.farm_location
+            || profile?.warehouse_location
+            || profile?.service_area
+            || 'N/A'
 
-        if (result.success) {
-          const formattedListings: AdminListing[] = result.data.map((item: any) => {
-            // Build seller location from their default address
-            const addr = item.user?.addresses?.[0]
-            const sellerLocation = addr
-              ? [addr.city, addr.state].filter(Boolean).join(', ')
-              : 'N/A'
-
-            return {
-              id: item.listing_id,
-              title: item.title,
-              description: item.description || '',
-              category:
-                item.type === 'PRODUCE'
-                  ? 'produce'
-                  : item.type === 'WAREHOUSE'
-                    ? 'warehouse'
-                    : 'transport',
-
-              seller: {
-                id: item.user_id,
-                name: item.user?.name || 'Unknown User',
-                email: item.user?.email || 'N/A',       // ✅ now real
-                location: sellerLocation,                // ✅ now real
-              },
-
-              price: Number(item.price),
-
-              unit:
-                item.produceListing?.unit ||
-                item.transportListing?.vehicleType ||
-                'unit',
-
-              quantity:
-                item.produceListing?.quantity ||
-                item.warehouseListing?.capacity ||
-                1,
-
-              location: item.listing_location || 'N/A', // ✅ was item.location (wrong key)
-
-              status:
-                item.status === 'ACTIVE'
-                  ? 'active'
-                  : item.status === 'PENDING'
-                    ? 'pending'
-                    : item.status === 'REJECTED'
-                      ? 'rejected'
-                      : 'expired',
-
-              createdAt: item.created_at,
-              expiresAt:
-                item.produceListing?.expiry_date ||
-                item.warehouseListing?.available_to ||
-                item.transportListing?.available_to ||
-                item.created_at,
-
-              views: 0,
-              inquiries: 0,
-              reports: 0,
-              featured: false,
-              images: [],
-            }
-          })
-
-          setListings(formattedListings)
-        }
-      } catch (error) {
-        console.error('Failed to fetch admin listings:', error)
-      } finally {
-        setLoading(false)
+          return {
+            id: item.listing_id,
+            title: item.title,
+            description: item.description || '',
+            category:
+              item.type === 'PRODUCE'
+                ? 'produce'
+                : item.type === 'WAREHOUSE'
+                  ? 'warehouse'
+                  : 'transport',
+            seller: {
+              id: item.user_id,
+              name: item.user?.name || 'Unknown User',
+              email: item.user?.email || 'N/A',
+              location: sellerLocation,
+            },
+            price: Number(item.price),
+            unit:
+              item.farmerProduce?.unit ||
+              item.transport?.vehicle_type ||
+              'unit',
+            quantity:
+              item.farmerProduce?.quantity ||
+              item.warehouse?.capacity ||
+              1,
+            location: item.listing_location || 'N/A',
+            status:
+              item.status === 'ACTIVE'
+                ? 'active'
+                : item.status === 'PENDING'
+                  ? 'pending'
+                  : item.status === 'REJECTED'
+                    ? 'rejected'
+                    : 'expired',
+            isBlocked: item.is_blocked || false,
+            createdAt: item.created_at,
+            expiresAt:
+              item.farmerProduce?.expiry_date ||
+              item.warehouse?.available_to ||
+              item.transport?.available_to ||
+              item.created_at,
+            views: 0,
+            inquiries: 0,
+            reports: 0,
+            featured: false,
+            images: [],
+          }
+        })
+        setListings(formattedListings)
       }
+    } catch (error) {
+      console.error('Failed to fetch admin listings:', error)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchListings()
   }, [])
+
+  const handleAction = (action: string, item: any) => {
+    if (action === 'block_toggled') {
+      fetchListings()
+    }
+  }
 
   const handleViewListing = (listing: AdminListing) => {
     setSelectedListing(listing)
@@ -335,6 +336,7 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
         onClose={handleCloseDrawer}
         data={selectedListing}
         type="listing"
+        onAction={handleAction}
       />
     </>
   )

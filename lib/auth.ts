@@ -1,4 +1,5 @@
 import { registrationService, type User } from './registration'
+import { authHeaders } from './api'
 
 export function getCurrentUser(): User | null {
   // Only access localStorage on client side
@@ -82,7 +83,7 @@ export function requireAuth() {
 }
 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
 export async function changePassword(
   currentPassword: string,
@@ -91,7 +92,8 @@ export async function changePassword(
   try {
     const res = await fetch(`${API_URL}/auth/change-password`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      // headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       credentials: 'include',
       body: JSON.stringify({ currentPassword, newPassword }),
     })

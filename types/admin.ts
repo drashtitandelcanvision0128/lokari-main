@@ -62,6 +62,7 @@ export type AdminListing = {
   quantity: number
   location: string
   status: 'active' | 'pending' | 'approved' | 'rejected' | 'expired' | 'flagged'
+  isBlocked: boolean
   createdAt: string
   expiresAt: string
   views: number

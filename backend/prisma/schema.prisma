@@ -1,11 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -26,7 +23,6 @@ enum KycStatus {
   REJECTED
 }
 
-// Listings Managaement : 
 enum ListingType {
   PRODUCE
   WAREHOUSE
@@ -40,7 +36,6 @@ enum ListingStatus {
   EXPIRED
 }
 
-// Enums for Bidding
 enum PriceType {
   FIXED_PRICE
   AUCTION
@@ -61,22 +56,23 @@ enum BidStatus {
 }
 
 model User {
-  user_id     String       @id @default(uuid())
+  user_id     String        @id @default(uuid())
   name        String?
-  email       String       @unique
-  phone       String?      @unique
+  email       String        @unique
+  phone       String?       @unique
   password    String
-  role        UserRole     @default(FARMER)
-  is_verified Boolean      @default(false)
-  is_active   Boolean      @default(true)
-  is_deleted  Boolean      @default(false)
+  role        UserRole      @default(FARMER)
+  is_verified Boolean       @default(false)
+  is_active   Boolean       @default(true)
+  is_deleted  Boolean       @default(false)
   profile     UserProfile?
   addresses   Address[]
-  created_at  DateTime     @default(now())
-  updated_at  DateTime     @updatedAt
-  listings    Listing[]
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
+  listings    Marketplace[]
+  bids        Bid[]
 
-  bids Bid[]
+  @@map("users")
 }
 
 model UserProfile {
@@ -87,7 +83,6 @@ model UserProfile {
   bio        String?
   kyc_status KycStatus @default(PENDING)
 
-  // Role-specific fields
   farm_name          String?
   farm_location      String?
   company_name       String?
@@ -102,6 +97,8 @@ model UserProfile {
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  @@map("user_profiles")
 }
 
 model Address {
@@ -123,10 +120,11 @@ model Address {
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  @@map("addresses")
 }
 
-// Listing management Tables 
-model Listing {
+model Marketplace {
   listing_id String @id @default(uuid())
   user_id    String
 
@@ -139,20 +137,21 @@ model Listing {
   status           ListingStatus @default(DRAFT)
 
   is_deleted Boolean @default(false)
+  is_blocked Boolean @default(false)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  user User @relation(fields: [user_id], references: [user_id])
+  user          User           @relation(fields: [user_id], references: [user_id])
+  farmerProduce FarmerProduce?
+  warehouse     Warehouse?
+  transport     Transport?
+  auction       Auction?
 
-  produceListing   ProduceListing?
-  warehouseListing WarehouseListing?
-  transportListing TransportListing?
-
-  auction Auction?
+  @@map("marketplace")
 }
 
-model ProduceListing {
+model FarmerProduce {
   produce_listing_id String @id @default(uuid())
   listing_id         String @unique
 
@@ -167,10 +166,12 @@ model ProduceListing {
   storage_temperature String?
   storage_humidity    String?
 
-  listing Listing @relation(fields: [listing_id], references: [listing_id])
+  listing Marketplace @relation(fields: [listing_id], references: [listing_id])
+
+  @@map("farmer_produces")
 }
 
-model WarehouseListing {
+model Warehouse {
   warehouse_listing_id String @id @default(uuid())
   listing_id           String @unique
 
@@ -182,10 +183,12 @@ model WarehouseListing {
   available_to       DateTime?
   climate_controlled Boolean   @default(false)
 
-  listing Listing @relation(fields: [listing_id], references: [listing_id])
+  listing Marketplace @relation(fields: [listing_id], references: [listing_id])
+
+  @@map("warehouses")
 }
 
-model TransportListing {
+model Transport {
   transport_listing_id String @id @default(uuid())
   listing_id           String @unique
 
@@ -198,10 +201,11 @@ model TransportListing {
   available_to    DateTime?
   is_refrigerated Boolean   @default(false)
 
-  listing Listing @relation(fields: [listing_id], references: [listing_id])
+  listing Marketplace @relation(fields: [listing_id], references: [listing_id])
+
+  @@map("transports")
 }
 
-// Bidding Tables
 model Auction {
   auction_id String @id @default(uuid())
 
@@ -221,9 +225,10 @@ model Auction {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  listing Listing @relation(fields: [listing_id], references: [listing_id])
+  listing Marketplace @relation(fields: [listing_id], references: [listing_id])
+  bids    Bid[]
 
-  bids Bid[]
+  @@map("auctions")
 }
 
 model Bid {
@@ -240,6 +245,7 @@ model Bid {
   updated_at DateTime @updatedAt
 
   auction Auction @relation(fields: [auction_id], references: [auction_id])
+  bidder  User    @relation(fields: [bidder_id], references: [user_id])
 
-  bidder User @relation(fields: [bidder_id], references: [user_id])
+  @@map("bids")
 }

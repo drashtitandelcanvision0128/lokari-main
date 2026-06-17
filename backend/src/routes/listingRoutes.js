@@ -6,6 +6,7 @@ import {
   getListingsByUser,
   deleteListing,
   placeBid,
+  toggleBlockListing,
 } from '../controllers/listingController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -18,5 +19,7 @@ router.get('/:id', getListingById);
 router.post('/', protect, createListing);
 router.delete('/:id', protect, deleteListing);
 router.post('/:id/bid', protect, placeBid);
+
+router.patch('/:id/block', protect, toggleBlockListing);
 
 export default router;

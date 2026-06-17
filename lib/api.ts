@@ -27,7 +27,7 @@ export function apiUrl(path: string): string {
   if (base.endsWith('/api')) {
     return `${base}${normalizedPath}`
   }
-  return `${base}${normalizedPath}`
+  return `${base}/api${normalizedPath}`
 }
 
 const AUTH_TOKEN_KEY = 'authToken'

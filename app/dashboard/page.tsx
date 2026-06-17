@@ -12,6 +12,7 @@ import { TransactionsPage } from '@/components/dashboard/pages/TransactionsPage'
 import { SettingsPage } from '@/components/dashboard/pages/SettingsPage'
 import { dashboardMock } from '@/data/dashboardMock'
 import { TabType, DashboardTabs } from '@/types/dashboard'
+import { SettingsProvider } from '@/backend/src/context/SettingsContext'
 
 // Tab component mapping
 const TAB_COMPONENTS = {
@@ -27,6 +28,7 @@ const TAB_COMPONENTS = {
 }
 
 export default function Dashboard() {
+  console.log('DASHBOARD PAGE RENDERED');
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [dashboardTabs, setDashboardTabs] = useState<DashboardTabs | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -39,15 +41,15 @@ export default function Dashboard() {
       try {
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 500))
-        
+
         // Set dashboard tabs from mock data
         setDashboardTabs(dashboardMock.tabs)
-        
+
         // Set default active tab to first available one
         const availableTabs = Object.entries(dashboardMock.tabs)
           .filter(([_, isVisible]) => isVisible)
           .map(([tab]) => tab as TabType)
-        
+
         if (availableTabs.length > 0) {
           setActiveTab(availableTabs[0])
         }
@@ -75,16 +77,18 @@ export default function Dashboard() {
   const ActiveComponent = TAB_COMPONENTS[activeTab]
 
   return (
-    <DashboardLayout
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      dashboardTabs={dashboardTabs}
-      userName={dashboardMock.user.name}
-      userAvatar={dashboardMock.user.avatar}
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
-    >
-      <ActiveComponent searchQuery={searchQuery} />
-    </DashboardLayout>
+    <SettingsProvider>
+      <DashboardLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        dashboardTabs={dashboardTabs}
+        userName={dashboardMock.user.name}
+        userAvatar={dashboardMock.user.avatar}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      >
+        <ActiveComponent searchQuery={searchQuery} />
+      </DashboardLayout>
+    </SettingsProvider>
   )
 }

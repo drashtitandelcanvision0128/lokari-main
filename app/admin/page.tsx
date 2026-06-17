@@ -11,7 +11,8 @@ import { AnalyticsPanel } from '@/components/admin/panels/AnalyticsPanel'
 import { AuditLogPanel } from '@/components/admin/panels/AuditLogPanel'
 import { adminMock } from '@/data/adminMock'
 import { TabType, AdminTabs } from '@/types/admin'
-import { isAdminAuthenticated, redirectIfNotAdmin } from '@/lib/adminAuth'
+// import { isAdminAuthenticated, redirectIfNotAdmin } from '@/lib/adminAuth'
+import { getCurrentUser } from '@/lib/auth'
 
 // Tab component mapping
 const TAB_COMPONENTS = {
@@ -24,18 +25,27 @@ const TAB_COMPONENTS = {
 }
 
 export default function AdminPage() {
+  console.log('ADMIN PAGE RENDERED');
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('users')
   const [adminTabs, setAdminTabs] = useState<AdminTabs | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
   // Check admin authentication on component mount
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
   useEffect(() => {
-    if (!isAdminAuthenticated()) {
+
+    const currentUser = getCurrentUser()
+
+    if (!currentUser || currentUser.role !== 'admin') {
       router.push('/admin-login')
-      return
+    } else {
+      setCheckingAuth(false)
     }
   }, [router])
+
+
 
   // Simulate backend API call on component mount
   useEffect(() => {
@@ -45,15 +55,15 @@ export default function AdminPage() {
       try {
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 500))
-        
+
         // Set admin tabs from mock data
         setAdminTabs(adminMock.tabs)
-        
+
         // Set default active tab to first available one
         const availableTabs = Object.entries(adminMock.tabs)
           .filter(([_, isVisible]) => isVisible)
           .map(([tab]) => tab as TabType)
-        
+
         if (availableTabs.length > 0) {
           setActiveTab(availableTabs[0])
         }
@@ -65,6 +75,7 @@ export default function AdminPage() {
     fetchAdminState()
   }, [])
 
+  if (checkingAuth) return <div>Loading...</div>
   // Show loading state while fetching admin configuration
   if (!adminTabs) {
     return (

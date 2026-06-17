@@ -4,6 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
+import { loginWithCredentials } from '@/lib/auth/api';
+import { persistUserSession } from '@/lib/auth/session';
+import { buildProfileFromUser } from '@/lib/auth/session';
+import { getDashboardUrl } from '@/lib/auth/session'
+import { useAppDispatch } from '@/lib/store/hooks';
+import { setUser, setProfile } from '@/lib/store/slices/authSlice';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -15,17 +21,20 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [canShowPage, setCanShowPage] = useState(false);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // Immediate check if user is already logged in with regular account
     const currentUser = getCurrentUser();
+    console.log('Current User:', currentUser);
+    // if (currentUser) {
+    //   router.replace('/dashboard');
+    //   return;
+    // }
     if (currentUser) {
-      // User is already logged in, redirect them to dashboard immediately
-      router.replace('/dashboard');
-      return;
+      router.replace(getDashboardUrl(currentUser.role))
+      return
     }
-    
-    // Only show page if user is not logged in
+
     setCanShowPage(true);
 
     const checkTheme = () => {
@@ -52,31 +61,43 @@ export default function AdminLoginPage() {
     setIsLoading(true);
     setError('');
 
-    // Simulate admin authentication
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simple admin credentials for demo
-      if (formData.email === 'admin@lokhari.com' && formData.password === 'admin123') {
-        // Store admin session
-        localStorage.setItem('adminSession', JSON.stringify({
-          isAuthenticated: true,
-          email: formData.email,
-          loginTime: new Date().toISOString()
-        }));
-        
-        // Dispatch custom event to trigger navbar update
-        window.dispatchEvent(new Event('storage'));
-        window.dispatchEvent(new CustomEvent('adminSessionChanged'));
-        
-        // Redirect to admin dashboard
-        router.push('/admin');
-      } else {
-        setError('Invalid credentials. Please try again.');
+      // Call real backend login
+      const { user, token } = await loginWithCredentials({
+        email: formData.email,
+        password: formData.password
+      });
+      console.log('Logged in user:', user);
+      console.log('Role:', user.role);
+
+      // Check if user is admin
+      if (user.role !== 'admin') {
+        setError('Access denied. Admin account required.');
+        setIsLoading(false);
+        return;
       }
+
+      // Store token and user session
+      // persistUserSession(user, token);
+
+      // Dispatch custom event to trigger navbar update
+      // window.dispatchEvent(new Event('storage'));
+      // window.dispatchEvent(new CustomEvent('adminSessionChanged'));
+
+      // Redirect to admin dashboard
+      // router.push('/admin');
+
+      persistUserSession(user, token);
+
+      const profile = buildProfileFromUser(user);
+
+      dispatch(setUser(user));
+      dispatch(setProfile(profile));
+
+      router.replace('/admin');
     } catch (err) {
-      setError('Login failed. Please try again.');
-    } finally {
+      console.error('Login error:', err);
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
       setIsLoading(false);
     }
   };
@@ -89,7 +110,6 @@ export default function AdminLoginPage() {
     }));
   };
 
-  // Don't render anything if user shouldn't see this page
   if (!canShowPage) {
     return null;
   }
@@ -127,16 +147,14 @@ export default function AdminLoginPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-4 py-3 rounded-xl border transition-all duration-300 ${
-                    isDark 
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#2eb5c2] focus:ring-2 focus:ring-[#2eb5c2]/20' 
-                      : 'bg-[#f9f9f7] border-gray-200 text-[#0b5d68] placeholder-[#666666] focus:border-[#0b5d68] focus:ring-2 focus:ring-[#0b5d68]/20'
-                  } focus:outline-none`}
+                  className={`w-full px-4 py-3 rounded-xl border transition-all duration-300 ${isDark
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#2eb5c2] focus:ring-2 focus:ring-[#2eb5c2]/20'
+                    : 'bg-[#f9f9f7] border-gray-200 text-[#0b5d68] placeholder-[#666666] focus:border-[#0b5d68] focus:ring-2 focus:ring-[#0b5d68]/20'
+                    } focus:outline-none`}
                   placeholder="admin@lokhari.com"
                 />
-                <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 material-symbols-outlined ${
-                  isDark ? 'text-gray-400' : 'text-[#666666]'
-                }`}>
+                <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 material-symbols-outlined ${isDark ? 'text-gray-400' : 'text-[#666666]'
+                  }`}>
                   email
                 </span>
               </div>
@@ -155,16 +173,14 @@ export default function AdminLoginPage() {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
-                  className={`w-full px-4 py-3 rounded-xl border transition-all duration-300 ${
-                    isDark 
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#2eb5c2] focus:ring-2 focus:ring-[#2eb5c2]/20' 
-                      : 'bg-[#f9f9f7] border-gray-200 text-[#0b5d68] placeholder-[#666666] focus:border-[#0b5d68] focus:ring-2 focus:ring-[#0b5d68]/20'
-                  } focus:outline-none`}
+                  className={`w-full px-4 py-3 rounded-xl border transition-all duration-300 ${isDark
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-[#2eb5c2] focus:ring-2 focus:ring-[#2eb5c2]/20'
+                    : 'bg-[#f9f9f7] border-gray-200 text-[#0b5d68] placeholder-[#666666] focus:border-[#0b5d68] focus:ring-2 focus:ring-[#0b5d68]/20'
+                    } focus:outline-none`}
                   placeholder="Enter your password"
                 />
-                <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 material-symbols-outlined ${
-                  isDark ? 'text-gray-400' : 'text-[#666666]'
-                }`}>
+                <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 material-symbols-outlined ${isDark ? 'text-gray-400' : 'text-[#666666]'
+                  }`}>
                   lock
                 </span>
               </div>
@@ -181,13 +197,12 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-3 px-4 rounded-xl font-headline font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-                isLoading
-                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                  : isDark 
-                    ? 'bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] text-white hover:from-[#2eb5c2] hover:to-[#0b5d68] shadow-lg' 
-                    : 'bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] text-white hover:from-[#2eb5c2] hover:to-[#0b5d68] shadow-lg'
-              }`}
+              className={`w-full py-3 px-4 rounded-xl font-headline font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${isLoading
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : isDark
+                  ? 'bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] text-white hover:from-[#2eb5c2] hover:to-[#0b5d68] shadow-lg'
+                  : 'bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] text-white hover:from-[#2eb5c2] hover:to-[#0b5d68] shadow-lg'
+                }`}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -214,11 +229,10 @@ export default function AdminLoginPage() {
 
         {/* Back to Main Site */}
         <div className="text-center mt-6">
-          <Link 
-            href="/" 
-            className={`inline-flex items-center gap-2 text-sm font-medium transition-colors ${
-              isDark ? 'text-gray-300 hover:text-[#2eb5c2]' : 'text-[#666666] hover:text-[#0b5d68]'
-            }`}
+          <Link
+            href="/"
+            className={`inline-flex items-center gap-2 text-sm font-medium transition-colors ${isDark ? 'text-gray-300 hover:text-[#2eb5c2]' : 'text-[#666666] hover:text-[#0b5d68]'
+              }`}
           >
             <span className="material-symbols-outlined">arrow_back</span>
             Back to Main Site

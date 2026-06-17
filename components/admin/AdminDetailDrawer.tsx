@@ -319,6 +319,12 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status, 'order')}`}>
             {order.status}
           </span>
+          {/* only shows when blocked */}
+          {(data as AdminListing).isBlocked && (
+            <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold bg-[#d55b39] text-white shadow-sm">
+              blocked
+            </span>
+          )}
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.paymentStatus, 'order')}`}>
             {order.paymentStatus.replace('_', ' ')}
           </span>
@@ -531,15 +537,46 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
           specificActions.push({ label: 'Verify User', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_verify' })
         }
         break
+      // case 'listing':
+      //   const listing = data as AdminListing
+      //   specificActions = listing.status === 'pending'
+      //     ? [
+      //       { label: 'Approve', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
+      //       { label: 'Reject', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
+      //       { label: 'Flag', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' }
+      //     ]
+      //     : [{
+      //       label: listing.isBlocked ? 'Unblock' : 'Block',
+      //       color: listing.isBlocked
+      //         ? 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200'
+      //         : 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200'
+      //     }]
+      //   break
       case 'listing':
         const listing = data as AdminListing
-        specificActions = listing.status === 'pending'
-          ? [
-            { label: 'Approve', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
-            { label: 'Reject', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
-            { label: 'Flag', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' }
-          ]
-          : [{ label: 'Flag', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' }]
+        specificActions = [
+          {
+            label: listing.isBlocked ? 'Unblock' : 'Block',
+            color: listing.isBlocked
+              ? 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200 cursor-pointer'
+              : 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer',
+            onClick: async () => {
+              try {
+                const response = await fetch(`/api/listings/${listing.id}/block`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                })
+                const result = await response.json()
+                if (result.success) {
+                  onAction?.('block_toggled', { id: listing.id })
+                  onClose()
+                }
+              } catch (err) {
+                console.error('Failed to toggle block:', err)
+              }
+            }
+          }
+        ]
         break
       case 'order':
         const order = data as AdminOrder
@@ -572,7 +609,9 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
             <button
               key={index}
               onClick={() => {
-                if (action.actionType && onAction) {
+                if (action.onClick) {
+                  action.onClick()
+                } else if (action.actionType && onAction) {
                   onAction(action.actionType, data)
                 }
               }}
@@ -771,14 +810,17 @@ export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: Adm
                     </span>
                   )}
                   {type === 'listing' && (
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor((data as AdminListing).status, 'listing')} shadow-sm`}>
-                      {(data as AdminListing).status}
-                    </span>
-                  )}
-                  {type === 'order' && (
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor((data as AdminOrder).status, 'order')} shadow-sm`}>
-                      {(data as AdminOrder).status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor((data as AdminListing).status, 'listing')} shadow-sm`}>
+                        {(data as AdminListing).status}
+                      </span>
+                      {/*  only shows when blocked */}
+                      {(data as AdminListing).isBlocked && (
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold bg-[#d55b39] text-white shadow-sm">
+                          blocked
+                        </span>
+                      )}
+                    </div>
                   )}
                   {type === 'dispute' && (
                     <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor((data as AdminDispute).status, 'dispute')} shadow-sm`}>
