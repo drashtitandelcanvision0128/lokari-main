@@ -195,31 +195,6 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
 
       {/* <div className="grid grid-cols-1 lg:grid-cols-4 gap-8"> */}
       <div>
-        {/* Sidebar */}
-        {/* <div className="lg:col-span-1">
-          <nav className="space-y-2">
-            {[
-              { id: 'profile', label: 'Profile', icon: 'person' },
-              { id: 'kyc', label: 'KYC Verification', icon: 'verified_user' },
-              { id: 'addresses', label: 'Addresses', icon: 'location_on' },
-              { id: 'notifications', label: 'Notifications', icon: 'notifications' },
-              { id: 'security', label: 'Reset Password', icon: 'lock' }
-            ].map((section) => (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id as any)}
-                className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeSection === section.id
-                  ? 'bg-primary text-white'
-                  : 'text-stone-600 hover:bg-stone-100'
-                  }`}
-              >
-                <Icon name={section.icon} />
-                {section.label}
-              </button>
-            ))}
-          </nav>
-        </div> */}
-
         {/* Content */}
         {/* <div className="lg:col-span-3"> */}
         <div>

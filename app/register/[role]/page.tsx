@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import Button from '@/components/common/Button'
@@ -39,6 +40,19 @@ interface FormErrors {
   phone?: string
   password?: string
   confirmPassword?: string
+
+  farmName?: string
+  farmLocation?: string
+
+  companyName?: string
+  businessType?: string
+
+  warehouseName?: string
+  warehouseLocation?: string
+  capacity?: string
+
+  vehicleType?: string
+  serviceArea?: string
   termsAccepted?: string
   general?: string
 }
@@ -66,7 +80,7 @@ const roleConfig = {
   }
 }
 
-export default function RegisterRolePage() {
+export default function RegisterRolePage(): ReactNode {
   const router = useRouter()
   const params = useParams()
   const role = params.role as string
@@ -104,6 +118,18 @@ export default function RegisterRolePage() {
     }
   }, [role, config, router])
 
+  const getInputClass = (hasError?: string) =>
+    `w-full pl-12 pr-4 py-3 border rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-all ${hasError
+      ? 'border-red-400 focus:ring-red-400 focus:border-red-400'
+      : 'border-gray-300 focus:ring-[#2eb5c2] focus:border-[#2eb5c2]'
+    }`
+
+  const getSelectClass = (hasError?: string) =>
+    `w-full pl-12 pr-10 py-3 border rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 transition-all appearance-none ${hasError
+      ? 'border-red-400 focus:ring-red-400 focus:border-red-400'
+      : 'border-gray-300 focus:ring-[#2eb5c2] focus:border-[#2eb5c2]'
+    }`
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
 
@@ -132,6 +158,48 @@ export default function RegisterRolePage() {
 
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match'
+    }
+
+    if (role === 'farmer') {
+      if (!formData.farmName?.trim()) {
+        newErrors.farmName = 'Farm name is required'
+      }
+
+      if (!formData.farmLocation?.trim()) {
+        newErrors.farmLocation = 'Farm location is required'
+      }
+    }
+
+    if (role === 'trader') {
+      if (!formData.companyName?.trim()) {
+        newErrors.companyName = 'Company name is required'
+      }
+
+      if (!formData.businessType) {
+        newErrors.businessType = 'Please select a business type'
+      }
+    }
+
+    if (role === 'warehouse') {
+      if (!formData.warehouseName?.trim()) {
+        newErrors.warehouseName = 'Warehouse name is required'
+      }
+      if (!formData.warehouseLocation?.trim()) {
+        newErrors.warehouseLocation = 'Warehouse location is required'
+      }
+      if (!formData.capacity?.trim()) {
+        newErrors.capacity = 'Capacity is required'
+      }
+    }
+
+    if (role === 'transporter') {
+      if (!formData.vehicleType) {
+        newErrors.vehicleType = 'Please select a vehicle type'
+      }
+
+      if (!formData.serviceArea?.trim()) {
+        newErrors.serviceArea = 'Service area is required'
+      }
     }
 
     if (!formData.termsAccepted) {
@@ -278,15 +346,42 @@ export default function RegisterRolePage() {
           </div>
 
           <TransitionWrapper show={!showOTP} animation="slideIn">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <Input
+            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+              {/* <Input
                 label="Full Name"
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 error={errors.fullName}
                 placeholder="Enter your full name"
                 required
-              />
+              /> */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-[#0b5d68]">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
+                      person
+                    </span>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullName: e.target.value })
+                    }
+                    className={getInputClass(errors.fullName)}
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+
+                {errors.fullName && (
+                  <p className="text-red-600 text-xs mt-1">{errors.fullName}</p>
+                )}
+              </div>
 
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-[#0b5d68]">
@@ -300,7 +395,8 @@ export default function RegisterRolePage() {
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] transition-all"
+                    // className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] transition-all"
+                    className={getInputClass(errors.email)}
                     placeholder="Enter your email address"
                     required
                   />
@@ -322,7 +418,7 @@ export default function RegisterRolePage() {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] transition-all"
+                    className={getInputClass(errors.phone)}
                     placeholder="Enter your phone number"
                   />
                 </div>
@@ -343,7 +439,7 @@ export default function RegisterRolePage() {
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] transition-all"
+                    className={getInputClass(errors.password)}
                     placeholder="Create a strong password"
                     required
                   />
@@ -365,7 +461,7 @@ export default function RegisterRolePage() {
                     type="password"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] transition-all"
+                    className={getInputClass(errors.confirmPassword)}
                     placeholder="Confirm your password"
                     required
                   />
@@ -378,48 +474,128 @@ export default function RegisterRolePage() {
               {/* Role-specific fields */}
               {role === 'farmer' && (
                 <>
-                  <Input
-                    label="Farm Name"
-                    value={formData.farmName || ''}
-                    onChange={(e) => setFormData({ ...formData, farmName: e.target.value })}
-                    placeholder="Enter your farm name"
-                    required
-                  />
-                  <Input
-                    label="Farm Location"
-                    value={formData.farmLocation || ''}
-                    onChange={(e) => setFormData({ ...formData, farmLocation: e.target.value })}
-                    placeholder="Enter your farm location"
-                    required
-                  />
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-[#0b5d68]">
+                      Farm Name
+                    </label>
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
+                          agriculture
+                        </span>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={formData.farmName || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, farmName: e.target.value })
+                        }
+                        className={getInputClass(errors.farmName)}
+                        placeholder="Enter your farm name"
+                        required
+                      />
+                    </div>
+                    {errors.farmName && (
+                      <p className="text-red-600 text-xs mt-1">{errors.farmName}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-[#0b5d68]">
+                      Farm Location
+                    </label>
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
+                          location_on
+                        </span>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={formData.farmLocation || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, farmLocation: e.target.value })
+                        }
+                        className={getInputClass(errors.farmLocation)}
+                        placeholder="Enter your farm location"
+                        required
+                      />
+                    </div>
+                    {errors.farmLocation && (
+                      <p className="text-red-600 text-xs mt-1">{errors.farmLocation}</p>
+                    )}
+                  </div>
                 </>
               )}
 
               {role === 'trader' && (
                 <>
-                  <Input
-                    label="Company Name"
-                    value={formData.companyName || ''}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    placeholder="Enter your company name"
-                    required
-                  />
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-[#0b5d68]">
+                    <label className="block text-sm font-semibold text-[#0b5d68]">
+                      Company Name
+                    </label>
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
+                          business
+                        </span>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={formData.companyName || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, companyName: e.target.value })
+                        }
+                        className={getInputClass(errors.companyName)}
+                        placeholder="Enter your company name"
+                        required
+                      />
+                    </div>
+                    {errors.companyName && (
+                      <p className="text-red-600 text-xs mt-1">{errors.companyName}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-[#0b5d68]">
                       Business Type
                     </label>
-                    <select
-                      value={formData.businessType || ''}
-                      onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                      className="block w-full px-3 py-2 border border-[#e0e0e0] rounded-lg shadow-sm placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-[#0b5d68] focus:border-[#0b5d68] sm:text-sm"
-                      required
-                    >
-                      <option value="">Select business type</option>
-                      <option value="individual">Individual Trader</option>
-                      <option value="partnership">Partnership</option>
-                      <option value="corporation">Corporation</option>
-                      <option value="cooperative">Cooperative</option>
-                    </select>
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
+                          work
+                        </span>
+                      </div>
+
+                      <select
+                        value={formData.businessType || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, businessType: e.target.value })
+                        }
+                        className={getSelectClass(errors.businessType)}
+                        required
+                      >
+                        <option value="">Select business type</option>
+                        <option value="individual">Individual Trader</option>
+                        <option value="partnership">Partnership</option>
+                        <option value="corporation">Corporation</option>
+                        <option value="cooperative">Cooperative</option>
+                      </select>
+
+                      <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-gray-400 text-lg">
+                          expand_more
+                        </span>
+                      </div>
+                    </div>
+                    {errors.businessType && (
+                      <p className="text-red-600 text-xs mt-1">{errors.businessType}</p>
+                    )}
                   </div>
                 </>
               )}
@@ -437,11 +613,14 @@ export default function RegisterRolePage() {
                       <input
                         value={formData.warehouseName || ''}
                         onChange={(e) => setFormData({ ...formData, warehouseName: e.target.value })}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] transition-all"
+                        className={getInputClass(errors.warehouseName)}
                         placeholder="Enter warehouse name"
                         required
                       />
                     </div>
+                    {errors.warehouseName && (
+                      <p className="text-red-600 text-xs mt-1">{errors.warehouseName}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -455,11 +634,14 @@ export default function RegisterRolePage() {
                       <input
                         value={formData.warehouseLocation || ''}
                         onChange={(e) => setFormData({ ...formData, warehouseLocation: e.target.value })}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] transition-all"
+                        className={getInputClass(errors.warehouseLocation)}
                         placeholder="Enter warehouse location"
                         required
                       />
                     </div>
+                    {errors.warehouseLocation && (
+                      <p className="text-red-600 text-xs mt-1">{errors.warehouseLocation}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -473,11 +655,14 @@ export default function RegisterRolePage() {
                       <input
                         value={formData.capacity || ''}
                         onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] transition-all"
+                        className={getInputClass(errors.capacity)}
                         placeholder="e.g., 1000 tons"
                         required
                       />
                     </div>
+                    {errors.capacity && (
+                      <p className="text-red-600 text-xs mt-1">{errors.capacity}</p>
+                    )}
                   </div>
                 </>
               )}
@@ -485,30 +670,69 @@ export default function RegisterRolePage() {
               {role === 'transporter' && (
                 <>
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-[#0b5d68]">
+                    <label className="block text-sm font-semibold text-[#0b5d68]">
                       Vehicle Type
                     </label>
-                    <select
-                      value={formData.vehicleType || ''}
-                      onChange={(e) => setFormData({ ...formData, vehicleType: e.target.value })}
-                      className="block w-full px-3 py-2 border border-[#e0e0e0] rounded-lg shadow-sm placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-[#0b5d68] focus:border-[#0b5d68] sm:text-sm"
-                      required
-                    >
-                      <option value="">Select vehicle type</option>
-                      <option value="truck">Truck</option>
-                      <option value="refrigerated_truck">Refrigerated Truck</option>
-                      <option value="flatbed">Flatbed</option>
-                      <option value="container">Container Truck</option>
-                      <option value="van">Van</option>
-                    </select>
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
+                          local_shipping
+                        </span>
+                      </div>
+
+                      <select
+                        value={formData.vehicleType || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, vehicleType: e.target.value })
+                        }
+                        className={getSelectClass(errors.vehicleType)}
+                      >
+                        <option value="">Select vehicle type</option>
+                        <option value="truck">Truck</option>
+                        <option value="refrigerated_truck">Refrigerated Truck</option>
+                        <option value="flatbed">Flatbed</option>
+                        <option value="container">Container Truck</option>
+                        <option value="van">Van</option>
+                      </select>
+
+                      <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-gray-400 text-lg">
+                          expand_more
+                        </span>
+                      </div>
+                    </div>
+                    {errors.vehicleType && (
+                      <p className="text-red-600 text-xs mt-1">{errors.vehicleType}</p>
+                    )}
                   </div>
-                  <Input
-                    label="Service Area"
-                    value={formData.serviceArea || ''}
-                    onChange={(e) => setFormData({ ...formData, serviceArea: e.target.value })}
-                    placeholder="e.g., Nairobi to Mombasa"
-                    required
-                  />
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-[#0b5d68]">
+                      Service Area
+                    </label>
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
+                          route
+                        </span>
+                      </div>
+
+                      <input
+                        type="text"
+                        value={formData.serviceArea || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, serviceArea: e.target.value })
+                        }
+                        className={getInputClass(errors.serviceArea)}
+                        placeholder="e.g., Nairobi to Mombasa"
+                        required
+                      />
+                    </div>
+                    {errors.serviceArea && (
+                      <p className="text-red-600 text-xs mt-1">{errors.serviceArea}</p>
+                    )}
+                  </div>
                 </>
               )}
 
