@@ -6,6 +6,19 @@ import { dummyListings } from '@/lib/dummyData'
 import { apiUrl, authHeaders } from '@/lib/api'
 import ListingDetails from '@/components/listings/ListingDetails'
 
+const normalizePriceType = (priceType?: string) => {
+  switch (priceType?.toLowerCase()) {
+    case 'fixed_price':
+      return 'fixed'
+
+    case 'auction':
+      return 'auction'
+
+    default:
+      return undefined
+  }
+}
+
 export default function ListingDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -44,7 +57,8 @@ export default function ListingDetailPage() {
           description: d.description,
           type: d.type?.toLowerCase(),
           price: Number(d.price ?? 0),
-          priceType: d.price_type?.toLowerCase(),
+          // priceType: d.price_type?.toLowerCase(),
+          priceType: normalizePriceType(d.price_type),
           status: d.status?.toLowerCase(),
           location: d.listing_location,
           quantity:
