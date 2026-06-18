@@ -72,7 +72,10 @@ function ListingsPageContent() {
         const res = await fetch(apiUrl('/listings'))
         const result = await res.json()
 
-        console.log("DB listings:", result)
+        // console.log("DB listings:", result)
+        console.log("First Listing:", result.data[0])
+        console.log("Produce Listing:", result.data[0]?.produceListing)
+        console.log("User:", result.data[0]?.user)
 
         // IMPORTANT FIX 👇
         const dbArray = result.data || []
@@ -86,14 +89,16 @@ function ListingsPageContent() {
           type: item.type.toLowerCase(),
           price: Number(item.price),
           quantity:
-            item.produceListing?.quantity ||
-            item.warehouseListing?.capacity ||
+            Number(item.farmerProduce?.quantity) ||
+            item.warehouse?.capacity ||
             1,
           unit:
-            item.produceListing?.unit ||
-            item.transportListing?.vehicleType ||
+            item.farmerProduce?.unit ||
+            item.transport?.vehicleType ||
             "unit",
-          location: item.user?.location || "Unknown",
+          location:
+            item.listing_location ||
+            "Unknown",
           status: item.status.toLowerCase(),
           images: [],
           isDb: true

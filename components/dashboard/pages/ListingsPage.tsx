@@ -72,7 +72,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
               status:
                 item.status === 'ACTIVE'
                   ? 'live'
-                  : item.status === 'PAUSED'
+                  : item.status === 'DRAFT'
                     ? 'paused'
                     : 'reviewing',
               listingType:
@@ -98,9 +98,47 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     fetchListings();
   }, []);
 
-  const handleStatusChange = (listingId: string, newStatus: 'live' | 'paused') => {
-    setListings((prev) => prev.map((l) => (l.id === listingId ? { ...l, status: newStatus } : l)));
-    setOpenStatusDropdown(null);
+  const handleStatusChange = async (
+    listingId: string,
+    newStatus: 'live' | 'paused'
+  ) => {
+
+    const dbStatus =
+      newStatus === 'live'
+        ? 'ACTIVE'
+        : 'INACTIVE';
+
+
+    const response = await fetch(
+      apiUrl(`/listings/${listingId}`),
+      {
+        method: 'PUT',
+        headers: {
+          ...authHeaders(),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          status: dbStatus
+        })
+      }
+    );
+
+
+    const result = await response.json();
+
+
+    if (result.success) {
+
+      setListings(prev =>
+        prev.map(item =>
+          item.id === listingId
+            ? { ...item, status: newStatus }
+            : item
+        )
+      );
+
+    }
+
   };
   const [listingTypeFilter, setListingTypeFilter] = useState<
     'all' | 'produce' | 'warehouse' | 'transport'
@@ -227,9 +265,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           {filteredListings.map((listing) => (
             <div
               key={listing.id}
-              className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-[#f0f0f0] ${
-                listing.status === 'paused' ? 'opacity-70 grayscale-[0.3] bg-[#fcfcfc]' : ''
-              }`}
+              className={`bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group border border-[#f0f0f0] ${listing.status === 'paused' ? 'opacity-70 grayscale-[0.3] bg-[#fcfcfc]' : ''
+                }`}
             >
               {/* Product Image */}
               <div className="h-56 relative bg-gradient-to-br from-[#f9f9f7] to-[#f5f5f3]">
@@ -311,9 +348,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`w-full hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${
-                        openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''
-                      }`}
+                      className={`w-full hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''
+                        }`}
                       onClick={() =>
                         setOpenStatusDropdown((prev) => (prev === listing.id ? null : listing.id))
                       }
@@ -331,16 +367,14 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                         <div className="p-1.5 space-y-0.5">
                           <button
                             onClick={() => handleStatusChange(listing.id, 'live')}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
-                              listing.status === 'live'
-                                ? 'bg-[#2eb5c2]/10 text-[#2eb5c2]'
-                                : 'text-[#0b5d68] hover:bg-[#f5fafa] hover:text-[#2eb5c2]'
-                            }`}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${listing.status === 'live'
+                              ? 'bg-[#2eb5c2]/10 text-[#2eb5c2]'
+                              : 'text-[#0b5d68] hover:bg-[#f5fafa] hover:text-[#2eb5c2]'
+                              }`}
                           >
                             <span
-                              className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
-                                listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#cccccc]'
-                              }`}
+                              className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#cccccc]'
+                                }`}
                             />
                             Active
                             {listing.status === 'live' && (
@@ -350,16 +384,14 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
                           <button
                             onClick={() => handleStatusChange(listing.id, 'paused')}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
-                              listing.status === 'paused'
-                                ? 'bg-[#d55b39]/10 text-[#d55b39]'
-                                : 'text-[#0b5d68] hover:bg-[#fef5f3] hover:text-[#d55b39]'
-                            }`}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${listing.status === 'paused'
+                              ? 'bg-[#d55b39]/10 text-[#d55b39]'
+                              : 'text-[#0b5d68] hover:bg-[#fef5f3] hover:text-[#d55b39]'
+                              }`}
                           >
                             <span
-                              className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
-                                listing.status === 'paused' ? 'bg-[#d55b39]' : 'bg-[#cccccc]'
-                              }`}
+                              className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'paused' ? 'bg-[#d55b39]' : 'bg-[#cccccc]'
+                                }`}
                             />
                             Inactive
                             {listing.status === 'paused' && (

@@ -32,7 +32,7 @@ const getProductImage = (listing: Listing) => {
     'Cold Storage Unit 4': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCXeDmeZwUegHs4iiR1A4KGm3uwoQDIMOQzG0fx9cLfmbP3N730p_wLe9VI6mIoVHemgC_Jp1LK-VRxnRfoGRgYIXXeW8V7qaV49gPeTBiFNYzwDiU71tuWMdjJW5DWHDgQ0SoQYGCYEoP9tmp72XqFcAk90UYl8jMfOab0jsFwUTEnQz4cwTb2_EeNwyVPcQCPtLuehFGyBv9DE29nKay5zF1LoMYuI4XtEGsEGIvDcwmniOqSAAyBEQ-NhrN5ntutsuc9B9_hXcI',
     'Basmati Rice (Long)': 'https://lh3.googleusercontent.com/aida-public/AB6AXuCrv1X4l-V9Y-DM5LgGI6TVIvBNMLTcdRTNG8HWlutEt-VFFvlSiqTg6JNz3D9dl5gkd5Z4Hsu7x-Wx7jLswA2uWVJF2-cw4Ny9qdzcimgA5jWyYgelBZT7HgcVsfJ-oOpbYMlbSURsEtz74R5yD16eoYFVpvk_Y4Azx8jmTNldB9xhvRgdZSUduNsha7K6WjHJ6djkjkkijcDdfMp3RVBf_9nzMXifRgtDhl0LEzFUBdUiY259Sp_8qVnetbPUyb_MzfvfSG3Xxbs'
   }
-  
+
   return imageMap[listing.title] || 'https://images.pexels.com/photos/264537/pexels-photo-264537.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&fit=crop' // Default farm image
 }
 
@@ -89,73 +89,77 @@ const ListingCard = ({ listing }: ListingCardProps) => {
   }
 
   return (
-      <div className="bg-[#ffffff] rounded-xl overflow-hidden flex flex-col group transition-all hover:translate-y-[-4px] h-full">
-        <div className="relative h-48 overflow-hidden">
-          <img 
-            src={getProductImage(listing)}
-            alt={listing.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={(e) => {
-              const target = e.currentTarget;
-              const fallback = target.nextElementSibling as HTMLElement;
-              target.style.display = 'none';
-              if (fallback) {
-                fallback.style.display = 'flex';
-              }
-            }}
-          />
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#f6f3ef] to-[#e5e2de]" style={{display: 'none'}}>
-            <div className="p-4 bg-white/80 rounded-lg backdrop-blur-sm">
-              {getTypeIcon(listing.type)}
-            </div>
-          </div>
-          <div className="absolute top-4 left-4">
-            <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full ${getCategoryBadge(listing.type)}`}>
-              {getCategoryLabel(listing.type)}
-            </span>
-          </div>
-          <div className="absolute top-4 right-4 flex items-center gap-2">
-            <WishlistIcon listing={listing} size="md" />
-            <CartIcon listing={listing} size="md" />
-            {listing.priceType === 'auction' && (
-              <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-white animate-pulse shadow-lg">
-                LIVE BID
-              </span>
-            )}
+    <div className="bg-[#ffffff] rounded-xl overflow-hidden flex flex-col group transition-all hover:translate-y-[-4px] h-full">
+      <div className="relative h-48 overflow-hidden">
+        <img
+          src={getProductImage(listing)}
+          alt={listing.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => {
+            const target = e.currentTarget;
+            const fallback = target.nextElementSibling as HTMLElement;
+            target.style.display = 'none';
+            if (fallback) {
+              fallback.style.display = 'flex';
+            }
+          }}
+        />
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#f6f3ef] to-[#e5e2de]" style={{ display: 'none' }}>
+          <div className="p-4 bg-white/80 rounded-lg backdrop-blur-sm">
+            {getTypeIcon(listing.type)}
           </div>
         </div>
-        
-        <div className="p-6 flex-1 flex flex-col">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h3 className="font-bold text-xl text-[#012d1d] leading-none mb-1 font-['Manrope']">{listing.title}</h3>
-              <p className="text-xs text-[#717973] flex items-center gap-1">
-                <span className="text-[14px]">📍</span>
-                {listing.location}
-              </p>
-            </div>
-            <span className="text-lg font-bold text-[#735a3a]">
-              &#8377;{listing.price.toFixed(2)}
-              <span className="text-xs font-medium text-[#717973]">/{listing.unit}</span>
+        <div className="absolute top-4 left-4">
+          <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full ${getCategoryBadge(listing.type)}`}>
+            {getCategoryLabel(listing.type)}
+          </span>
+        </div>
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          <WishlistIcon listing={listing} size="md" />
+          <CartIcon listing={listing} size="md" />
+          {listing.priceType === 'auction' && (
+            <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-white animate-pulse shadow-lg">
+              LIVE BID
             </span>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-[#f0ede9] p-3 rounded-lg">
-              <span className="block text-[10px] text-[#717973] uppercase font-bold mb-1">Quantity</span>
-              <span className="text-sm font-semibold text-[#012d1d]">{listing.quantity} {listing.unit}</span>
-            </div>
-            <div className="bg-[#f0ede9] p-3 rounded-lg">
-              <span className="block text-[10px] text-[#717973] uppercase font-bold mb-1">Quality</span>
-              <span className="text-sm font-semibold text-[#012d1d]">{listing.status === 'active' ? 'Available' : listing.status}</span>
-            </div>
-          </div>
-          
-          <Link href={`/listings/${listing.id}`} className="mt-auto w-full py-3 bg-[#f0ede9] text-[#012d1d] font-bold rounded-lg hover:bg-[#012d1d] hover:text-white transition-all font-['Manrope'] text-center block">
-            View Details
-          </Link>
+          )}
         </div>
       </div>
+
+      <div className="p-6 flex-1 flex flex-col">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="font-bold text-xl text-[#012d1d] leading-none mb-1 font-['Manrope']">{listing.title}</h3>
+            <p className="text-xs text-[#717973] flex items-center gap-1">
+              <span className="text-[14px]">📍</span>
+              {listing.location}
+            </p>
+          </div>
+          <span className="text-lg font-bold text-[#735a3a]">
+            &#8377;{listing.price.toFixed(2)}
+            <span className="text-xs font-medium text-[#717973]">/{listing.unit}</span>
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-[#f0ede9] p-3 rounded-lg">
+            <span className="block text-[10px] text-[#717973] uppercase font-bold mb-1">Quantity</span>
+            <span className="text-sm font-semibold text-[#012d1d]">{listing.quantity} {listing.unit}</span>
+          </div>
+          <div className="bg-[#f0ede9] p-3 rounded-lg">
+            <span className="block text-[10px] text-[#717973] uppercase font-bold mb-1">
+              Status
+            </span>
+            <span className="text-sm font-semibold text-[#012d1d]">{listing.status === 'active'
+              ? 'Available'
+              : 'Not Available'}</span>
+          </div>
+        </div>
+
+        <Link href={`/listings/${listing.id}`} className="mt-auto w-full py-3 bg-[#f0ede9] text-[#012d1d] font-bold rounded-lg hover:bg-[#012d1d] hover:text-white transition-all font-['Manrope'] text-center block">
+          View Details
+        </Link>
+      </div>
+    </div>
   )
 }
 

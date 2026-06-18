@@ -190,7 +190,16 @@ export const updateListing = async (req, res) => {
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
         if (price !== undefined) updateData.price = price;
-        if (status !== undefined) updateData.status = status;
+        if (status !== undefined) {
+
+            const statusMap = {
+                ACTIVE: "ACTIVE",
+                INACTIVE: "DRAFT",
+            };
+
+            updateData.status = statusMap[status];
+
+        }
 
         const updatedListing = await prisma.marketplace.update({
             where: { listing_id: id },
