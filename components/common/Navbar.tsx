@@ -168,8 +168,8 @@ const Navbar = () => {
 
   return (
     <nav className={`fixed top-0 w-full z-50 h-16 transition-all duration-300 ${isScrolled
-      ? isDark ? 'bg-gray-900/80 backdrop-blur-md' : 'bg-[#f9f9f7]/80 backdrop-blur-md'
-      : isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'
+      ? isDark ? 'bg-gray-900/80 backdrop-blur-md' : 'bg-[#ece8e1]/80 backdrop-blur-md'
+      : isDark ? 'bg-gray-900' : 'bg-[#ece8e1]'
       }`}>
       <div className="flex justify-between items-center w-full px-8 h-full max-w-full">
         <div className="flex items-center gap-8">
