@@ -157,7 +157,7 @@ const Navbar = () => {
 
     if (!newState) {
       logout()
-      const protectedPages = ['/notifications', '/profile', '/dashboard']
+      const protectedPages = ['/notifications', '/dashboard']
       if (protectedPages.some(page => pathname.startsWith(page))) {
         window.location.href = '/'
       }

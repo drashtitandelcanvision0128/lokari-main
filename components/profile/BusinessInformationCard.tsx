@@ -19,9 +19,17 @@ export default function BusinessInformationCard({
 
             <div className="bg-gradient-to-r from-[#2eb5c2] to-[#0b5d68] text-white px-6 py-4">
 
-                <h3 className="text-xl font-bold">
-                    Business Information
-                </h3>
+                <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold">
+                        Business Information
+                    </h3>
+
+                    <button
+                        className="bg-white/20 border border-white/30 text-white hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition"
+                    >
+                        Edit Profile
+                    </button>
+                </div>
 
             </div>
 
