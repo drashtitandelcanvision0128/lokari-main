@@ -62,14 +62,25 @@ export default function ListingDetailPage() {
           status: d.status?.toLowerCase(),
           location: d.listing_location,
           quantity:
-            d.produceListing?.quantity ||
-            d.warehouseListing?.capacity ||
-            d.transportListing?.capacity ||
+            d.farmerProduce?.quantity ||
+            d.warehouse?.capacity ||
+            d.transport?.capacity ||
             0,
-          unit: d.produceListing?.unit || 'kg',
 
-          storageTemp: d.produceListing?.storage_temperature,
-          storageHumidity: d.produceListing?.storage_humidity,
+          unit:
+            d.farmerProduce?.unit ||
+            d.warehouse?.capacity_unit ||
+            d.transport?.capacity_unit ||
+            '',
+
+          storageTemp:
+            d.farmerProduce?.storage_temperature
+              ? `${d.farmerProduce.storage_temperature}°C`
+              : undefined,
+
+          storageHumidity:
+            d.farmerProduce?.storage_humidity,
+
           seller: {
             name: d.user?.name || 'Seller',
             rating: 4.5,
@@ -80,16 +91,25 @@ export default function ListingDetailPage() {
               d.listing_location ||
               'Location not available',
           },
-          images: [],
-          postedAt: d.created_at,
-          category: d.produceListing?.crop_type || d.type || 'General',
-          cropName: d.produceListing?.crop_type,
 
-          variety: d.produceListing?.variety,
+          category:
+            d.farmerProduce?.crop_type ||
+            d.type ||
+            'General',
 
-          qualityGrade: d.produceListing?.quality_grade,
+          cropName:
+            d.farmerProduce?.crop_type,
 
-          harvestDate: d.produceListing?.harvest_date,
+          variety:
+            d.farmerProduce?.variety,
+
+          qualityGrade:
+            d.farmerProduce?.quality_grade,
+
+          harvestDate:
+            d.farmerProduce?.harvest_date
+              ? new Date(d.farmerProduce.harvest_date).toLocaleDateString()
+              : undefined,
           auctionEnd: d.auction?.end_time,
           reservePrice: d.auction?.reserve_price ? Number(d.auction?.reserve_price) : undefined,
           bids: d.auction?.bids?.map((b: any) => ({

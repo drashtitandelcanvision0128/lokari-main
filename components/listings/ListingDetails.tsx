@@ -32,7 +32,7 @@ const getProductImage = (listing: any) => {
     'Fresh Strawberries - Hot Auction': 'https://images.pexels.com/photos/1994461/strawberries-fruits-fresh-red-1994461.jpeg?auto=compress&cs=tinysrgb&w=800&h=450&fit=crop',
     'Premium Soybeans - Fixed Price Deal': 'https://images.pexels.com/photos/536210/soybeans-bean-legume-soy-536210.jpeg?auto=compress&cs=tinysrgb&w=800&h=450&fit=crop'
   }
-  
+
   return imageMap[listing.title] || 'https://images.pexels.com/photos/264537/pexels-photo-264537.jpeg?auto=compress&cs=tinysrgb&w=800&h=450&fit=crop' // Default farm image
 }
 
@@ -44,13 +44,13 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
   const [userRole, setUserRole] = useState<string>('')
   const [isVerified, setIsVerified] = useState(false)
   const [showKycModal, setShowKycModal] = useState(false)
-  
+
   // Auction state
   const [bidAmount, setBidAmount] = useState('')
   const [autoBid, setAutoBid] = useState(false)
   const [maxBidAmount, setMaxBidAmount] = useState('')
   const [showBidHistory, setShowBidHistory] = useState(false)
-  
+
   // Action states
   const [showContactForm, setShowContactForm] = useState(false)
   const [contactMessage, setContactMessage] = useState('')
@@ -61,11 +61,11 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
     const user = getCurrentUser()
     const role = getUserRole()
     const verified = isUserVerified()
-    
+
     console.log('ListingDetails - User:', user?.id)
     console.log('ListingDetails - Role:', role)
     console.log('ListingDetails - Verified:', verified)
-    
+
     setCurrentUser(user)
     setUserRole(role)
     setIsVerified(verified)
@@ -188,8 +188,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
             <div className="relative w-full h-[500px] bg-gradient-to-br from-gray-50 to-gray-100">
-              <img 
-                src={getProductImage(listing)} 
+              <img
+                src={getProductImage(listing)}
                 alt={listing.title}
                 className="w-full h-[500px] object-cover group-hover:scale-105 transition-transform duration-700"
                 onError={(e) => {
@@ -200,7 +200,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 <div className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-full font-semibold text-sm shadow-lg animate-pulse">
                   <span className="flex items-center">
                     <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
+                      <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
                     </svg>
                     LIVE AUCTION
                   </span>
@@ -210,8 +210,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 <div className="absolute top-4 left-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full font-semibold text-sm shadow-lg">
                   <span className="flex items-center">
                     <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"/>
+                      <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" />
                     </svg>
                     FIXED PRICE
                   </span>
@@ -224,9 +224,9 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
               <div className="grid grid-cols-4 gap-3">
                 {listing.images.slice(1, 5).map((img: string, index: number) => (
                   <div key={index} className="relative group overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
-                    <img 
-                      src={getProductImage(listing)} 
-                      alt={`${listing.title} ${index + 2}`} 
+                    <img
+                      src={getProductImage(listing)}
+                      alt={`${listing.title} ${index + 2}`}
                       className="w-full h-24 object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
@@ -250,26 +250,26 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <div className="flex items-center space-x-4">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 Verified Quality
               </span>
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100 4h2a1 1 0 100 2 2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd"/>
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100 4h2a1 1 0 100 2 2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd" />
                 </svg>
-                Premium Grade
+                {listing.qualityGrade || 'Premium Grade'}
               </span>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <div className="bg-gradient-to-br from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="flex items-center mb-2">
                 <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center mr-3">
                   <svg className="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
+                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                   </svg>
                 </div>
                 <div>
@@ -278,12 +278,12 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="flex items-center mb-2">
                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                   <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
+                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                   </svg>
                 </div>
                 <div>
@@ -292,12 +292,12 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="flex items-center mb-2">
                 <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                   <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 </div>
                 <div>
@@ -306,12 +306,12 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="flex items-center mb-2">
                 <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
                   <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
                   </svg>
                 </div>
                 <div>
@@ -320,12 +320,12 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="flex items-center mb-2">
                 <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
                   <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                   </svg>
                 </div>
                 <div>
@@ -334,12 +334,12 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-gray-50 to-white p-4 rounded-xl border border-gray-100">
               <div className="flex items-center mb-2">
                 <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                   <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"/>
+                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div>
@@ -354,7 +354,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                 <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/>
+                  <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                 </svg>
               </div>
               Storage Requirements
@@ -375,7 +375,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                 <svg className="w-3 h-3 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
               </div>
               Product Description
@@ -392,8 +392,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                 <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100 4h2a1 1 0 100 2 2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd"/>
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100 4h2a1 1 0 100 2 2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd" />
                 </svg>
               </div>
               Bid History
@@ -413,11 +413,10 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">{bid.message}</p>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                      }`}>
                       {bid.status}
                     </span>
                   </div>
@@ -444,13 +443,13 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   <span className="text-xl font-normal text-gray-600">/{listing.unit}</span>
                 </div>
               </div>
-              <Button 
+              <Button
                 onClick={() => router.push(`/listings/${listing.id}/pay`)}
                 className="w-full bg-gradient-to-r from-[#e89151] to-[#f0a060] hover:from-[#d67a3a] hover:to-[#e89151] text-white py-4 rounded-xl font-bold text-lg shadow-lg transform hover:scale-105 transition-all duration-200"
               >
                 <span className="flex items-center justify-center">
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+                    <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                   </svg>
                   Buy Now
                 </span>
@@ -459,7 +458,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
                   <p className="text-sm text-amber-800 flex items-center">
                     <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
                     KYC verification required to purchase
                   </p>
@@ -478,15 +477,15 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 </div>
                 <p className="text-gray-600 mt-2 italic">Price is negotiable based on volume</p>
               </div>
-              <Button 
+              <Button
                 onClick={() => setShowContactForm(true)}
                 className="w-full bg-gradient-to-r from-[#0b5d68] to-[#1a6b70] hover:from-[#0a4d58] hover:to-[#0b5d68] text-white py-4 rounded-xl font-bold text-lg shadow-lg transform hover:scale-105 transition-all duration-200"
                 disabled={!isVerified}
               >
                 <span className="flex items-center justify-center">
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
-                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
                   </svg>
                   Make Offer
                 </span>
@@ -499,7 +498,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
               <div className="text-center mb-6">
                 <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full font-bold text-sm mb-4 shadow-lg animate-pulse">
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z"/>
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
                   </svg>
                   LIVE AUCTION
                 </div>
@@ -581,7 +580,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 )}
 
                 <div className="space-y-3">
-                  <Button 
+                  <Button
                     type="submit"
                     className="w-full bg-[#e89151] hover:bg-[#f0a060] text-white py-3 rounded-lg font-semibold"
                     onClick={(e) => {
@@ -594,7 +593,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   >
                     Place Bid
                   </Button>
-                  <Button 
+                  <Button
                     onClick={() => router.push(`/listings/${listing.id}/bid`)}
                     className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white py-3 rounded-lg font-semibold shadow-lg"
                   >
@@ -628,7 +627,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
               <p className="text-sm text-[#666666]">{listing.seller?.location || 'Location'}</p>
             </div>
           </div>
-          <Button 
+          <Button
             onClick={() => setShowContactForm(true)}
             className="w-full bg-[#0b5d68] hover:bg-[#1a6b70] text-white py-2 rounded-lg"
             disabled={!isVerified}
@@ -670,7 +669,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
           <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <div className="w-6 h-6 bg-red-100 rounded-lg flex items-center justify-center mr-3">
               <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
               </svg>
             </div>
             Origin Location
@@ -681,7 +680,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 <div className="text-center">
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
                     <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="bg-white px-3 py-2 rounded-full shadow-md">
@@ -693,7 +692,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
               <div className="flex items-center">
                 <svg className="w-5 h-5 text-gray-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                 </svg>
                 <p className="text-gray-700 font-medium">{listing.location}</p>
               </div>
@@ -711,8 +710,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
         {/* Image Gallery */}
         <div className="bg-white rounded-xl border border-[#e0e0e0] overflow-hidden">
           <div className="relative w-full h-96 bg-gray-100">
-            <img 
-              src={getProductImage(listing)} 
+            <img
+              src={getProductImage(listing)}
               alt={listing.title}
               className="w-full h-96 object-cover"
               onError={(e) => {
@@ -724,9 +723,9 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <div className="grid grid-cols-4 gap-2 p-4">
               {listing.images.slice(1, 5).map((img: string, index: number) => (
                 <div key={index} className="relative w-full h-20 bg-gray-100">
-                  <img 
-                    src={getProductImage(listing)} 
-                    alt={`${listing.title} ${index + 2}`} 
+                  <img
+                    src={getProductImage(listing)}
+                    alt={`${listing.title} ${index + 2}`}
                     className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-75"
                   />
                 </div>
@@ -738,15 +737,14 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
         {/* Facility Details */}
         <div className="bg-white rounded-xl border border-[#e0e0e0] p-6">
           <h2 className="text-2xl font-bold text-[#0b5d68] mb-4">{listing.title}</h2>
-          
+
           <div className="mb-6">
-            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-              listing.storageTypes?.includes('Cold') ? 'bg-blue-100 text-blue-800' :
-              listing.storageTypes?.includes('Wet') ? 'bg-green-100 text-green-800' :
-              listing.storageTypes?.includes('Dry') ? 'bg-yellow-100 text-yellow-800' :
-              listing.storageTypes?.includes('Frozen') ? 'bg-purple-100 text-purple-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
+            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${listing.storageTypes?.includes('Cold') ? 'bg-blue-100 text-blue-800' :
+                listing.storageTypes?.includes('Wet') ? 'bg-green-100 text-green-800' :
+                  listing.storageTypes?.includes('Dry') ? 'bg-yellow-100 text-yellow-800' :
+                    listing.storageTypes?.includes('Frozen') ? 'bg-purple-100 text-purple-800' :
+                      'bg-gray-100 text-gray-800'
+              }`}>
               {listing.storageTypes?.join(', ') || 'Standard Storage'}
             </span>
           </div>
@@ -813,8 +811,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                 <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100 4h2a1 1 0 100 2 2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd"/>
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100 4h2a1 1 0 100 2 2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd" />
                 </svg>
               </div>
               Bid History
@@ -834,11 +832,10 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">{bid.message}</p>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                      }`}>
                       {bid.status}
                     </span>
                   </div>
@@ -862,8 +859,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             </div>
             <p className="text-[#666666]">Pricing per {listing.pricingModel === 'per-sqft' ? 'square foot' : 'ton'}</p>
           </div>
-          
-          <Button 
+
+          <Button
             onClick={() => setShowContactForm(true)}
             className="w-full bg-[#e89151] hover:bg-[#f0a060] text-white py-3 rounded-lg font-semibold"
             disabled={!isVerified}
@@ -897,7 +894,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
               <p className="text-sm text-[#666666]">{listing.seller?.location || 'Location'}</p>
             </div>
           </div>
-          <Button 
+          <Button
             onClick={() => setShowContactForm(true)}
             className="w-full bg-[#0b5d68] hover:bg-[#1a6b70] text-white py-2 rounded-lg"
             disabled={!isVerified}
@@ -939,7 +936,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
           <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <div className="w-6 h-6 bg-red-100 rounded-lg flex items-center justify-center mr-3">
               <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
               </svg>
             </div>
             Warehouse Location
@@ -950,7 +947,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 <div className="text-center">
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
                     <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="bg-white px-3 py-2 rounded-full shadow-md">
@@ -962,7 +959,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
               <div className="flex items-center">
                 <svg className="w-5 h-5 text-gray-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                 </svg>
                 <p className="text-gray-700 font-medium">{listing.address || listing.location}</p>
               </div>
@@ -980,8 +977,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
         {/* Image Gallery */}
         <div className="bg-white rounded-xl border border-[#e0e0e0] overflow-hidden">
           <div className="relative w-full h-96 bg-gray-100">
-            <img 
-              src={getProductImage(listing)} 
+            <img
+              src={getProductImage(listing)}
               alt={listing.title}
               className="w-full h-96 object-cover"
               onError={(e) => {
@@ -993,9 +990,9 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <div className="grid grid-cols-4 gap-2 p-4">
               {listing.images.slice(1, 5).map((img: string, index: number) => (
                 <div key={index} className="relative w-full h-20 bg-gray-100">
-                  <img 
-                    src={getProductImage(listing)} 
-                    alt={`${listing.title} ${index + 2}`} 
+                  <img
+                    src={getProductImage(listing)}
+                    alt={`${listing.title} ${index + 2}`}
                     className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-75"
                   />
                 </div>
@@ -1007,7 +1004,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
         {/* Vehicle Details */}
         <div className="bg-white rounded-xl border border-[#e0e0e0] p-6">
           <h2 className="text-2xl font-bold text-[#0b5d68] mb-4">{listing.title}</h2>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             <div>
               <span className="text-sm text-[#666666]">Vehicle Type</span>
@@ -1067,8 +1064,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
               <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                 <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100 4h2a1 1 0 100 2 2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd"/>
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100 4h2a1 1 0 100 2 2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd" />
                 </svg>
               </div>
               Bid History
@@ -1088,11 +1085,10 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   </div>
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">{bid.message}</p>
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                      }`}>
                       {bid.status}
                     </span>
                   </div>
@@ -1116,8 +1112,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             </div>
             <p className="text-[#666666]">Price per kilometer</p>
           </div>
-          
-          <Button 
+
+          <Button
             onClick={() => setShowContactForm(true)}
             className="w-full bg-[#e89151] hover:bg-[#f0a060] text-white py-3 rounded-lg font-semibold"
             disabled={!isVerified}
@@ -1151,7 +1147,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
               <p className="text-sm text-[#666666]">{listing.seller?.location || 'Location'}</p>
             </div>
           </div>
-          <Button 
+          <Button
             onClick={() => setShowContactForm(true)}
             className="w-full bg-[#0b5d68] hover:bg-[#1a6b70] text-white py-2 rounded-lg"
             disabled={!isVerified}
@@ -1193,7 +1189,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
           <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
             <div className="w-6 h-6 bg-red-100 rounded-lg flex items-center justify-center mr-3">
               <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
               </svg>
             </div>
             Service Area
@@ -1204,7 +1200,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 <div className="text-center">
                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
                     <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="bg-white px-3 py-2 rounded-full shadow-md">
@@ -1216,7 +1212,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
               <div className="flex items-center">
                 <svg className="w-5 h-5 text-gray-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                 </svg>
                 <p className="text-gray-700 font-medium">{listing.routes?.from} to {listing.routes?.to}</p>
               </div>
@@ -1242,7 +1238,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
             {showBidHistory ? 'Hide' : 'Show'} History
           </Button>
         </div>
-        
+
         {showBidHistory && (
           <div className="space-y-3">
             <div className="grid grid-cols-4 text-sm font-medium text-[#666666] pb-2 border-b">
@@ -1262,11 +1258,10 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   {new Date(bid.timestamp || bid.createdAt).toISOString().split('T')[0]}
                 </div>
                 <div>
-                  <span className={`px-2 py-1 rounded text-xs ${
-                    bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                  <span className={`px-2 py-1 rounded text-xs ${bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                    }`}>
                     {bid.status || 'pending'}
                   </span>
                 </div>
@@ -1285,7 +1280,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
           <h3 className="text-xl font-bold text-[#0b5d68] mb-4">Contact {listing.seller?.name || 'Seller'}</h3>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[#0b5d68] mb-1">
@@ -1300,7 +1295,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 required
               />
             </div>
-            
+
             <div className="flex space-x-3">
               <Button
                 onClick={handleContactSeller}
@@ -1317,7 +1312,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 Cancel
               </Button>
             </div>
-            
+
             {!isVerified && (
               <p className="text-sm text-[#d55b39]">KYC verification required to contact sellers</p>
             )}
@@ -1343,7 +1338,7 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
       {listingType === 'produce' && renderProduceListing()}
       {listingType === 'warehouse' && renderWarehouseListing()}
       {listingType === 'transport' && renderTransportListing()}
-      
+
       {/* KYC Verification Modal */}
       {showKycModal && !isVerified && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
