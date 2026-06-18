@@ -8,6 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { getCurrentUser, changePassword } from '@/lib/auth'
 import { useDashboardSearch } from '@/hooks/useSearchFilter'
 import { useSettings } from '@/backend/src/context/SettingsContext'
+import { useSearchParams } from 'next/navigation'
+
+import ProfileCard from '@/components/profile/ProfileCard'
+import BusinessInformationCard from '@/components/profile/BusinessInformationCard'
+
+import { apiUrl } from '@/lib/api'
 
 interface Address {
   id: string
@@ -46,21 +52,43 @@ interface SettingsPageProps {
 
 export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
   // const [activeSection, setActiveSection] = useState<'profile' | 'kyc' | 'addresses' | 'notifications' | 'security'>('profile')
-  const { activeSection } = useSettings()
+  const searchParams = useSearchParams()
+  const { activeSection, setActiveSection } = useSettings()
   const [addresses] = useState<Address[]>(mockAddresses)
 
   // Filter addresses based on search query using the new search hook
   const filteredAddresses = useDashboardSearch(addresses, searchQuery)
   const [currentUser, setCurrentUser] = useState<any>(null)
 
+  const [profileStats, setProfileStats] = useState({
+    listings: 0,
+    completed: 0,
+    businessLocation: '',
+    createdAt: ''
+  })
+
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
     phone: '',
-    farmName: '',
-    description: ''
+    businessLocation: '',
+    businessType: '',
+    bio: ''
   })
 
+  useEffect(() => {
+    const section = searchParams.get('section')
+
+    if (
+      section === 'profile' ||
+      section === 'kyc' ||
+      section === 'addresses' ||
+      section === 'notifications' ||
+      section === 'security'
+    ) {
+      setActiveSection(section)
+    }
+  }, [searchParams, setActiveSection])
 
   const [passwords, setPasswords] = useState({ current: '', next: '', confirm: '' })
   const [showPasswords, setShowPasswords] = useState({ current: false, next: false, confirm: false })
@@ -148,10 +176,56 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
         name: user.fullName || '',
         email: user.email || '',
         phone: user.phone || '',
-        farmName: '',
-        description: ''
+        businessLocation: '',
+        businessType: user.role || '',
+        bio: ''
       })
     }
+  }, [])
+
+  useEffect(() => {
+    const fetchProfileStats = async () => {
+      try {
+        const user = getCurrentUser()
+
+        if (!user?.id) return
+
+        const response = await fetch(apiUrl('/listings'))
+        const result = await response.json()
+
+        if (result.success) {
+          const userListings = result.data.filter(
+            (item: any) => item.user_id === user.id
+          )
+
+          setProfileData(prev => ({
+            ...prev,
+            businessLocation: userListings[0]?.listing_location || ''
+          }))
+
+          // console.log(
+          //   'Business Location:',
+          //   userListings[0]?.listing_location
+          // )
+
+          setProfileStats({
+            listings: userListings.length,
+
+            completed: userListings.filter(
+              (item: any) => item.status === 'SOLD'
+            ).length,
+
+            businessLocation:
+              userListings[0]?.listing_location || '',
+            createdAt: userListings[0]?.created_at || ''
+          })
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    fetchProfileStats()
   }, [])
 
   const kycStatus = {
@@ -200,107 +274,36 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
         <div>
           {/* Profile Section */}
           {activeSection === 'profile' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-full overflow-hidden bg-surface-container">
-                    <img
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtcgwObeViinNN0eoLWBwhhJ0GVy6Fb60CZTEB5YNI9pPmfAICJtPgUEEKnAbb3n2vXd1zqAcFit9CLpUsa3S_i_JOx0T9DWXhXN9TeO1Az3stLuWy2_epMdPJEC3zhh_jj9QrCdBgn7OOGXkqNmDrhyMO2LHUyI68R7llG227nMDW7_F1zLxQI3ovhA_b7OBauTXjBFpfPLxNwi2dZPNdcpQpv02nyAZVOvV1biO76xCpZDutKelMLqXbYGI2GjOHJyJZe8kskPo"
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-[#0a4e58] transition-colors cursor-pointer shadow-sm"
-                    >
-                      Change Photo
-                    </button>
-                    <p className="text-xs text-stone-500 mt-1">JPG, PNG or GIF. Max 2MB.</p>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-on-surface mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={profileData.name}
-                      onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-on-surface mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      value={profileData.email}
-                      onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-on-surface mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                      className="w-full px-3 py-2 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-on-surface mb-2">
-                      Farm Name
-                    </label>
-                    <input
-                      type="text"
-                      value={profileData.farmName}
-                      onChange={(e) => setProfileData({ ...profileData, farmName: e.target.value })}
-                      className="w-full px-3 py-2 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                    />
-                  </div>
-                </div>
+            <div className="grid lg:grid-cols-3 gap-8">
 
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-2">
-                    Farm Description
-                  </label>
-                  <textarea
-                    value={profileData.description}
-                    onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
-                  />
-                </div>
+              <ProfileCard
+                user={{
+                  ...profileData,
+                  role: currentUser?.role,
+                  location: currentUser?.location,
+                  listings: profileStats.listings,
+                  completed: profileStats.completed,
+                  createdAt: profileStats.createdAt
+                }}
+              />
 
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-[#0a4e58] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-                  >
-                    <Icon name="save" className="text-[16px]" />
-                    Save Changes
-                  </button>
 
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-lg text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer border border-outline"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
+              <div className="lg:col-span-2">
+
+                <BusinessInformationCard
+
+                  user={profileData}
+
+                  setUser={setProfileData}
+
+                />
+
+              </div>
+
+
+            </div>
+
           )}
 
           {/* KYC Section */}

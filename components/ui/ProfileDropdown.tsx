@@ -38,7 +38,8 @@ const ProfileDropdown = ({ userName, userRole }: ProfileDropdownProps) => {
     {
       icon: 'person',
       label: 'Profile',
-      href: '/profile',
+      // href: '/profile',
+      href: `/${userRole || 'farmer'}-dashboard?tab=settings&section=profile`,
       description: 'View and edit your profile'
     },
     {
@@ -86,8 +87,8 @@ const ProfileDropdown = ({ userName, userRole }: ProfileDropdownProps) => {
       <div className={`
         absolute right-0 mt-2 w-80 rounded-2xl shadow-2xl border border-[#e5e2de] bg-white overflow-hidden
         transform transition-all duration-300 ease-out origin-top-right
-        ${isOpen 
-          ? 'opacity-100 scale-100 translate-y-0' 
+        ${isOpen
+          ? 'opacity-100 scale-100 translate-y-0'
           : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
         }
       `}>
@@ -124,8 +125,8 @@ const ProfileDropdown = ({ userName, userRole }: ProfileDropdownProps) => {
                 >
                   <div className={`
                     w-10 h-10 rounded-lg flex items-center justify-center transition-colors
-                    ${item.isDanger 
-                      ? 'bg-red-100 text-red-600 group-hover:bg-red-200' 
+                    ${item.isDanger
+                      ? 'bg-red-100 text-red-600 group-hover:bg-red-200'
                       : 'bg-[#f0ede9] text-[#0b5d68] group-hover:bg-[#e5e2de]'
                     }
                   `}>
