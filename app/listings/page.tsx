@@ -134,13 +134,11 @@ function ListingsPageContent() {
         filtered = listings.filter(listing => listing.type === filterType)
       } else {
         // Search filter
-        if (searchTerm) {
-          const term = searchTerm.toLowerCase()
+        if (searchTerm.trim()) {
+          const term = searchTerm.trim().toLowerCase()
 
           filtered = filtered.filter(listing =>
-            (listing.title || '').toLowerCase().includes(term) ||
-            (listing.description || '').toLowerCase().includes(term) ||
-            (listing.category || '').toLowerCase().includes(term)
+            (listing.title || '').toLowerCase().includes(term)
           )
         }
 
