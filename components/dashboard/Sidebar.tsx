@@ -45,11 +45,17 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
     activeSection,
     setActiveSection
   } = useSettings()
+  const isSettingsActive = activeTab === 'settings'
 
   useEffect(() => {
     const role = getUserRole()
     setUserRole(role)
   }, [])
+  useEffect(() => {
+    if (activeTab === 'settings') {
+      setIsSettingsOpen(true)
+    }
+  }, [activeTab])
 
   return (
     <aside
@@ -116,7 +122,9 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
                   onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                   className={cn(
                     'w-full flex items-center px-4 py-3 rounded-md',
-                    'text-on-surface-variant hover:bg-accent/10'
+                    isSettingsActive
+                      ? 'bg-primary text-white'
+                      : 'text-on-surface-variant hover:bg-accent/10'
                   )}
                 >
                   <Icon name="settings" />
@@ -133,30 +141,37 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
                     </>
                   )}
                 </button>
+                <div
+                  className={cn(
+                    'overflow-hidden transition-all duration-300 ease-out',
+                    isSettingsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                  )}
+                >
+                  {!isCollapsed && isSettingsOpen && (
+                    <div className="ml-8 mt-1 space-y-1">
+                      {settingsSubTabs.map((item) => (
+                        <button
+                          className={cn(
+                            'w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-200 ease-out',
+                            activeTab === 'settings' &&
+                              activeSection === item.id
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'hover:bg-accent/10 hover:translate-x-1'
+                          )}
+                          key={item.id}
+                          onClick={() => {
+                            onTabChange('settings')
+                            setActiveSection(item.id as any)
+                          }}
+                        >
+                          <Icon name={item.icon} />
+                          {item.label}
+                        </button>
 
-                {!isCollapsed && isSettingsOpen && (
-                  <div className="ml-8 mt-1 space-y-1">
-                    {settingsSubTabs.map((item) => (
-                      <button
-                        className={cn(
-                          'w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm',
-                          activeSection === item.id
-                            ? 'bg-primary text-white'
-                            : 'hover:bg-accent/10'
-                        )}
-                        key={item.id}
-                        onClick={() => {
-                          onTabChange('settings')
-                          setActiveSection(item.id as any)
-                        }}
-                      >
-                        <Icon name={item.icon} />
-                        {item.label}
-                      </button>
-
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )
           }
@@ -171,8 +186,8 @@ export function Sidebar({ activeTab, onTabChange, dashboardTabs, isCollapsed, on
                 // isCollapsed ? 'px-2 py-3 justify-center' : 'mx-2 px-4 py-3 gap-3',
                 isCollapsed ? 'w-full px-2 py-3 justify-center' : 'w-full px-4 py-3 gap-3',
                 isActive
-                  ? 'bg-primary text-white'
-                  : 'text-on-surface-variant hover:bg-accent/10'
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-on-surface-variant hover:bg-accent/10 hover:translate-x-1'
               )}
               title={isCollapsed ? config.label : undefined}
             >
