@@ -237,26 +237,26 @@ function ListingsPageContent() {
   }
 
   return (
-    <div className="bg-[#fcf9f5] min-h-screen pt-16">
+    <div className="bg-background min-h-screen pt-16 pb-8">
 
-      <div className="flex min-h-screen">
+      <div className="flex">
         {/* Sidebar Filters */}
         <SidebarFilters onFilterChange={handleSidebarFilterChange} />
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-72 p-8">
+        <main className="flex-1 min-w-0 p-8">
           <header className="mb-8">
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-3xl font-bold text-[#012d1d] tracking-tight mb-2 font-['Manrope']">Marketplace Listings</h1>
-                <p className="text-[#414844] text-sm">Real-time inventory and logistics exchange for modern agriculture.</p>
+                <h1 className="text-3xl font-bold text-[#0b5d68] tracking-tight mb-2 font-headline">Marketplace Listings</h1>
+                <p className="text-[0.875rem] text-[#666666] font-body">Real-time inventory and logistics exchange for modern agriculture.</p>
               </div>
 
               {/* Search Field - Extreme Right */}
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#717973] text-sm material-symbols-outlined text-base">search</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-base text-[#2eb5c2]">search</span>
                 <input
-                  className="pl-10 pr-4 py-2 rounded-lg bg-white border border-gray-200 focus:ring-2 focus:ring-[#012d1d] focus:border-transparent text-sm w-64"
+                  className="w-64 rounded-[0.3125rem] border border-gray-200 bg-white py-2 pl-10 pr-4 text-[0.875rem] text-[#0b5d68] placeholder:text-gray-400 transition-all focus:border-[#2eb5c2] focus:outline-none focus:ring-2 focus:ring-[#2eb5c2]/30 font-body"
                   placeholder="Search listings..."
                   type="text"
                   value={searchTerm}
@@ -267,40 +267,40 @@ function ListingsPageContent() {
 
             {/* Sort Options - Extreme Right, Below Search */}
             <div className="flex justify-end mt-4">
-              <div className="flex items-center gap-2 bg-[#f6f3ef] p-1.5 rounded-xl w-fit">
-                <span className="text-xs font-semibold px-3 text-[#717973] uppercase tracking-widest">Sort:</span>
+              <div className="flex items-center gap-2 bg-white border border-gray-100 p-1.5 rounded-[0.3125rem] w-fit">
+                <span className="text-xs font-semibold px-3 text-[#666666] uppercase tracking-wider font-headline">Sort:</span>
                 <button
                   onClick={() => setSortBy('latest')}
-                  className={`px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${sortBy === 'latest'
-                    ? 'bg-[#ffffff] text-[#012d1d] shadow-sm'
-                    : 'text-[#414844] hover:bg-[#e5e2de]'
+                  className={`px-3 py-1.5 text-[0.875rem] font-medium rounded-[0.3125rem] transition-colors font-body ${sortBy === 'latest'
+                    ? 'bg-[#0b5d68] text-white'
+                    : 'text-[#0b5d68] hover:bg-[#f0f0f0]'
                     }`}
                 >
                   Latest
                 </button>
                 <button
                   onClick={() => setSortBy('price-low')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${sortBy === 'price-low'
-                    ? 'bg-[#ffffff] text-[#012d1d] shadow-sm'
-                    : 'text-[#414844] hover:bg-[#e5e2de]'
+                  className={`px-3 py-1.5 text-[0.875rem] font-medium rounded-[0.3125rem] transition-colors font-body ${sortBy === 'price-low'
+                    ? 'bg-[#0b5d68] text-white'
+                    : 'text-[#0b5d68] hover:bg-[#f0f0f0]'
                     }`}
                 >
                   Price Low
                 </button>
                 <button
                   onClick={() => setSortBy('price-high')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${sortBy === 'price-high'
-                    ? 'bg-[#ffffff] text-[#012d1d] shadow-sm'
-                    : 'text-[#414844] hover:bg-[#e5e2de]'
+                  className={`px-3 py-1.5 text-[0.875rem] font-medium rounded-[0.3125rem] transition-colors font-body ${sortBy === 'price-high'
+                    ? 'bg-[#0b5d68] text-white'
+                    : 'text-[#0b5d68] hover:bg-[#f0f0f0]'
                     }`}
                 >
                   Price High
                 </button>
                 <button
                   onClick={() => setSortBy('capacity')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${sortBy === 'capacity'
-                    ? 'bg-[#ffffff] text-[#012d1d] shadow-sm'
-                    : 'text-[#414844] hover:bg-[#e5e2de]'
+                  className={`px-3 py-1.5 text-[0.875rem] font-medium rounded-[0.3125rem] transition-colors font-body ${sortBy === 'capacity'
+                    ? 'bg-[#0b5d68] text-white'
+                    : 'text-[#0b5d68] hover:bg-[#f0f0f0]'
                     }`}
                 >
                   Capacity

@@ -5,18 +5,21 @@ import Footer from './Footer'
 
 export default function ConditionalFooter() {
   const pathname = usePathname()
-  
-  // Hide footer on all dashboard and admin pages
-  const shouldHideFooter = pathname.startsWith('/dashboard') || 
-                           pathname.startsWith('/farmer-dashboard') || 
-                           pathname.startsWith('/trader-dashboard') || 
-                           pathname.startsWith('/transporter-dashboard') || 
-                           pathname.startsWith('/warehouse-dashboard') || 
-                           pathname.startsWith('/admin')
 
-  if (shouldHideFooter) {
-    return null
-  }
+  const shouldHideFooter =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/farmer-dashboard') ||
+    pathname.startsWith('/trader-dashboard') ||
+    pathname.startsWith('/transporter-dashboard') ||
+    pathname.startsWith('/warehouse-dashboard') ||
+    pathname.startsWith('/admin')
 
-  return <Footer />
+  return (
+    <div
+      className={`transition-opacity duration-200 ${shouldHideFooter ? 'h-0 overflow-hidden opacity-0 pointer-events-none' : 'opacity-100'}`}
+      aria-hidden={shouldHideFooter}
+    >
+      <Footer />
+    </div>
+  )
 }

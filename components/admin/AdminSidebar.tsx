@@ -1,144 +1,190 @@
-'use client'
+'use client';
 
-import { AdminTabs, TabType } from '@/types/admin'
+import { AdminTabs, TabType } from '@/types/admin';
 
 interface AdminSidebarProps {
-  activeTab: TabType
-  onTabChange: (tab: TabType) => void
-  adminTabs: AdminTabs
-  isCollapsed: boolean
-  onToggleCollapse: () => void
+  activeTab: TabType | null;
+  onTabChange: (tab: TabType) => void;
+  adminTabs: AdminTabs;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-export function AdminSidebar({ activeTab, onTabChange, adminTabs, isCollapsed, onToggleCollapse }: AdminSidebarProps) {
-  const getTabIcon = (tab: TabType): string => {
-    const icons: Record<TabType, string> = {
-      users: 'people',
-      listings: 'inventory_2',
-      orders: 'shopping_cart',
-      disputes: 'gavel',
-      analytics: 'analytics',
-      auditLog: 'history'
-    }
-    return icons[tab] || 'dashboard'
-  }
+const TAB_META: Record<
+  TabType,
+  { label: string; icon: string; section: 'operations' | 'insights' }
+> = {
+  users: { label: 'Users', icon: 'people', section: 'operations' },
+  listings: { label: 'Listings', icon: 'inventory_2', section: 'operations' },
+  orders: { label: 'Orders', icon: 'shopping_cart', section: 'operations' },
+  disputes: { label: 'Disputes', icon: 'gavel', section: 'operations' },
+  analytics: { label: 'Analytics', icon: 'analytics', section: 'insights' },
+  auditLog: { label: 'Audit Log', icon: 'history', section: 'insights' },
+};
 
-  const getTabLabel = (tab: TabType): string => {
-    const labels: Record<TabType, string> = {
-      users: 'Users',
-      listings: 'Listings',
-      orders: 'Orders',
-      disputes: 'Disputes',
-      analytics: 'Analytics',
-      auditLog: 'Audit Log'
-    }
-    return labels[tab] || tab
-  }
+const TAB_BADGES: Partial<Record<TabType, number>> = {
+  users: 3,
+  listings: 23,
+  orders: 5,
+  disputes: 2,
+};
 
-  const getTabBadge = (tab: TabType): number | null => {
-    // Mock badge counts for demonstration
-    const badges: Record<TabType, number | null> = {
-      users: 3, // 3 pending users
-      listings: 23, // 23 pending listings
-      orders: 5, // 5 disputed orders
-      disputes: 2, // 2 open disputes
-      analytics: null,
-      auditLog: null
-    }
-    return badges[tab] || null
-  }
+export function AdminSidebar({
+  activeTab,
+  onTabChange,
+  adminTabs,
+  isCollapsed,
+  onToggleCollapse,
+}: AdminSidebarProps) {
+  const operationsTabs = (Object.keys(adminTabs) as TabType[]).filter(
+    (tab) => adminTabs[tab] && TAB_META[tab].section === 'operations',
+  );
+  const insightsTabs = (Object.keys(adminTabs) as TabType[]).filter(
+    (tab) => adminTabs[tab] && TAB_META[tab].section === 'insights',
+  );
+
+  const renderNavButton = (tab: TabType) => {
+    const { label, icon } = TAB_META[tab];
+    const isActive = activeTab === tab;
+    const badge = TAB_BADGES[tab];
+
+    return (
+      <button
+        key={tab}
+        type="button"
+        onClick={() => onTabChange(tab)}
+        title={isCollapsed ? label : undefined}
+        className={`group relative flex w-full items-center rounded-xl transition-all duration-200 ${
+          isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5'
+        } ${
+          isActive
+            ? 'bg-[#0b5d68]/10 text-[#0b5d68] shadow-sm'
+            : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+        }`}
+      >
+        {isActive && (
+          <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-[#2eb5c2]" />
+        )}
+
+        <span
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+            isActive
+              ? 'bg-[#0b5d68] text-white shadow-sm'
+              : 'bg-surface-container-high text-on-surface-variant group-hover:bg-surface group-hover:text-[#0b5d68]'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[1.25rem]">{icon}</span>
+        </span>
+
+        {!isCollapsed && (
+          <>
+            <span className="flex-1 text-left text-sm font-medium">{label}</span>
+            {badge != null && badge > 0 && (
+              <span
+                className={`min-w-[1.25rem] rounded-full px-1.5 py-0.5 text-center text-[10px] font-bold ${
+                  isActive ? 'bg-[#0b5d68] text-white' : 'bg-[#2eb5c2]/15 text-[#0b5d68]'
+                }`}
+              >
+                {badge > 99 ? '99+' : badge}
+              </span>
+            )}
+          </>
+        )}
+      </button>
+    );
+  };
+
+  const renderSection = (title: string, tabs: TabType[]) => {
+    if (tabs.length === 0) return null;
+
+    return (
+      <div className="space-y-1">
+        {!isCollapsed && (
+          <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest text-on-surface-variant/70">
+            {title}
+          </p>
+        )}
+        {tabs.map(renderNavButton)}
+      </div>
+    );
+  };
 
   return (
     <aside
-      className={`
-        bg-surface-container border-r border-outline flex flex-col
-        transition-all duration-300 ease-in-out
-        ${isCollapsed ? 'w-20' : 'w-64'}
-      `}
+      className={`sticky top-16 z-30 flex h-[calc(100vh-4rem)] shrink-0 flex-col border-r border-outline bg-surface shadow-sm transition-all duration-300 ease-in-out ${
+        isCollapsed ? 'w-[4.75rem]' : 'w-64'
+      }`}
     >
-      {/* Admin Header */}
-      <div className={`border-b border-outline transition-all duration-300 ease-in-out ${isCollapsed ? 'p-3' : 'p-4'}`}>
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-          <button
-            onClick={onToggleCollapse}
-            className="w-10 h-10 bg-error rounded-lg flex items-center justify-center hover:bg-error/90 transition-colors cursor-pointer group flex-shrink-0"
-          >
-            <span className="material-symbols-outlined text-on-error group-hover:scale-110 transition-transform">
-              admin_panel_settings
-            </span>
-          </button>
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
-            <h3 className="font-headline font-semibold text-on-surface">Admin Panel</h3>
-            <p className="text-xs text-on-surface-variant">System Management</p>
+      {/* Header */}
+      <div
+        className={`relative overflow-hidden border-b border-outline/60 ${
+          isCollapsed ? 'px-3 py-4' : 'px-4 py-5'
+        }`}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#0b5d68]/8 via-transparent to-[#2eb5c2]/10" />
+
+        <div className={`relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] shadow-md shadow-[#0b5d68]/20">
+            <span className="material-symbols-outlined text-2xl text-white">admin_panel_settings</span>
           </div>
+
+          {!isCollapsed && (
+            <p className="min-w-0 flex-1 text-sm font-medium text-on-surface-variant">System management</p>
+          )}
+
+          {!isCollapsed && (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className="rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+              aria-label="Collapse sidebar"
+            >
+              <span className="material-symbols-outlined text-xl">chevron_left</span>
+            </button>
+          )}
         </div>
+
+        {isCollapsed && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className="relative mt-3 flex w-full items-center justify-center rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-on-surface"
+            aria-label="Expand sidebar"
+          >
+            <span className="material-symbols-outlined text-xl">chevron_right</span>
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
-      <nav className={`flex-1 space-y-1 transition-all duration-300 ease-in-out ${isCollapsed ? 'px-2 py-4' : 'p-4'}`}>
-        {(Object.keys(adminTabs) as TabType[]).map((tab) => {
-          if (!adminTabs[tab]) return null
-
-          const isActive = activeTab === tab
-          const badge = getTabBadge(tab)
-
-          return (
-            <button
-              key={tab}
-              onClick={() => onTabChange(tab)}
-              className={`
-                w-full flex items-center justify-between rounded-lg transition-all duration-200 group cursor-pointer
-                ${isCollapsed ? 'px-2 py-3 justify-center' : 'px-4 py-3'}
-                ${isActive
-                  ? 'bg-primary-container text-on-primary-container shadow-sm'
-                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
-                }
-              `}
-              title={isCollapsed ? getTabLabel(tab) : undefined}
-            >
-              <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                <span className={`material-symbols-outlined ${isActive ? 'text-on-primary-container' : 'text-on-surface-variant group-hover:text-on-surface'
-                  }`}>
-                  {getTabIcon(tab)}
-                </span>
-                <span className={`font-medium transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
-                  }`}>
-                  {getTabLabel(tab)}
-                </span>
-              </div>
-
-              {!isCollapsed && badge !== null && badge > 0 && (
-                <span className={`px-2 py-1 text-xs font-medium rounded-full transition-all duration-300 ease-in-out ${isActive
-                    ? 'bg-on-primary-container text-primary-container'
-                    // : 'bg-error text-on-error'
-                    : 'bg-error text-white'
-                  }`}>
-                  {badge}
-                </span>
-              )}
-            </button>
-          )
-        })}
+      <nav className={`flex-1 space-y-4 overflow-y-auto ${isCollapsed ? 'px-2 py-4' : 'px-3 py-4'}`}>
+        {renderSection('Operations', operationsTabs)}
+        {renderSection('Insights', insightsTabs)}
       </nav>
 
-      {/* Admin Info */}
-      <div className={`border-t border-outline transition-all duration-300 ease-in-out ${isCollapsed ? 'p-2' : 'p-4'}`}>
-        <div className="bg-surface-container-high rounded-lg transition-all duration-300 ease-in-out">
-          <div className={`flex items-center gap-2 ${isCollapsed ? 'p-2 justify-center' : 'p-3'}`}>
-            <span className="material-symbols-outlined text-sm text-tertiary">security</span>
-            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
-              }`}>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs font-medium text-tertiary">Security Status</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-tertiary rounded-full animate-pulse"></div>
-                  <span className="text-xs text-on-surface-variant">All systems operational</span>
+      {/* Footer */}
+      <div className={`border-t border-outline/60 ${isCollapsed ? 'p-2' : 'p-3'}`}>
+        <div
+          className={`rounded-xl border border-outline/50 bg-gradient-to-br from-surface-container to-surface-container-high ${
+            isCollapsed ? 'p-2' : 'p-3'
+          }`}
+        >
+          <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2eb5c2]/15 text-[#0b5d68]">
+              <span className="material-symbols-outlined text-base">verified_user</span>
+            </span>
+            {!isCollapsed && (
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-on-surface">Secure session</p>
+                <div className="mt-0.5 flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[11px] text-on-surface-variant">All systems operational</span>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
     </aside>
-  )
+  );
 }

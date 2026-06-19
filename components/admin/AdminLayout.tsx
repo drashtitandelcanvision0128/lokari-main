@@ -1,14 +1,11 @@
 'use client'
 
 import { ReactNode, useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { AdminSidebar } from './AdminSidebar'
 import { AdminTabs, TabType } from '@/types/admin'
-import { AdminSettingsModal } from './AdminSettingsModal'
 
 interface AdminLayoutProps {
-  activeTab: TabType
+  activeTab?: TabType | null
   onTabChange: (tab: TabType) => void
   adminTabs: AdminTabs
   userName: string
@@ -17,10 +14,12 @@ interface AdminLayoutProps {
   searchQuery?: string
   onSearchChange?: (query: string) => void
   role?: string
+  pageTitle?: string
+  hideSearch?: boolean
 }
 
 export function AdminLayout({
-  activeTab,
+  activeTab = null,
   onTabChange,
   adminTabs,
   userName,
@@ -28,30 +27,18 @@ export function AdminLayout({
   children,
   searchQuery = '',
   onSearchChange,
-  role = 'farmer'
+  role = 'farmer',
+  pageTitle,
+  hideSearch = false,
 }: AdminLayoutProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
   
   // State from HEAD: Sidebar management
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const searchParams = useSearchParams()
 
-  // State from Incoming: Settings management
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [adminProfile, setAdminProfile] = useState({
-    username: userName,
-    email: 'admin@lokhari.com',
-  })
-
-  // Logic from HEAD: Auto-set active tab based on URL parameter
   useEffect(() => {
-    const tabFromUrl = searchParams.get('tab') as TabType
-    const validTabs: TabType[] = ['users', 'listings', 'orders', 'disputes', 'analytics', 'auditLog']
-    
-    if (tabFromUrl && validTabs.includes(tabFromUrl) && tabFromUrl !== activeTab) {
-      onTabChange(tabFromUrl)
-    }
-  }, [activeTab, onTabChange, searchParams])
+    setLocalSearchQuery(searchQuery)
+  }, [searchQuery])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,7 +59,9 @@ export function AdminLayout({
     setIsSidebarCollapsed(!isSidebarCollapsed)
   }
 
-  const getTabTitle = (tab: TabType): string => {
+  const getTabTitle = (tab: TabType | null): string => {
+    if (pageTitle) return pageTitle
+
     const titles: Record<TabType, string> = {
       users: 'User Management',
       listings: 'Listing Management',
@@ -83,6 +72,8 @@ export function AdminLayout({
     }
     return titles[tab] || 'Admin Panel'
   }
+
+  const headerTitle = pageTitle ?? (activeTab ? getTabTitle(activeTab) : 'Admin Panel')
 
   return (
     <div className="bg-surface text-on-surface flex min-h-screen pt-16">
@@ -106,7 +97,7 @@ export function AdminLayout({
                 Admin Access
               </span>
               <h2 className="font-headline font-bold text-primary text-lg">
-                {getTabTitle(activeTab)}
+                {headerTitle}
               </h2>
             </div>
           </div>
@@ -114,7 +105,7 @@ export function AdminLayout({
           {/* Right Section */}
           <div className="flex items-center gap-6">
             {/* Search Bar - Hidden for Analytics Tab */}
-            {activeTab !== 'analytics' && (
+            {!hideSearch && activeTab !== 'analytics' && (
               <form onSubmit={handleSearch} className="hidden lg:flex items-center gap-2 px-4 py-2 bg-surface-container rounded-full border border-outline">
                 <span className="material-symbols-outlined text-sm text-on-surface-variant">
                   search
@@ -128,21 +119,6 @@ export function AdminLayout({
                 />
               </form>
             )}
-
-            {/* Admin Actions */}
-            <div className="flex items-center gap-2">
-              <Link href="/admin/notifications" className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-sm">notifications</span>
-              </Link>
-              <button
-                id="admin-open-settings"
-                onClick={() => setIsSettingsOpen(true)}
-                title="Admin Settings"
-                className="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-sm">settings</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -151,15 +127,6 @@ export function AdminLayout({
           {children}
         </div>
       </main>
-
-      {/* Admin Settings Modal from Incoming Commit */}
-      <AdminSettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        initialUsername={adminProfile.username}
-        initialEmail={adminProfile.email}
-        onSave={(profile) => setAdminProfile(profile)}
-      />
     </div>
   )
 }

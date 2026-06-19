@@ -18,6 +18,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Lokhari",
   description: "Agricultural produce trading platform",
+  icons: {
+    icon: [{ url: "/AgriwareLogo.svg", type: "image/svg+xml" }],
+    shortcut: "/AgriwareLogo.svg",
+    apple: "/AgriwareLogo.svg",
+  },
 };
 
 export default function RootLayout({
@@ -32,7 +37,7 @@ export default function RootLayout({
         <link key="preconnect-2" rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link key="material-symbols" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
-      <body className="bg-[#fcf9f5] text-[#1c1c19] font-body selection:bg-primary-container selection:text-on-primary-container">
+      <body className="bg-background text-[#1c1c19] font-body selection:bg-primary-container selection:text-on-primary-container">
         <StoreProvider>
           <div className="min-h-screen flex flex-col">
             <Navbar />

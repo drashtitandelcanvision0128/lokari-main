@@ -10,6 +10,7 @@ interface OtpInputProps {
   error?: string
   disabled?: boolean
   autoFocus?: boolean
+  size?: 'md' | 'lg'
 }
 
 export default function OtpInput({
@@ -18,6 +19,7 @@ export default function OtpInput({
   error,
   disabled = false,
   autoFocus = true,
+  size = 'md',
 }: OtpInputProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -79,6 +81,11 @@ export default function OtpInput({
     }
   }
 
+  const boxClass =
+    size === 'lg'
+      ? 'h-12 w-11 sm:h-14 sm:w-12 text-lg'
+      : 'h-10 w-9 sm:h-11 sm:w-10 text-base'
+
   return (
     <div className="w-full">
       <div className="flex justify-center gap-2 sm:gap-3">
@@ -99,7 +106,7 @@ export default function OtpInput({
             onKeyDown={(e) => handleKeyDown(index, e)}
             onPaste={handlePaste}
             onFocus={(e) => e.target.select()}
-            className={`h-12 w-10 sm:h-14 sm:w-12 rounded-lg border text-center text-lg font-semibold font-mono shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[#0b5d68] focus:border-[#0b5d68] disabled:cursor-not-allowed disabled:opacity-50 ${
+            className={`${boxClass} rounded-[0.3125rem] border text-center font-semibold font-mono shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[#0b5d68] focus:border-[#0b5d68] disabled:cursor-not-allowed disabled:opacity-50 ${
               error ? 'border-[#d55b39]' : 'border-[#e0e0e0]'
             }`}
           />
