@@ -1,0 +1,19 @@
+<p style="margin:0 0 16px;font-size:16px;line-height:1.5;color:#333333;">
+  A new message was submitted via the contact form.
+</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#555555;">
+  <tr>
+    <td style="padding:8px 0;border-bottom:1px solid #eeeeee;font-weight:bold;width:100px;color:#0b5d68;">From</td>
+    <td style="padding:8px 0;border-bottom:1px solid #eeeeee;">{{senderName}} &lt;{{senderEmail}}&gt;</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 0;border-bottom:1px solid #eeeeee;font-weight:bold;color:#0b5d68;">Subject</td>
+    <td style="padding:8px 0;border-bottom:1px solid #eeeeee;">{{inquirySubject}}</td>
+  </tr>
+  <tr>
+    <td style="padding:8px 0;font-weight:bold;color:#0b5d68;vertical-align:top;">Submitted</td>
+    <td style="padding:8px 0;">{{submittedAt}}</td>
+  </tr>
+</table>
+<p style="margin:0 0 8px;font-size:14px;font-weight:bold;color:#0b5d68;">Message</p>
+<div style="background-color:#f9f9f7;border:1px solid #e8e8e6;border-radius:8px;padding:16px;font-size:14px;line-height:1.6;color:#333333;white-space:pre-wrap;">{{inquiryMessage}}</div>

@@ -8,6 +8,7 @@ import { registrationService, type KYCData } from '@/lib/registration';
 import ProgressIndicator from '@/components/common/ProgressIndicator';
 import TransitionWrapper from '@/components/common/TransitionWrapper';
 import { useGuestGuard } from '@/lib/authGuard';
+import GuestPageShell from '@/components/layout/GuestPageShell';
 
 interface LocalKYCData {
   aadhaarNumber: string;
@@ -47,7 +48,7 @@ export default function KYCPage() {
   const router = useRouter();
   const params = useParams();
   const role = params.role as string;
-  const canRender = useGuestGuard();
+  const guestStatus = useGuestGuard();
 
   const [kycData, setKycData] = useState<LocalKYCData>({
     aadhaarNumber: '',
@@ -279,8 +280,12 @@ export default function KYCPage() {
     }
   };
 
-  if (!config || !canRender) {
+  if (!config) {
     return null;
+  }
+
+  if (guestStatus !== 'allowed') {
+    return <GuestPageShell />;
   }
 
   return (
@@ -448,13 +453,13 @@ export default function KYCPage() {
                   <Button
                     onClick={handleKYCSubmit}
                     variant="primary"
-                    size="lg"
+                    size="md"
                     className="flex-1"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Submitting...' : 'Submit KYC'}
                   </Button>
-                  <Button onClick={handleSkipForNow} variant="outline" size="lg">
+                  <Button onClick={handleSkipForNow} variant="outline" size="md">
                     Skip for Now
                   </Button>
                 </div>
@@ -476,7 +481,7 @@ export default function KYCPage() {
                 <p className="text-sm text-[#666666]">
                   This usually takes 1-2 business days. You'll be notified once approved.
                 </p>
-                <Button onClick={handleSkipForNow} variant="primary" size="lg">
+                <Button onClick={handleSkipForNow} variant="primary" size="md">
                   Continue to Dashboard
                 </Button>
               </div>
@@ -495,7 +500,7 @@ export default function KYCPage() {
                 <p className="text-[#666666]">
                   Your account has been verified. You now have full access to all features.
                 </p>
-                <Button onClick={handleSkipForNow} variant="primary" size="lg">
+                <Button onClick={handleSkipForNow} variant="primary" size="md">
                   Go to Dashboard
                 </Button>
               </div>
@@ -527,12 +532,12 @@ export default function KYCPage() {
                       });
                     }}
                     variant="primary"
-                    size="lg"
+                    size="md"
                     className="flex-1"
                   >
                     Resubmit Documents
                   </Button>
-                  <Button onClick={handleSkipForNow} variant="outline" size="lg">
+                  <Button onClick={handleSkipForNow} variant="outline" size="md">
                     Skip for Now
                   </Button>
                 </div>

@@ -21,13 +21,13 @@ interface AuthApiResponse {
   }
 }
 
-/** POST /auth/login — throws with server error message on failure. */
-export async function loginWithCredentials(
+async function loginAtPath(
+  path: string,
   credentials: LoginCredentials,
 ): Promise<AuthPayload> {
   let response: Response
   try {
-    response = await fetch(apiUrl('/auth/login'), {
+    response = await fetch(apiUrl(path), {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -39,7 +39,7 @@ export async function loginWithCredentials(
   } catch (error) {
     if (error instanceof TypeError) {
       throw new Error(
-        `Cannot reach API at ${apiUrl('/auth/login')}. Start backend: cd backend && npm run dev`,
+        `Cannot reach API at ${apiUrl(path)}. Start backend: cd backend && npm run dev`,
       )
     }
     throw error
@@ -49,9 +49,7 @@ export async function loginWithCredentials(
   try {
     body = await response.json()
   } catch {
-    throw new Error(
-      `Cannot reach API at ${apiUrl('/auth/login')}. Is the backend running?`,
-    )
+    throw new Error(`Cannot reach API at ${apiUrl(path)}. Is the backend running?`)
   }
 
   if (!response.ok) {
@@ -66,6 +64,20 @@ export async function loginWithCredentials(
   }
 
   return { user, token }
+}
+
+/** POST /auth/login — throws with server error message on failure. */
+export async function loginWithCredentials(
+  credentials: LoginCredentials,
+): Promise<AuthPayload> {
+  return loginAtPath('/auth/login', credentials)
+}
+
+/** POST /auth/admin/login — admin portal only. */
+export async function loginWithAdminCredentials(
+  credentials: LoginCredentials,
+): Promise<AuthPayload> {
+  return loginAtPath('/auth/admin/login', credentials)
 }
 
 /** POST /auth/logout — best-effort; always clears client session separately. */

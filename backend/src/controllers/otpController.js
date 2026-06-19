@@ -3,7 +3,6 @@ import { createAndSendOtp, OTP_PURPOSES, verifyOtp } from '../services/otpServic
 export async function sendOtpHandler(req, res) {
   try {
     const { email, purpose = 'register' } = req.body;
-
     if (!email?.trim()) {
       return res.status(400).json({ error: 'Email is required' });
     }

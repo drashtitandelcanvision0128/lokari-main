@@ -69,6 +69,25 @@
   animation: scale-in 0.3s ease-out;
 }
 
+@keyframes page-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.page-enter {
+  animation: page-enter 0.15s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
+  }
+}
+
 /* Custom border radius */
 :root {
   --radius-sm: 0.125rem;
@@ -211,19 +230,30 @@ html, body {
 .text-primary-dark { color: #0b5d68 !important; }
 .border-primary-dark { border-color: #0b5d68 !important; }
 .hover-primary-dark:hover { color: #0b5d68 !important; }
-.bg-primary-dark-hover:hover { background-color: #0b5d68 !important; }
+.bg-primary-dark-hover:hover {
+  background-color: #0b5d68 !important;
+  color: #ffffff !important;
+}
 
 .bg-accent-turquoise { background-color: #2eb5c2 !important; }
 .text-accent-turquoise { color: #2eb5c2 !important; }
 .border-accent-turquoise { border-color: #2eb5c2 !important; }
 .hover-accent-turquoise:hover { color: #2eb5c2 !important; }
-.bg-accent-turquoise-hover:hover { background-color: #2eb5c2 !important; }
+
+.bg-accent-turquoise-hover:hover {
+  background-color: #2eb5c2 !important;
+  color: #0b5d68 !important;
+}
 
 .bg-cta-orange { background-color: #e89151 !important; }
 .text-cta-orange { color: #e89151 !important; }
 .border-cta-orange { border-color: #e89151 !important; }
 .hover-cta-orange:hover { color: #e89151 !important; }
-.bg-cta-orange-hover:hover { background-color: #e89151 !important; }
+
+.bg-cta-orange-hover:hover {
+  background-color: #e89151 !important;
+  color: #ffffff !important;
+}
 
 .bg-cta-red { background-color: #d55b39 !important; }
 .text-cta-red { color: #d55b39 !important; }
@@ -324,4 +354,32 @@ html {
 .backdrop-blur-md {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+/* Pointer on interactive links and controls */
+a[href],
+button:not(:disabled),
+label,
+select,
+summary,
+[role='button']:not([aria-disabled='true']) {
+  cursor: pointer;
+}
+
+button:disabled,
+[disabled],
+[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+input[type='checkbox'],
+input[type='radio'],
+input[type='submit'],
+input[type='button'],
+input[type='reset'] {
+  cursor: pointer;
+}
+
+input:disabled {
+  cursor: not-allowed;
 }

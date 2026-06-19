@@ -13,6 +13,9 @@ import {
 import { selectCartCount } from '@/lib/store/slices/cartSlice'
 import { selectWishlistCount } from '@/lib/store/slices/wishlistSlice'
 import ProfileDropdown from '@/components/ui/ProfileDropdown'
+import NavbarAuthActions from '@/components/layout/NavbarAuthActions'
+import { AdminHeaderNotifications } from '@/components/admin/AdminHeaderNotifications'
+import { AdminHeaderSettings } from '@/components/admin/AdminHeaderSettings'
 import { isAdminAuthenticated } from '@/lib/adminAuth'
 import { useLogout } from '@/hooks/useLogout'
 
@@ -165,6 +168,7 @@ const Navbar = () => {
   }
 
   const isActive = (path: string) => pathname === path
+  const isAdminUser = currentUser?.role === 'admin'
 
   return (
     <nav className={`fixed top-0 w-full z-50 h-16 transition-all duration-300 ${isScrolled
@@ -215,6 +219,15 @@ const Navbar = () => {
                   >
                     About Us
                   </Link>
+                  <Link
+                    href="/contact"
+                    className={`border-b-2 pb-1 transition-colors ${isActive('/contact')
+                      ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
+                      : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
+                      }`}
+                  >
+                    Contact Us
+                  </Link>
                 </>
               )}
           </div>
@@ -249,79 +262,58 @@ const Navbar = () => {
             </div>
           )}
 
-          {isAdminSession ? (
-            <>
-              {/* Admin-specific options */}
-              <button
-                onClick={handleLogout}
-                className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDark ? 'text-white bg-[#d55b39] hover:bg-[#c44928]' : 'text-white bg-[#d55b39] hover:bg-[#c44928]'
-                  }`}
-              >
-                <span className="material-symbols-outlined text-sm">logout</span>
-                <span>Admin Logout</span>
-              </button>
-            </>
-          ) : isLoggedIn ? (
-            <>
-              <Link href="/notifications" className="p-2 text-[#0b5d68]">
-                <span className="material-symbols-outlined">notifications</span>
-              </Link>
-              <Link href="/wishlist" className="p-2 text-[#0b5d68] relative">
-                <span className="material-symbols-outlined">favorite</span>
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#d55b39] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                    {wishlistCount > 99 ? '99+' : wishlistCount}
-                  </span>
-                )}
-              </Link>
-              <Link href="/cart" className="p-2 text-[#0b5d68] relative">
-                <span className="material-symbols-outlined">shopping_cart</span>
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#0b5d68] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                    {cartCount > 99 ? '99+' : cartCount}
-                  </span>
-                )}
-              </Link>
-
-              <div className="hidden md:flex items-center gap-2 ml-4">
-                <span className="text-sm text-on-surface-variant">Welcome,</span>
-                <span className="text-sm font-medium text-[#2eb5c2] font-headline">
-                  {userName || 'User'}
-                </span>
-                {currentUser?.role && (
-                  <>
-                    <span className="text-sm text-on-surface-variant">•</span>
-                    <span className="text-sm font-medium text-[#e89151] capitalize font-headline">
-                      {currentUser.role}
+          <NavbarAuthActions
+            isDark={isDark}
+            isAuthHydrated={isAuthHydrated}
+            isAdminSession={isAdminSession}
+            isLoggedIn={isLoggedIn}
+            onAdminLogout={handleLogout}
+          >
+            {isAdminUser ? (
+              <>
+                <AdminHeaderNotifications isDark={isDark} />
+                <AdminHeaderSettings isDark={isDark} />
+              </>
+            ) : (
+              <>
+                <Link href="/notifications" className={`p-2 ${isDark ? 'text-gray-200' : 'text-[#0b5d68]'}`}>
+                  <span className="material-symbols-outlined">notifications</span>
+                </Link>
+                <Link href="/wishlist" className={`p-2 relative ${isDark ? 'text-gray-200' : 'text-[#0b5d68]'}`}>
+                  <span className="material-symbols-outlined">favorite</span>
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#d55b39] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                      {wishlistCount > 99 ? '99+' : wishlistCount}
                     </span>
-                  </>
-                )}
-              </div>
-              <ProfileDropdown userName={userName} userRole={currentUser?.role} />
-              {/* <button 
-                onClick={handleLogout}
-                className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
-                  isDark ? 'text-white bg-[#e89151] hover:bg-[#d67a3a]' : 'text-white bg-[#e89151] hover:bg-[#d67a3a]'
-                }`}
-              >
-                <span className="material-symbols-outlined text-sm">logout</span>
-                <span>Logout</span>
-              </button> */}
-            </>
-          ) : (
-            <>
-              <Link href="/login" className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDark ? 'text-white bg-[#e89151] hover:bg-[#d67a3a]' : 'text-white bg-[#e89151] hover:bg-[#d67a3a]'
-                }`}>
-                <span className="material-symbols-outlined text-sm">login</span>
-                <span>Login</span>
-              </Link>
-              <Link href="/register" className={`hidden md:flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${isDark ? 'text-white bg-[#d55b39] hover:bg-[#c44928]' : 'text-white bg-[#d55b39] hover:bg-[#c44928]'
-                }`}>
-                <span className="material-symbols-outlined text-sm">person_add</span>
-                <span>Register</span>
-              </Link>
-            </>
-          )}
+                  )}
+                </Link>
+                <Link href="/cart" className={`p-2 relative ${isDark ? 'text-gray-200' : 'text-[#0b5d68]'}`}>
+                  <span className="material-symbols-outlined">shopping_cart</span>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#0b5d68] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                      {cartCount > 99 ? '99+' : cartCount}
+                    </span>
+                  )}
+                </Link>
+              </>
+            )}
+
+            <div className="hidden md:flex items-center gap-2 ml-4">
+              <span className="text-sm text-on-surface-variant">Welcome,</span>
+              <span className="text-sm font-medium text-[#2eb5c2] font-headline">
+                {userName || 'User'}
+              </span>
+              {currentUser?.role && (
+                <>
+                  <span className="text-sm text-on-surface-variant">•</span>
+                  <span className="text-sm font-medium text-[#e89151] capitalize font-headline">
+                    {currentUser.role}
+                  </span>
+                </>
+              )}
+            </div>
+            <ProfileDropdown userName={userName} userRole={currentUser?.role} />
+          </NavbarAuthActions>
         </div>
       </div>
     </nav>

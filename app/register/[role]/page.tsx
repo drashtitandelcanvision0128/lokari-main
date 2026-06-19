@@ -1,90 +1,249 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import type { ReactNode } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import Link from 'next/link'
-import Button from '@/components/common/Button'
-import Input from '@/components/common/Input'
-import OtpInput from '@/components/common/OtpInput'
-import { registrationService, type RegistrationData } from '@/lib/registration'
-import ProgressIndicator from '@/components/common/ProgressIndicator'
-import TransitionWrapper from '@/components/common/TransitionWrapper'
-import { useGuestGuard } from '@/lib/authGuard'
+import { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
+import Button from '@/components/common/Button';
+import OtpInput from '@/components/common/OtpInput';
+import RegistrationFormField, {
+  RegistrationFormSection,
+  registrationInputClass,
+  registrationSelectClass,
+  formatIndianPhone,
+  normalizeIndianPhoneInput,
+  getIndianPhoneValidationError,
+} from '@/components/forms/RegistrationFormField';
+import { registrationService, type RegistrationData } from '@/lib/registration';
+import ProgressIndicator from '@/components/common/ProgressIndicator';
+import TransitionWrapper from '@/components/common/TransitionWrapper';
+import { useGuestGuard } from '@/lib/authGuard';
+import GuestPageShell from '@/components/layout/GuestPageShell';
+
+const FIELD_SIZE = 'lg' as const;
 
 interface FormData {
-  fullName: string
-  email: string
-  phone: string
-  password: string
-  confirmPassword: string
-  termsAccepted: boolean
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+  termsAccepted: boolean;
   // Farmer specific
-  farmName?: string
-  farmLocation?: string
+  farmName?: string;
+  farmLocation?: string;
   // Trader specific
-  companyName?: string
-  businessType?: string
+  companyName?: string;
+  businessType?: string;
   // Warehouse specific
-  warehouseName?: string
-  warehouseLocation?: string
-  capacity?: string
+  warehouseName?: string;
+  warehouseLocation?: string;
+  capacity?: string;
   // Transporter specific
-  vehicleType?: string
-  serviceArea?: string
+  vehicleType?: string;
+  serviceArea?: string;
 }
 
 interface FormErrors {
-  fullName?: string
-  email?: string
-  phone?: string
-  password?: string
-  confirmPassword?: string
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+  confirmPassword?: string;
 
-  farmName?: string
-  farmLocation?: string
+  farmName?: string;
+  farmLocation?: string;
 
-  companyName?: string
-  businessType?: string
+  companyName?: string;
+  businessType?: string;
 
-  warehouseName?: string
-  warehouseLocation?: string
-  capacity?: string
+  warehouseName?: string;
+  warehouseLocation?: string;
+  capacity?: string;
 
-  vehicleType?: string
-  serviceArea?: string
-  termsAccepted?: string
-  general?: string
+  vehicleType?: string;
+  serviceArea?: string;
+  termsAccepted?: string;
+  general?: string;
 }
 
 const roleConfig = {
   farmer: {
     title: 'Farmer / Producer Registration',
     description: 'Join our marketplace to sell your produce directly to buyers',
-    fields: ['fullName', 'email', 'phone', 'password', 'confirmPassword', 'farmName', 'farmLocation']
+    fields: [
+      'fullName',
+      'email',
+      'phone',
+      'password',
+      'confirmPassword',
+      'farmName',
+      'farmLocation',
+    ],
   },
   trader: {
     title: 'Trader / Buyer Registration',
     description: 'Access real-time market insights and procure from verified sources',
-    fields: ['fullName', 'email', 'phone', 'password', 'confirmPassword', 'companyName', 'businessType']
+    fields: [
+      'fullName',
+      'email',
+      'phone',
+      'password',
+      'confirmPassword',
+      'companyName',
+      'businessType',
+    ],
   },
   warehouse: {
     title: 'Warehouse Owner Registration',
     description: 'Manage space availability and digitize warehouse receipts',
-    fields: ['fullName', 'email', 'phone', 'password', 'confirmPassword', 'warehouseName', 'warehouseLocation', 'capacity']
+    fields: [
+      'fullName',
+      'email',
+      'phone',
+      'password',
+      'confirmPassword',
+      'warehouseName',
+      'warehouseLocation',
+      'capacity',
+    ],
   },
   transporter: {
     title: 'Logistics Provider Registration',
     description: 'Optimize routes and secure cargo from our vast network',
-    fields: ['fullName', 'email', 'phone', 'password', 'confirmPassword', 'vehicleType', 'serviceArea']
+    fields: [
+      'fullName',
+      'email',
+      'phone',
+      'password',
+      'confirmPassword',
+      'vehicleType',
+      'serviceArea',
+    ],
+  },
+};
+
+const roleIcons: Record<string, string> = {
+  farmer: 'agriculture',
+  trader: 'monitoring',
+  warehouse: 'warehouse',
+  transporter: 'local_shipping',
+};
+
+const roleSectionTitles: Record<string, string> = {
+  farmer: 'Farm Details',
+  trader: 'Business Details',
+  warehouse: 'Warehouse Details',
+  transporter: 'Fleet Details',
+};
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type ValidatableField = Exclude<keyof FormErrors, 'general'>;
+
+function getFieldError(
+  field: ValidatableField,
+  data: FormData,
+  userRole: string,
+): string | undefined {
+  switch (field) {
+    case 'fullName':
+      if (!data.fullName.trim()) return 'Full name is required';
+      return undefined;
+    case 'email':
+      if (!data.email.trim()) return 'Email is required for account verification';
+      if (!EMAIL_REGEX.test(data.email)) return 'Please enter a valid email address';
+      return undefined;
+    case 'phone':
+      return getIndianPhoneValidationError(data.phone);
+    case 'password':
+      if (!data.password) return 'Password is required';
+      if (data.password.length < 8) return 'Password must be at least 8 characters';
+      return undefined;
+    case 'confirmPassword':
+      if (data.password !== data.confirmPassword) return 'Passwords do not match';
+      return undefined;
+    case 'farmName':
+      if (userRole === 'farmer' && !data.farmName?.trim()) return 'Farm name is required';
+      return undefined;
+    case 'farmLocation':
+      if (userRole === 'farmer' && !data.farmLocation?.trim()) return 'Farm location is required';
+      return undefined;
+    case 'companyName':
+      if (userRole === 'trader' && !data.companyName?.trim()) return 'Company name is required';
+      return undefined;
+    case 'businessType':
+      if (userRole === 'trader' && !data.businessType) return 'Please select a business type';
+      return undefined;
+    case 'warehouseName':
+      if (userRole === 'warehouse' && !data.warehouseName?.trim()) {
+        return 'Warehouse name is required';
+      }
+      return undefined;
+    case 'warehouseLocation':
+      if (userRole === 'warehouse' && !data.warehouseLocation?.trim()) {
+        return 'Warehouse location is required';
+      }
+      return undefined;
+    case 'capacity':
+      if (userRole === 'warehouse' && !data.capacity?.trim()) return 'Capacity is required';
+      return undefined;
+    case 'vehicleType':
+      if (userRole === 'transporter' && !data.vehicleType) return 'Please select a vehicle type';
+      return undefined;
+    case 'serviceArea':
+      if (userRole === 'transporter' && !data.serviceArea?.trim())
+        return 'Service area is required';
+      return undefined;
+    case 'termsAccepted':
+      if (!data.termsAccepted) return 'You must accept the terms and conditions';
+      return undefined;
+    default:
+      return undefined;
   }
 }
 
+function getRelatedFields(field: keyof FormData): ValidatableField[] {
+  if (field === 'password') return ['password', 'confirmPassword'];
+  if (field === 'confirmPassword') return ['confirmPassword'];
+  return [field as ValidatableField];
+}
+
+function getFieldsInOrder(userRole: string): ValidatableField[] {
+  return [
+    'fullName',
+    'email',
+    'phone',
+    'password',
+    'confirmPassword',
+    ...(userRole === 'farmer' ? (['farmName', 'farmLocation'] as ValidatableField[]) : []),
+    ...(userRole === 'trader' ? (['companyName', 'businessType'] as ValidatableField[]) : []),
+    ...(userRole === 'warehouse'
+      ? (['warehouseName', 'warehouseLocation', 'capacity'] as ValidatableField[])
+      : []),
+    ...(userRole === 'transporter' ? (['vehicleType', 'serviceArea'] as ValidatableField[]) : []),
+    'termsAccepted',
+  ];
+}
+
+function scrollToFirstError(fields: ValidatableField[], errorMap: FormErrors) {
+  const firstInvalidField = fields.find((field) => errorMap[field]);
+  if (!firstInvalidField) return;
+
+  requestAnimationFrame(() => {
+    const container = document.getElementById(`register-field-${firstInvalidField}`);
+    container?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    const focusable = container?.querySelector<HTMLElement>('input, select, textarea, button');
+    focusable?.focus({ preventScroll: true });
+  });
+}
+
 export default function RegisterRolePage(): ReactNode {
-  const router = useRouter()
-  const params = useParams()
-  const role = params.role as string
-  const canRender = useGuestGuard()
+  const router = useRouter();
+  const params = useParams();
+  const role = params.role as string;
+  const guestStatus = useGuestGuard();
 
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
@@ -101,151 +260,114 @@ export default function RegisterRolePage(): ReactNode {
     warehouseLocation: '',
     capacity: '',
     vehicleType: '',
-    serviceArea: ''
-  })
+    serviceArea: '',
+  });
 
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [isLoading, setIsLoading] = useState(false)
-  const [showOTP, setShowOTP] = useState(false)
-  const [otpValue, setOtpValue] = useState('')
-  const [otpSentTo, setOtpSentTo] = useState('')
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showOTP, setShowOTP] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [otpSentTo, setOtpSentTo] = useState('');
 
-  const config = roleConfig[role as keyof typeof roleConfig]
+  const config = roleConfig[role as keyof typeof roleConfig];
 
   useEffect(() => {
     if (!config) {
-      router.push('/register')
+      router.push('/register');
     }
-  }, [role, config, router])
+  }, [role, config, router]);
 
-  const getInputClass = (hasError?: string) =>
-    `w-full pl-12 pr-4 py-3 border rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 transition-all ${hasError
-      ? 'border-red-400 focus:ring-red-400 focus:border-red-400'
-      : 'border-gray-300 focus:ring-[#2eb5c2] focus:border-[#2eb5c2]'
-    }`
+  const clearFeedback = () => {
+    setErrors({});
+    setSuccessMessage('');
+  };
 
-  const getSelectClass = (hasError?: string) =>
-    `w-full pl-12 pr-10 py-3 border rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 transition-all appearance-none ${hasError
-      ? 'border-red-400 focus:ring-red-400 focus:border-red-400'
-      : 'border-gray-300 focus:ring-[#2eb5c2] focus:border-[#2eb5c2]'
-    }`
+  const handleFieldChange = <K extends keyof FormData>(field: K, value: FormData[K]) => {
+    const nextData = { ...formData, [field]: value };
+    setFormData(nextData);
+
+    const relatedFields = getRelatedFields(field);
+    setErrors((prev) => {
+      if (!relatedFields.some((key) => prev[key])) return prev;
+
+      const nextErrors = { ...prev };
+      for (const key of relatedFields) {
+        const message = getFieldError(key, nextData, role);
+        if (message) nextErrors[key] = message;
+        else delete nextErrors[key];
+      }
+      return nextErrors;
+    });
+  };
+
+  const handlePhoneChange = (value: string) => {
+    handleFieldChange('phone', normalizeIndianPhoneInput(value));
+  };
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
+    const fieldsToValidate = getFieldsInOrder(role);
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required'
+    const newErrors: FormErrors = {};
+    for (const field of fieldsToValidate) {
+      const message = getFieldError(field, formData, role);
+      if (message) newErrors[field] = message;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/
+    setErrors(newErrors);
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required for account verification'
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+    if (Object.keys(newErrors).length > 0) {
+      scrollToFirstError(fieldsToValidate, newErrors);
+      return false;
     }
 
-    if (formData.phone.trim() && !phoneRegex.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number'
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
-    }
-
-    if (role === 'farmer') {
-      if (!formData.farmName?.trim()) {
-        newErrors.farmName = 'Farm name is required'
-      }
-
-      if (!formData.farmLocation?.trim()) {
-        newErrors.farmLocation = 'Farm location is required'
-      }
-    }
-
-    if (role === 'trader') {
-      if (!formData.companyName?.trim()) {
-        newErrors.companyName = 'Company name is required'
-      }
-
-      if (!formData.businessType) {
-        newErrors.businessType = 'Please select a business type'
-      }
-    }
-
-    if (role === 'warehouse') {
-      if (!formData.warehouseName?.trim()) {
-        newErrors.warehouseName = 'Warehouse name is required'
-      }
-      if (!formData.warehouseLocation?.trim()) {
-        newErrors.warehouseLocation = 'Warehouse location is required'
-      }
-      if (!formData.capacity?.trim()) {
-        newErrors.capacity = 'Capacity is required'
-      }
-    }
-
-    if (role === 'transporter') {
-      if (!formData.vehicleType) {
-        newErrors.vehicleType = 'Please select a vehicle type'
-      }
-
-      if (!formData.serviceArea?.trim()) {
-        newErrors.serviceArea = 'Service area is required'
-      }
-    }
-
-    if (!formData.termsAccepted) {
-      newErrors.termsAccepted = 'You must accept the terms and conditions'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setIsLoading(true)
-    setErrors({})
+    setIsLoading(true);
+    clearFeedback();
 
     try {
       // Send OTP first — account is created only after verification
-      await registrationService.sendOTP(formData.email.trim(), 'register')
-      setOtpSentTo(formData.email.trim())
-      setShowOTP(true)
+      await registrationService.sendOTP(formData.email.trim(), 'register');
+      setOtpSentTo(formData.email.trim());
+      setShowOTP(true);
     } catch (error) {
-      setErrors({ general: error instanceof Error ? error.message : 'Failed to send OTP. Please try again.' })
+      setErrors({
+        general: error instanceof Error ? error.message : 'Failed to send OTP. Please try again.',
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleOTPVerify = async () => {
     if (otpValue.length !== 6) {
-      setErrors({ general: 'Please enter a valid 6-digit OTP' })
-      return
+      setSuccessMessage('');
+      setErrors({ general: 'Please enter a valid 6-digit OTP' });
+      requestAnimationFrame(() => {
+        document
+          .getElementById('register-field-otp')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      return;
     }
 
-    setIsLoading(true)
-    setErrors({})
+    setIsLoading(true);
+    clearFeedback();
 
     try {
-      await registrationService.verifyOTP(otpValue, formData.email.trim(), 'register')
+      await registrationService.verifyOTP(otpValue, formData.email.trim(), 'register');
 
       registrationService.savePendingRegistration({
         fullName: formData.fullName,
         email: formData.email.trim(),
-        phone: formData.phone || undefined,
+        phone: formData.phone ? formatIndianPhone(formData.phone) : undefined,
         password: formData.password,
         role: role as 'farmer' | 'trader' | 'warehouse' | 'transporter',
         termsAccepted: formData.termsAccepted,
@@ -264,524 +386,438 @@ export default function RegisterRolePage(): ReactNode {
         vehicleType: formData.vehicleType,
         capacity: formData.capacity,
         businessType: formData.businessType,
-      })
+      });
 
-      router.push(`/register/${role}/kyc`)
+      router.push(`/register/${role}/kyc`);
     } catch (error) {
       setErrors({
         general: error instanceof Error ? error.message : 'Invalid OTP. Please try again.',
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleResendOtp = async () => {
-    if (!formData.email.trim()) return
-    setIsLoading(true)
-    setErrors({})
+    if (!formData.email.trim()) return;
+
+    setIsLoading(true);
+    setErrors({});
     try {
-      await registrationService.sendOTP(formData.email.trim(), 'register')
-      setOtpValue('')
-      setErrors({ general: 'A new OTP has been sent to your email.' })
+      await registrationService.sendOTP(formData.email.trim(), 'register');
+      setOtpValue('');
+      setSuccessMessage('A new verification code has been sent to your email.');
     } catch (error) {
+      setSuccessMessage('');
       setErrors({
         general: error instanceof Error ? error.message : 'Failed to resend OTP',
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
+  };
+
+  const handleOtpChange = (value: string) => {
+    setOtpValue(value);
+    if (value.length === 6 && errors.general) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.general;
+        return next;
+      });
+    }
+  };
+
+  if (!config) {
+    return null;
   }
 
-  if (!config || !canRender) {
-    return null
+  if (guestStatus !== 'allowed') {
+    return <GuestPageShell />;
   }
 
   return (
     <div className="min-h-screen bg-[#f9f9f7]">
-      {/* Header */}
       <div className="bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] py-8 pt-24">
         <div className="max-w-6xl mx-auto px-8">
           <div className="text-center text-white">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-3xl">warehouse</span>
+            <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <span className="material-symbols-outlined text-3xl">
+                {roleIcons[role] ?? 'person_add'}
+              </span>
             </div>
-            <h1 className="text-3xl font-bold mb-2">
-              {config.title}
-            </h1>
-
-            <p className="text-white/90">
+            <h1 className="font-headline text-2xl sm:text-3xl font-bold mb-2">{config.title}</h1>
+            <p className="text-white/90 text-sm sm:text-base max-w-xl mx-auto">
               {config.description}
             </p>
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-1 mt-4 text-sm text-white/80 hover:text-white transition-colors"
+            >
+              <span className="material-symbols-outlined text-base">arrow_back</span>
+              Change role
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Registration Form */}
-      <div className="max-w-2xl mx-auto px-8 py-12">
-        {/* Progress Indicator */}
-        <div className="mb-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-8 py-8">
+        <div className="mb-6">
           <ProgressIndicator
-            currentStep={2}
+            currentStep={showOTP ? 2 : 2}
             totalSteps={3}
             steps={[
               { label: 'Role', status: 'completed' },
-              { label: 'Details', status: 'active' },
-              { label: 'KYC', status: 'pending' }
+              { label: showOTP ? 'Verify' : 'Details', status: 'active' },
+              { label: 'KYC', status: 'pending' },
             ]}
           />
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-10">
-          <div className="text-center mb-6">
-            <div className="lg:hidden w-16 h-16 bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <span className="material-symbols-outlined text-3xl text-white">warehouse</span>
-            </div>
-            <h1 className="font-headline text-2xl font-bold text-[#0b5d68] mb-2">
-              {config.title}
-            </h1>
-            <p className="text-gray-600 text-sm">
-              {config.description}
-            </p>
-          </div>
-
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8">
           <TransitionWrapper show={!showOTP} animation="slideIn">
-            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-              {/* <Input
+            <div className="mb-6">
+              <h2 className="font-headline text-xl font-bold text-[#0b5d68]">
+                Create your account
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Fill in your details below. We&apos;ll verify your email before continuing.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              <RegistrationFormSection title="Account Information" />
+
+              <RegistrationFormField
+                size={FIELD_SIZE}
+                fieldId="fullName"
                 label="Full Name"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                icon="person"
                 error={errors.fullName}
-                placeholder="Enter your full name"
-                required
-              /> */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#0b5d68]">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
-                      person
-                    </span>
-                  </div>
+              >
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) => handleFieldChange('fullName', e.target.value)}
+                  className={registrationInputClass(errors.fullName, { size: FIELD_SIZE })}
+                  placeholder="Enter your full name"
+                  autoComplete="name"
+                  required
+                />
+              </RegistrationFormField>
 
-                  <input
-                    type="text"
-                    value={formData.fullName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, fullName: e.target.value })
-                    }
-                    className={getInputClass(errors.fullName)}
-                    placeholder="Enter your full name"
-                    required
-                  />
-                </div>
+              <RegistrationFormField
+                size={FIELD_SIZE}
+                fieldId="email"
+                label="Email Address"
+                icon="email"
+                error={errors.email}
+              >
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleFieldChange('email', e.target.value)}
+                  className={registrationInputClass(errors.email, { size: FIELD_SIZE })}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  required
+                />
+              </RegistrationFormField>
 
-                {errors.fullName && (
-                  <p className="text-red-600 text-xs mt-1">{errors.fullName}</p>
-                )}
-              </div>
+              <RegistrationFormField
+                size={FIELD_SIZE}
+                fieldId="phone"
+                label="Phone Number"
+                icon="phone"
+                prefix="+91"
+                optional
+                error={errors.phone}
+                hint="10-digit phone number"
+              >
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={formData.phone}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  className={registrationInputClass(errors.phone, {
+                    withPrefix: true,
+                    size: FIELD_SIZE,
+                  })}
+                  placeholder="0000000000"
+                  autoComplete="tel-national"
+                  maxLength={10}
+                />
+              </RegistrationFormField>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#0b5d68]">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span className="material-symbols-outlined text-[#2eb5c2] text-lg">email</span>
-                  </div>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    // className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] transition-all"
-                    className={getInputClass(errors.email)}
-                    placeholder="Enter your email address"
-                    required
-                  />
-                </div>
-                {errors.email && (
-                  <p className="text-red-600 text-xs mt-1">{errors.email}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#0b5d68]">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span className="material-symbols-outlined text-[#2eb5c2] text-lg">phone</span>
-                  </div>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className={getInputClass(errors.phone)}
-                    placeholder="Enter your phone number"
-                  />
-                </div>
-                {errors.phone && (
-                  <p className="text-red-600 text-xs mt-1">{errors.phone}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#0b5d68]">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span className="material-symbols-outlined text-[#2eb5c2] text-lg">lock</span>
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <RegistrationFormField
+                  size={FIELD_SIZE}
+                  fieldId="password"
+                  label="Password"
+                  icon="lock"
+                  error={errors.password}
+                  hint="Minimum 8 characters"
+                >
                   <input
                     type="password"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className={getInputClass(errors.password)}
-                    placeholder="Create a strong password"
+                    onChange={(e) => handleFieldChange('password', e.target.value)}
+                    className={registrationInputClass(errors.password, { size: FIELD_SIZE })}
+                    placeholder="Create a password"
+                    autoComplete="new-password"
                     required
                   />
-                </div>
-                {errors.password && (
-                  <p className="text-red-600 text-xs mt-1">{errors.password}</p>
-                )}
-              </div>
+                </RegistrationFormField>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-[#0b5d68]">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <span className="material-symbols-outlined text-[#2eb5c2] text-lg">lock</span>
-                  </div>
+                <RegistrationFormField
+                  size={FIELD_SIZE}
+                  fieldId="confirmPassword"
+                  label="Confirm Password"
+                  icon="lock"
+                  error={errors.confirmPassword}
+                >
                   <input
                     type="password"
                     value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className={getInputClass(errors.confirmPassword)}
-                    placeholder="Confirm your password"
+                    onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
+                    className={registrationInputClass(errors.confirmPassword, { size: FIELD_SIZE })}
+                    placeholder="Re-enter password"
+                    autoComplete="new-password"
                     required
                   />
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-red-600 text-xs mt-1">{errors.confirmPassword}</p>
-                )}
+                </RegistrationFormField>
               </div>
+
+              <RegistrationFormSection title={roleSectionTitles[role] ?? 'Additional Details'} />
 
               {/* Role-specific fields */}
               {role === 'farmer' && (
                 <>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-[#0b5d68]">
-                      Farm Name
-                    </label>
-
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
-                          agriculture
-                        </span>
-                      </div>
-
-                      <input
-                        type="text"
-                        value={formData.farmName || ''}
-                        onChange={(e) =>
-                          setFormData({ ...formData, farmName: e.target.value })
-                        }
-                        className={getInputClass(errors.farmName)}
-                        placeholder="Enter your farm name"
-                        required
-                      />
-                    </div>
-                    {errors.farmName && (
-                      <p className="text-red-600 text-xs mt-1">{errors.farmName}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-[#0b5d68]">
-                      Farm Location
-                    </label>
-
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
-                          location_on
-                        </span>
-                      </div>
-
-                      <input
-                        type="text"
-                        value={formData.farmLocation || ''}
-                        onChange={(e) =>
-                          setFormData({ ...formData, farmLocation: e.target.value })
-                        }
-                        className={getInputClass(errors.farmLocation)}
-                        placeholder="Enter your farm location"
-                        required
-                      />
-                    </div>
-                    {errors.farmLocation && (
-                      <p className="text-red-600 text-xs mt-1">{errors.farmLocation}</p>
-                    )}
-                  </div>
+                  <RegistrationFormField
+                    size={FIELD_SIZE}
+                    fieldId="farmName"
+                    label="Farm Name"
+                    icon="agriculture"
+                    error={errors.farmName}
+                  >
+                    <input
+                      type="text"
+                      value={formData.farmName || ''}
+                      onChange={(e) => handleFieldChange('farmName', e.target.value)}
+                      className={registrationInputClass(errors.farmName, { size: FIELD_SIZE })}
+                      placeholder="e.g., Green Valley Farms"
+                      required
+                    />
+                  </RegistrationFormField>
+                  <RegistrationFormField
+                    size={FIELD_SIZE}
+                    fieldId="farmLocation"
+                    label="Farm Location"
+                    icon="location_on"
+                    error={errors.farmLocation}
+                  >
+                    <input
+                      type="text"
+                      value={formData.farmLocation || ''}
+                      onChange={(e) => handleFieldChange('farmLocation', e.target.value)}
+                      className={registrationInputClass(errors.farmLocation, { size: FIELD_SIZE })}
+                      placeholder="e.g., Nashik, Maharashtra"
+                      required
+                    />
+                  </RegistrationFormField>
                 </>
               )}
 
               {role === 'trader' && (
                 <>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-[#0b5d68]">
-                      Company Name
-                    </label>
-
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
-                          business
-                        </span>
-                      </div>
-
-                      <input
-                        type="text"
-                        value={formData.companyName || ''}
-                        onChange={(e) =>
-                          setFormData({ ...formData, companyName: e.target.value })
-                        }
-                        className={getInputClass(errors.companyName)}
-                        placeholder="Enter your company name"
-                        required
-                      />
+                  <RegistrationFormField
+                    size={FIELD_SIZE}
+                    fieldId="companyName"
+                    label="Company Name"
+                    icon="business"
+                    error={errors.companyName}
+                  >
+                    <input
+                      type="text"
+                      value={formData.companyName || ''}
+                      onChange={(e) => handleFieldChange('companyName', e.target.value)}
+                      className={registrationInputClass(errors.companyName, { size: FIELD_SIZE })}
+                      placeholder="Enter your company or trading name"
+                      required
+                    />
+                  </RegistrationFormField>
+                  <RegistrationFormField
+                    size={FIELD_SIZE}
+                    fieldId="businessType"
+                    label="Business Type"
+                    icon="work"
+                    error={errors.businessType}
+                  >
+                    <select
+                      value={formData.businessType || ''}
+                      onChange={(e) => handleFieldChange('businessType', e.target.value)}
+                      className={registrationSelectClass(errors.businessType, { size: FIELD_SIZE })}
+                      required
+                    >
+                      <option value="">Select business type</option>
+                      <option value="individual">Individual Trader</option>
+                      <option value="partnership">Partnership</option>
+                      <option value="corporation">Corporation</option>
+                      <option value="cooperative">Cooperative</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <span className="material-symbols-outlined text-base text-gray-400">
+                        expand_more
+                      </span>
                     </div>
-                    {errors.companyName && (
-                      <p className="text-red-600 text-xs mt-1">{errors.companyName}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-[#0b5d68]">
-                      Business Type
-                    </label>
-
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
-                          work
-                        </span>
-                      </div>
-
-                      <select
-                        value={formData.businessType || ''}
-                        onChange={(e) =>
-                          setFormData({ ...formData, businessType: e.target.value })
-                        }
-                        className={getSelectClass(errors.businessType)}
-                        required
-                      >
-                        <option value="">Select business type</option>
-                        <option value="individual">Individual Trader</option>
-                        <option value="partnership">Partnership</option>
-                        <option value="corporation">Corporation</option>
-                        <option value="cooperative">Cooperative</option>
-                      </select>
-
-                      <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-gray-400 text-lg">
-                          expand_more
-                        </span>
-                      </div>
-                    </div>
-                    {errors.businessType && (
-                      <p className="text-red-600 text-xs mt-1">{errors.businessType}</p>
-                    )}
-                  </div>
+                  </RegistrationFormField>
                 </>
               )}
 
               {role === 'warehouse' && (
                 <>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-[#0b5d68]">
-                      Warehouse Name
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">warehouse</span>
-                      </div>
-                      <input
-                        value={formData.warehouseName || ''}
-                        onChange={(e) => setFormData({ ...formData, warehouseName: e.target.value })}
-                        className={getInputClass(errors.warehouseName)}
-                        placeholder="Enter warehouse name"
-                        required
-                      />
-                    </div>
-                    {errors.warehouseName && (
-                      <p className="text-red-600 text-xs mt-1">{errors.warehouseName}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-[#0b5d68]">
-                      Warehouse Location
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">location_on</span>
-                      </div>
-                      <input
-                        value={formData.warehouseLocation || ''}
-                        onChange={(e) => setFormData({ ...formData, warehouseLocation: e.target.value })}
-                        className={getInputClass(errors.warehouseLocation)}
-                        placeholder="Enter warehouse location"
-                        required
-                      />
-                    </div>
-                    {errors.warehouseLocation && (
-                      <p className="text-red-600 text-xs mt-1">{errors.warehouseLocation}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-[#0b5d68]">
-                      Storage Capacity
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">inventory</span>
-                      </div>
-                      <input
-                        value={formData.capacity || ''}
-                        onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                        className={getInputClass(errors.capacity)}
-                        placeholder="e.g., 1000 tons"
-                        required
-                      />
-                    </div>
-                    {errors.capacity && (
-                      <p className="text-red-600 text-xs mt-1">{errors.capacity}</p>
-                    )}
-                  </div>
+                  <RegistrationFormField
+                    size={FIELD_SIZE}
+                    fieldId="warehouseName"
+                    label="Warehouse Name"
+                    icon="warehouse"
+                    error={errors.warehouseName}
+                  >
+                    <input
+                      value={formData.warehouseName || ''}
+                      onChange={(e) => handleFieldChange('warehouseName', e.target.value)}
+                      className={registrationInputClass(errors.warehouseName, { size: FIELD_SIZE })}
+                      placeholder="Enter warehouse name"
+                      required
+                    />
+                  </RegistrationFormField>
+                  <RegistrationFormField
+                    size={FIELD_SIZE}
+                    fieldId="warehouseLocation"
+                    label="Warehouse Location"
+                    icon="location_on"
+                    error={errors.warehouseLocation}
+                  >
+                    <input
+                      value={formData.warehouseLocation || ''}
+                      onChange={(e) => handleFieldChange('warehouseLocation', e.target.value)}
+                      className={registrationInputClass(errors.warehouseLocation, {
+                        size: FIELD_SIZE,
+                      })}
+                      placeholder="e.g., Indore, Madhya Pradesh"
+                      required
+                    />
+                  </RegistrationFormField>
+                  <RegistrationFormField
+                    size={FIELD_SIZE}
+                    fieldId="capacity"
+                    label="Storage Capacity"
+                    icon="inventory"
+                    error={errors.capacity}
+                    hint="Total storage available in metric tons"
+                  >
+                    <input
+                      value={formData.capacity || ''}
+                      onChange={(e) => handleFieldChange('capacity', e.target.value)}
+                      className={registrationInputClass(errors.capacity, { size: FIELD_SIZE })}
+                      placeholder="e.g., 500 MT"
+                      required
+                    />
+                  </RegistrationFormField>
                 </>
               )}
 
               {role === 'transporter' && (
                 <>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-[#0b5d68]">
-                      Vehicle Type
-                    </label>
-
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
-                          local_shipping
-                        </span>
-                      </div>
-
-                      <select
-                        value={formData.vehicleType || ''}
-                        onChange={(e) =>
-                          setFormData({ ...formData, vehicleType: e.target.value })
-                        }
-                        className={getSelectClass(errors.vehicleType)}
-                      >
-                        <option value="">Select vehicle type</option>
-                        <option value="truck">Truck</option>
-                        <option value="refrigerated_truck">Refrigerated Truck</option>
-                        <option value="flatbed">Flatbed</option>
-                        <option value="container">Container Truck</option>
-                        <option value="van">Van</option>
-                      </select>
-
-                      <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-gray-400 text-lg">
-                          expand_more
-                        </span>
-                      </div>
+                  <RegistrationFormField
+                    size={FIELD_SIZE}
+                    fieldId="vehicleType"
+                    label="Vehicle Type"
+                    icon="local_shipping"
+                    error={errors.vehicleType}
+                  >
+                    <select
+                      value={formData.vehicleType || ''}
+                      onChange={(e) => handleFieldChange('vehicleType', e.target.value)}
+                      className={registrationSelectClass(errors.vehicleType, { size: FIELD_SIZE })}
+                    >
+                      <option value="">Select vehicle type</option>
+                      <option value="truck">Truck</option>
+                      <option value="refrigerated_truck">Refrigerated Truck</option>
+                      <option value="flatbed">Flatbed</option>
+                      <option value="container">Container Truck</option>
+                      <option value="van">Van</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <span className="material-symbols-outlined text-base text-gray-400">
+                        expand_more
+                      </span>
                     </div>
-                    {errors.vehicleType && (
-                      <p className="text-red-600 text-xs mt-1">{errors.vehicleType}</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-[#0b5d68]">
-                      Service Area
-                    </label>
-
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="material-symbols-outlined text-[#2eb5c2] text-lg">
-                          route
-                        </span>
-                      </div>
-
-                      <input
-                        type="text"
-                        value={formData.serviceArea || ''}
-                        onChange={(e) =>
-                          setFormData({ ...formData, serviceArea: e.target.value })
-                        }
-                        className={getInputClass(errors.serviceArea)}
-                        placeholder="e.g., Nairobi to Mombasa"
-                        required
-                      />
-                    </div>
-                    {errors.serviceArea && (
-                      <p className="text-red-600 text-xs mt-1">{errors.serviceArea}</p>
-                    )}
-                  </div>
+                  </RegistrationFormField>
+                  <RegistrationFormField
+                    size={FIELD_SIZE}
+                    fieldId="serviceArea"
+                    label="Service Area"
+                    icon="route"
+                    error={errors.serviceArea}
+                  >
+                    <input
+                      type="text"
+                      value={formData.serviceArea || ''}
+                      onChange={(e) => handleFieldChange('serviceArea', e.target.value)}
+                      className={registrationInputClass(errors.serviceArea, { size: FIELD_SIZE })}
+                      placeholder="e.g., Mumbai to Pune"
+                      required
+                    />
+                  </RegistrationFormField>
                 </>
               )}
 
-              <div className="flex items-start bg-[#f0f9fa] rounded-xl p-4">
+              <div
+                id="register-field-termsAccepted"
+                className="flex items-start rounded-lg border border-gray-100 bg-gray-50 p-4 scroll-mt-28"
+              >
                 <input
                   type="checkbox"
                   id="terms"
                   checked={formData.termsAccepted}
-                  onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
+                  onChange={(e) => handleFieldChange('termsAccepted', e.target.checked)}
                   className="mt-0.5 h-5 w-5 text-[#0b5d68] focus:ring-[#2eb5c2] border-[#2eb5c2] rounded"
                 />
                 <label htmlFor="terms" className="ml-3 text-sm text-gray-700 leading-relaxed">
                   I accept the{' '}
-                  <Link href="/terms" className="text-[#2eb5c2] font-semibold hover:text-[#0b5d68] transition-colors">
+                  <Link
+                    href="/terms"
+                    className="text-[#2eb5c2] font-semibold hover:text-[#0b5d68] transition-colors"
+                  >
                     Terms and Conditions
                   </Link>{' '}
                   and{' '}
-                  <Link href="/privacy" className="text-[#2eb5c2] font-semibold hover:text-[#0b5d68] transition-colors">
+                  <Link
+                    href="/privacy"
+                    className="text-[#2eb5c2] font-semibold hover:text-[#0b5d68] transition-colors"
+                  >
                     Privacy Policy
                   </Link>
                 </label>
               </div>
               {errors.termsAccepted && (
-                <p className="text-red-600 text-xs mt-1">{errors.termsAccepted}</p>
+                <p className="text-xs text-red-600">{errors.termsAccepted}</p>
               )}
 
-              {/* Mock CAPTCHA */}
-              <div className="bg-[#f5f5f5] p-4 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#666666]">Security Check</span>
-                  <span className="text-xs bg-[#0b5d68] text-white px-2 py-1 rounded">
-                    CAPTCHA
-                  </span>
-                </div>
-                <p className="text-xs text-[#666666] mt-1">
-                  (Mock CAPTCHA - always verified in demo)
-                </p>
-              </div>
-
               {errors.general && (
-                <div className="bg-[#ffdad6] border border-[#d55b39] text-[#690005] px-4 py-3 rounded-lg text-sm">
+                <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <span className="material-symbols-outlined text-base shrink-0">error</span>
                   {errors.general}
                 </div>
               )}
 
               <Button
                 type="submit"
+                variant="primary"
+                size="lg"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-[#e89151] to-[#d55b39] hover:from-[#d67a3a] hover:to-[#c54a28] text-white px-6 py-4 rounded-xl font-headline font-bold transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                className="w-full"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -798,48 +834,41 @@ export default function RegisterRolePage(): ReactNode {
             </form>
           </TransitionWrapper>
           <TransitionWrapper show={showOTP} animation="slideIn">
-            <div className="space-y-4">
-              <div className="mb-4">
-                <ProgressIndicator
-                  currentStep={2}
-                  totalSteps={3}
-                  steps={[
-                    { label: 'Role', status: 'completed' },
-                    { label: 'Verify', status: 'active' },
-                    { label: 'KYC', status: 'pending' },
-                  ]}
-                />
-              </div>
+            <div className="space-y-5">
               <div className="text-center">
-                <div className="w-16 h-16 bg-[#a5dce4] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="material-symbols-outlined text-[#0b5d68] text-2xl">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#a5dce4]/40">
+                  <span className="material-symbols-outlined text-2xl text-[#0b5d68]">
                     mark_email_unread
                   </span>
                 </div>
-                <h3 className="font-headline text-lg font-bold text-[#0b5d68] mb-2">
-                  Verify Your Account
+                <h3 className="font-headline text-lg font-bold text-[#0b5d68] mb-1">
+                  Verify your email
                 </h3>
-                <p className="text-[#666666] text-sm">
-                  We've sent a 6-digit OTP to {otpSentTo}
+                <p className="text-sm text-gray-500">
+                  Enter the 6-digit code sent to{' '}
+                  <span className="font-medium text-gray-700">{otpSentTo}</span>
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#0b5d68] text-center">
-                  Enter OTP
-                </label>
+              <div id="register-field-otp" className="scroll-mt-28">
                 <OtpInput
                   value={otpValue}
-                  onChange={setOtpValue}
+                  onChange={handleOtpChange}
                   disabled={isLoading}
+                  size="lg"
                 />
-                <p className="text-xs text-[#666666] text-center">
-                  Enter the 6-digit code sent to your email
-                </p>
               </div>
 
+              {successMessage && (
+                <div className="flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+                  <span className="material-symbols-outlined text-base shrink-0">check_circle</span>
+                  {successMessage}
+                </div>
+              )}
+
               {errors.general && (
-                <div className="bg-[#ffdad6] border border-[#d55b39] text-[#690005] px-4 py-3 rounded-lg text-sm">
+                <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <span className="material-symbols-outlined text-base shrink-0">error</span>
                   {errors.general}
                 </div>
               )}
@@ -854,38 +883,39 @@ export default function RegisterRolePage(): ReactNode {
                 {isLoading ? 'Verifying...' : 'Continue to KYC'}
               </Button>
 
-              <div className="text-center space-y-2">
+              <div className="flex flex-col items-center gap-2 text-sm">
                 <button
                   type="button"
-                  className="text-sm text-[#0b5d68] hover:underline disabled:opacity-50"
+                  className="text-[#0b5d68] font-medium hover:underline disabled:opacity-50"
                   onClick={handleResendOtp}
                   disabled={isLoading}
                 >
-                  Resend OTP
+                  Resend code
                 </button>
-                <div>
-                  <button
-                    type="button"
-                    className="text-sm text-[#666666] hover:underline"
-                    onClick={() => setShowOTP(false)}
-                  >
-                    Back to Registration
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="text-gray-500 hover:underline"
+                  onClick={() => {
+                    setShowOTP(false);
+                    clearFeedback();
+                  }}
+                >
+                  Edit registration details
+                </button>
               </div>
             </div>
           </TransitionWrapper>
 
-          <div className="text-center mt-6 pt-6 border-t border-[#e0e0e0]">
-            <p className="text-sm text-[#666666]">
+          <div className="mt-6 border-t border-gray-100 pt-6 text-center">
+            <p className="text-sm text-gray-500">
               Already have an account?{' '}
-              <Link href="/login" className="text-[#0b5d68] font-medium hover:underline">
-                Sign in
+              <Link href="/login" className="font-medium text-[#0b5d68] hover:underline">
+                Sign in here
               </Link>
             </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

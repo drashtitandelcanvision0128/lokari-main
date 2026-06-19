@@ -21,7 +21,10 @@ export async function sendEmailOtp(
   const response = await fetch(apiUrl('/auth/otp/send'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email.trim(), purpose }),
+    body: JSON.stringify({
+      email: email.trim(),
+      purpose,
+    }),
   })
 
   let body: OtpApiResponse = {}
