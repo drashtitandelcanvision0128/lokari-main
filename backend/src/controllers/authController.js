@@ -4,7 +4,7 @@ import { generateToken } from '../utils/generateToken.js';
 import { authCookieOptions } from '../middleware/authMiddleware.js';
 import { mapDbUserToFrontendUser, toDbRole } from '../utils/userMapper.js';
 import { buildProfileCreateData, userWithProfileInclude } from '../utils/profileFields.js';
-import { verifyOtp, consumeRegistrationVerified } from '../services/otpService.js';
+import { verifyOtp, consumeRegistrationVerified, createAndSendOtp } from '../services/otpService.js';
 
 const findActiveUserByIdentifier = async (identifier) => {
   const trimmed = identifier.trim();
@@ -134,32 +134,73 @@ const register = async (req, res) => {
   }
 };
 
+const authenticateWithPassword = async (email, password) => {
+  if (!email?.trim() || !password) {
+    const error = new Error('Please provide both email and password');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const user = await findActiveUserByIdentifier(email);
+
+  if (!user) {
+    const error = new Error('Invalid email or password');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    const error = new Error('Invalid email or password');
+    error.statusCode = 401;
+    throw error;
+  }
+
+  if (!user.is_active) {
+    const error = new Error('Account suspended. Contact support.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return user;
+};
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const user = await authenticateWithPassword(email, password);
 
-    if (!email?.trim() || !password) {
-      return res.status(400).json({ error: 'Please provide both email and password' });
-    }
-
-    const user = await findActiveUserByIdentifier(email);
-
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    if (!user.is_active) {
-      return res.status(403).json({ error: 'Account suspended. Contact support.' });
+    if (user.role === 'ADMIN') {
+      return res.status(403).json({
+        error: 'Admin accounts must sign in at the admin login page.',
+      });
     }
 
     return sendAuthSuccess(res, 200, user);
   } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
     console.error('Login error:', error);
+    res.status(500).json({ error: 'Server error during login. Please try again.' });
+  }
+};
+
+const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await authenticateWithPassword(email, password);
+
+    if (user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Access denied. Admin account required.' });
+    }
+
+    return sendAuthSuccess(res, 200, user);
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+    console.error('Admin login error:', error);
     res.status(500).json({ error: 'Server error during login. Please try again.' });
   }
 };
@@ -220,4 +261,76 @@ const changePassword = async (req, res) => {
   }
 };
 
-export { register, login, logout, changePassword };
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email?.trim()) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = await findActiveUserByIdentifier(email);
+
+    if (user) {
+      await createAndSendOtp(email, 'reset_password');
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      message:
+        "If an account exists with that email, we've sent a verification code to reset your password.",
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'Failed to process password reset request.',
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword, confirmPassword } = req.body;
+
+    if (!email?.trim() || !otp?.trim() || !newPassword) {
+      return res.status(400).json({ error: 'Email, OTP, and new password are required.' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+    }
+
+    if (confirmPassword !== undefined && newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'Passwords do not match.' });
+    }
+
+    const user = await findActiveUserByIdentifier(email);
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset request.' });
+    }
+
+    try {
+      await verifyOtp(email, otp, 'reset_password');
+    } catch (err) {
+      return res.status(err.statusCode || 400).json({ error: err.message });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    await prisma.user.update({
+      where: { user_id: user.user_id },
+      data: { password: hashedPassword },
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Password reset successfully. You can now sign in with your new password.',
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    return res.status(500).json({ error: 'Server error while resetting password.' });
+  }
+};
+
+export { register, login, adminLogin, logout, changePassword, forgotPassword, resetPassword };

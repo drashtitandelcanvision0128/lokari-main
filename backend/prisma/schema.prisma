@@ -55,6 +55,26 @@ enum BidStatus {
   LOST
 }
 
+enum ContactInquiryStatus {
+  NEW
+  READ
+  REPLIED
+  ARCHIVED
+}
+
+model ContactInquiry {
+  inquiry_id String               @id @default(uuid())
+  name       String
+  email      String
+  subject    String
+  message    String               @db.Text
+  status     ContactInquiryStatus @default(NEW)
+  created_at DateTime             @default(now())
+  updated_at DateTime             @updatedAt
+
+  @@map("contact_inquiries")
+}
+
 model User {
   user_id     String        @id @default(uuid())
   name        String?

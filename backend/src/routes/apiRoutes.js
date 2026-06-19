@@ -2,6 +2,7 @@ import express from 'express';
 import authRoutes from './authRoutes.js';
 import adminRoutes from './adminRoutes.js';
 import listingRoutes from './listingRoutes.js';
+import contactRoutes from './contactRoutes.js';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.get('/', (_req, res) => {
       auth: '/api/auth',
       admin: '/api/admin',
       listings: '/api/listings',
+      contact: '/api/contact',
     },
   });
 });
@@ -31,5 +33,6 @@ router.get('/health', (_req, res) => {
 router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
 router.use('/listings', listingRoutes);
+router.use('/contact', contactRoutes);
 
 export default router;
