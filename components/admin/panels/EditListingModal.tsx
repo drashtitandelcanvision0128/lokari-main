@@ -23,9 +23,10 @@ export function EditListingModal({ isOpen, onClose, listing, onSave }: EditListi
         title: listing.title || '',
         description: listing.description || '',
         price: listing.price || 0,
-        status: listing.status === 'active' ? 'ACTIVE' : 
-                listing.status === 'expired' ? 'EXPIRED' : 
-                (listing.status as string) === 'sold' ? 'SOLD' : 'DRAFT'
+        // status: listing.status === 'active' ? 'ACTIVE' : 
+        //         listing.status === 'expired' ? 'EXPIRED' : 
+        //         (listing.status as string) === 'sold' ? 'SOLD' : 'DRAFT'
+        status: listing.status || 'DRAFT'
       });
     }
   }, [listing]);
@@ -54,38 +55,38 @@ export function EditListingModal({ isOpen, onClose, listing, onSave }: EditListi
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-on-surface-variant mb-1">Title</label>
-            <input 
-              type="text" 
-              value={formData.title} 
-              onChange={e => setFormData({...formData, title: e.target.value})}
+            <input
+              type="text"
+              value={formData.title}
+              onChange={e => setFormData({ ...formData, title: e.target.value })}
               className="w-full px-3 py-2 border border-outline rounded-lg bg-surface text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-on-surface-variant mb-1">Description</label>
-            <textarea 
-              value={formData.description} 
-              onChange={e => setFormData({...formData, description: e.target.value})}
+            <textarea
+              value={formData.description}
+              onChange={e => setFormData({ ...formData, description: e.target.value })}
               rows={4}
               className="w-full px-3 py-2 border border-outline rounded-lg bg-surface text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-on-surface-variant mb-1">Price (Rs.)</label>
-            <input 
-              type="number" 
-              value={formData.price} 
-              onChange={e => setFormData({...formData, price: Number(e.target.value)})}
+            <input
+              type="number"
+              value={formData.price}
+              onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
               className="w-full px-3 py-2 border border-outline rounded-lg bg-surface text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-on-surface-variant mb-1">Status</label>
-            <select 
-              value={formData.status} 
-              onChange={e => setFormData({...formData, status: e.target.value})}
+            <select
+              value={formData.status}
+              onChange={e => setFormData({ ...formData, status: e.target.value })}
               className="w-full px-3 py-2 border border-outline rounded-lg bg-surface text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent"
             >
               <option value="DRAFT">Draft</option>
@@ -96,15 +97,15 @@ export function EditListingModal({ isOpen, onClose, listing, onSave }: EditListi
           </div>
 
           <div className="flex justify-end gap-3 pt-6">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors cursor-pointer"
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-70"
             >
