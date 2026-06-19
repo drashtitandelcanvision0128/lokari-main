@@ -9,6 +9,8 @@ import { useAdminSearch } from '@/hooks/useSearchFilter'
 import { EditUserModal } from './EditUserModal'
 import { AddUserModal } from './AddUserModal'
 
+import AdminTable from '@/components/admin/common/AdminTable'
+
 interface UsersPanelProps {
   searchQuery?: string
 }
@@ -18,16 +20,36 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
   const [loading, setLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  
+
   // Edit modal state
   const [editUser, setEditUser] = useState<AdminUser | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  
+
   // Add modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   const [selectedRole, setSelectedRole] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
+
+
+  //For sorting 
+  const [sortField, setSortField] = useState<'name' | 'email' | 'location' | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+  const handleSort = (field: 'name' | 'email' | 'location') => {
+    if (sortField === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
+
+
+  // For Pagination
+  const [currentPage, setCurrentPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+
 
   const fetchUsers = async () => {
     try {
@@ -117,7 +139,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
       if (response.ok) {
         alert('User status updated')
         fetchUsers() // Refresh list
-        
+
         // Also update the selected user in drawer if it's currently open
         if (selectedUser && selectedUser.id === userId) {
           const updatedData = await response.json()
@@ -141,7 +163,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
       if (response.ok) {
         alert('User verification updated')
         fetchUsers() // Refresh list
-        
+
         // Also update the selected user in drawer if it's currently open
         if (selectedUser && selectedUser.id === userId) {
           const updatedData = await response.json()
@@ -158,7 +180,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
 
   const handleDeleteUser = async (userId: string) => {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
-    
+
     try {
       const response = await fetch(apiUrl(`/admin/users/${userId}`), {
         method: 'DELETE',
@@ -194,6 +216,27 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     const matchesStatus = selectedStatus === 'all' || user.status === selectedStatus
     return matchesRole && matchesStatus
   })
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (!sortField) return 0
+
+    const aValue = (a[sortField] ?? '').toString().toLowerCase()
+    const bValue = (b[sortField] ?? '').toString().toLowerCase()
+
+    const comparison = aValue.localeCompare(bValue)
+
+    return sortDirection === 'asc'
+      ? comparison
+      : -comparison
+  })
+
+  // Pagination
+  const totalPages = Math.ceil(sortedUsers.length / rowsPerPage)
+
+  const paginatedUsers = sortedUsers.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  )
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -235,7 +278,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
-    
+
     if (diffInHours < 1) return 'Just now'
     if (diffInHours < 24) return `${diffInHours}h ago`
     if (diffInHours < 48) return 'Yesterday'
@@ -263,7 +306,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                 <option value="admin">Admin</option>
               </select>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-on-surface-variant">Status:</label>
               <select
@@ -281,7 +324,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
               Showing {filteredUsers.length} of {users.length} users
             </div>
           </div>
-          
+
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
@@ -297,114 +340,230 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-outline-variant">
-              <thead className="bg-surface-container">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    Verification
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    Activity
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    Performance
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-surface-container-lowest divide-y divide-outline-variant">
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-surface-container transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-surface-container-high flex items-center justify-center">
-                            <span className="text-sm font-medium text-on-surface-variant">
+          // <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
+          <AdminTable>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-outline-variant">
+                {/* <thead className="bg-surface-container"> */}
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('name')}
+                        className="flex items-center gap-1 hover:text-primary"
+                      >
+                        Name
+                        <span className="material-symbols-outlined text-sm">
+                          {sortField === 'name'
+                            ? sortDirection === 'asc'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
+                            : 'unfold_more'}
+                        </span>
+                        {/* <span className="text-gray-400">
+                          {sortField === 'name'
+                            ? sortDirection === 'asc'
+                              ? '↑'
+                              : '↓'
+                            : '↕'}
+                        </span> */}
+
+                      </button>
+                    </th>
+
+                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('email')}
+                        className="flex items-center gap-1 hover:text-primary"
+                      >
+                        Email
+                        <span className="material-symbols-outlined text-sm">
+                          {sortField === 'email'
+                            ? sortDirection === 'asc'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
+                            : 'unfold_more'}
+                        </span>
+                      </button>
+                    </th>
+
+                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                      <button
+                        onClick={() => handleSort('location')}
+                        className="flex items-center gap-1 hover:text-primary"
+                      >
+                        Location
+                        <span className="material-symbols-outlined text-sm">
+                          {sortField === 'location'
+                            ? sortDirection === 'asc'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
+                            : 'unfold_more'}
+                        </span>
+                      </button>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                      Verification
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                      Last Active
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                {/* <tbody className="bg-surface-container-lowest divide-y divide-outline-variant"> */}
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedUsers.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                            <span className="text-sm font-medium">
                               {user.name.split(' ').map(n => n[0]).join('')}
                             </span>
                           </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-on-surface">{user.name}</div>
-                          <div className="text-sm text-on-surface-variant">{user.email}</div>
-                          <div className="text-xs text-on-surface-variant">{user.location || 'Location not set'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container text-on-surface capitalize">
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getVerificationColor(user.verificationStatus)}`}>
-                        {user.verificationStatus}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-on-surface">
-                        <div>{formatLastActive(user.lastActive)}</div>
-                        <div className="text-xs text-on-surface-variant">Joined {formatDate(user.joinedAt)}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-on-surface">
-                        <div>{user.listings} listings</div>
-                        <div className="text-xs text-on-surface-variant">{user.orders} orders</div>
-                        <div className="text-xs font-medium text-primary">{user.revenue}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => handleViewUser(user)}
-                          className="text-primary hover:text-primary-container transition-colors cursor-pointer"
-                          title="View Details"
-                        >
-                          <span className="material-symbols-outlined text-lg">visibility</span>
-                        </button>
-                        <button 
-                          onClick={() => handleEditUser(user)}
-                          className="text-on-surface hover:text-on-surface-variant transition-colors cursor-pointer"
-                          title="Edit User"
-                        >
-                          <span className="material-symbols-outlined text-lg">edit</span>
-                        </button>
-                        <button 
-                          onClick={() => handleToggleSuspend(user.id)}
-                          className={`${user.status === 'banned' ? 'text-green-600 hover:text-green-700' : 'text-error hover:text-error-container'} transition-colors cursor-pointer`}
-                          title={user.status === 'banned' ? 'Unban User' : 'Ban User'}
-                        >
-                          <span className="material-symbols-outlined text-lg">
-                            {user.status === 'banned' ? 'check_circle' : 'block'}
+
+                          <span className="text-sm font-medium text-gray-900">
+                            {user.name}
                           </span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {user.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {user.location || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container text-on-surface capitalize">
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
+                          {user.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getVerificationColor(user.verificationStatus)}`}>
+                          {user.verificationStatus}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                          {formatLastActive(user.lastActive)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewUser(user)}
+                            className="text-primary hover:text-primary-container transition-colors cursor-pointer"
+                            title="View Details"
+                          >
+                            <span className="material-symbols-outlined text-lg">visibility</span>
+                          </button>
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="text-on-surface hover:text-on-surface-variant transition-colors cursor-pointer"
+                            title="Edit User"
+                          >
+                            <span className="material-symbols-outlined text-lg">edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleToggleSuspend(user.id)}
+                            className={`${user.status === 'banned' ? 'text-green-600 hover:text-green-700' : 'text-error hover:text-error-container'} transition-colors cursor-pointer`}
+                            title={user.status === 'banned' ? 'Unban User' : 'Ban User'}
+                          >
+                            <span className="material-symbols-outlined text-lg">
+                              {user.status === 'banned' ? 'check_circle' : 'block'}
+                            </span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="p-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+
+                  {/* Left */}
+                  <p className="text-sm text-gray-500">
+                    Showing{" "}
+                    {(currentPage - 1) * rowsPerPage + 1}
+                    {" - "}
+                    {Math.min(currentPage * rowsPerPage, sortedUsers.length)}
+                    {" of "}
+                    {sortedUsers.length} users
+                  </p>
+
+
+                  {/* Right */}
+                  <div className="flex items-center gap-4">
+
+                    {/* Rows dropdown */}
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span>Rows:</span>
+
+                      <select
+                        value={rowsPerPage}
+                        onChange={(e) => {
+                          setRowsPerPage(Number(e.target.value))
+                          setCurrentPage(1)
+                        }}
+                        className="border border-gray-200 rounded-md px-2 py-1 text-sm"
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                      </select>
+                    </div>
+
+
+                    {/* Pagination */}
+                    <div className="flex items-center gap-2">
+
+                      <button
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(p => p - 1)}
+                        className="px-3 py-1 text-sm border rounded-md disabled:opacity-40"
+                      >
+                        Previous
+                      </button>
+
+
+                      <span className="text-sm text-gray-600">
+                        {currentPage} / {totalPages}
+                      </span>
+
+
+                      <button
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(p => p + 1)}
+                        className="px-3 py-1 text-sm border rounded-md disabled:opacity-40"
+                      >
+                        Next
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </AdminTable>
+          // </div>
         )}
 
         {/* Empty State */}
