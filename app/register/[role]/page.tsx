@@ -29,19 +29,11 @@ interface FormData {
   password: string;
   confirmPassword: string;
   termsAccepted: boolean;
-  // Farmer specific
-  farmName?: string;
-  farmLocation?: string;
-  // Trader specific
-  companyName?: string;
-  businessType?: string;
-  // Warehouse specific
-  warehouseName?: string;
-  warehouseLocation?: string;
-  capacity?: string;
-  // Transporter specific
-  vehicleType?: string;
-  serviceArea?: string;
+  street: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
 }
 
 interface FormErrors {
@@ -50,19 +42,11 @@ interface FormErrors {
   phone?: string;
   password?: string;
   confirmPassword?: string;
-
-  farmName?: string;
-  farmLocation?: string;
-
-  companyName?: string;
-  businessType?: string;
-
-  warehouseName?: string;
-  warehouseLocation?: string;
-  capacity?: string;
-
-  vehicleType?: string;
-  serviceArea?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  country?: string;
   termsAccepted?: string;
   general?: string;
 }
@@ -139,6 +123,45 @@ const roleSectionTitles: Record<string, string> = {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const INDIAN_STATES = [
+  'Andaman and Nicobar Islands',
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chandigarh',
+  'Chhattisgarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jammu and Kashmir',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Ladakh',
+  'Lakshadweep',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Puducherry',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal'
+];
+
 type ValidatableField = Exclude<keyof FormErrors, 'general'>;
 
 function getFieldError(
@@ -163,37 +186,20 @@ function getFieldError(
     case 'confirmPassword':
       if (data.password !== data.confirmPassword) return 'Passwords do not match';
       return undefined;
-    case 'farmName':
-      if (userRole === 'farmer' && !data.farmName?.trim()) return 'Farm name is required';
+    case 'street':
+      if (!data.street?.trim()) return 'Street address is required';
       return undefined;
-    case 'farmLocation':
-      if (userRole === 'farmer' && !data.farmLocation?.trim()) return 'Farm location is required';
+    case 'city':
+      if (!data.city?.trim()) return 'City/Area is required';
       return undefined;
-    case 'companyName':
-      if (userRole === 'trader' && !data.companyName?.trim()) return 'Company name is required';
+    case 'state':
+      if (!data.state?.trim()) return 'State is required';
       return undefined;
-    case 'businessType':
-      if (userRole === 'trader' && !data.businessType) return 'Please select a business type';
+    case 'pincode':
+      if (!data.pincode?.trim()) return 'Pincode is required';
       return undefined;
-    case 'warehouseName':
-      if (userRole === 'warehouse' && !data.warehouseName?.trim()) {
-        return 'Warehouse name is required';
-      }
-      return undefined;
-    case 'warehouseLocation':
-      if (userRole === 'warehouse' && !data.warehouseLocation?.trim()) {
-        return 'Warehouse location is required';
-      }
-      return undefined;
-    case 'capacity':
-      if (userRole === 'warehouse' && !data.capacity?.trim()) return 'Capacity is required';
-      return undefined;
-    case 'vehicleType':
-      if (userRole === 'transporter' && !data.vehicleType) return 'Please select a vehicle type';
-      return undefined;
-    case 'serviceArea':
-      if (userRole === 'transporter' && !data.serviceArea?.trim())
-        return 'Service area is required';
+    case 'country':
+      if (!data.country?.trim()) return 'Country is required';
       return undefined;
     case 'termsAccepted':
       if (!data.termsAccepted) return 'You must accept the terms and conditions';
@@ -216,12 +222,11 @@ function getFieldsInOrder(userRole: string): ValidatableField[] {
     'phone',
     'password',
     'confirmPassword',
-    ...(userRole === 'farmer' ? (['farmName', 'farmLocation'] as ValidatableField[]) : []),
-    ...(userRole === 'trader' ? (['companyName', 'businessType'] as ValidatableField[]) : []),
-    ...(userRole === 'warehouse'
-      ? (['warehouseName', 'warehouseLocation', 'capacity'] as ValidatableField[])
-      : []),
-    ...(userRole === 'transporter' ? (['vehicleType', 'serviceArea'] as ValidatableField[]) : []),
+    'street',
+    'city',
+    'state',
+    'pincode',
+    'country',
     'termsAccepted',
   ];
 }
@@ -252,15 +257,11 @@ export default function RegisterRolePage(): ReactNode {
     password: '',
     confirmPassword: '',
     termsAccepted: false,
-    farmName: '',
-    farmLocation: '',
-    companyName: '',
-    businessType: '',
-    warehouseName: '',
-    warehouseLocation: '',
-    capacity: '',
-    vehicleType: '',
-    serviceArea: '',
+    street: '',
+    city: '',
+    state: '',
+    pincode: '',
+    country: 'India',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -372,20 +373,11 @@ export default function RegisterRolePage(): ReactNode {
         role: role as 'farmer' | 'trader' | 'warehouse' | 'transporter',
         termsAccepted: formData.termsAccepted,
         emailVerified: true,
-        location:
-          role === 'farmer'
-            ? formData.farmLocation
-            : role === 'warehouse'
-              ? formData.warehouseLocation
-              : role === 'transporter'
-                ? formData.serviceArea
-                : undefined,
-        farmName: formData.farmName,
-        companyName: formData.companyName,
-        warehouseName: formData.warehouseName,
-        vehicleType: formData.vehicleType,
-        capacity: formData.capacity,
-        businessType: formData.businessType,
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.pincode,
+        country: formData.country,
       });
 
       router.push(`/register/${role}/kyc`);
@@ -588,190 +580,105 @@ export default function RegisterRolePage(): ReactNode {
                 </RegistrationFormField>
               </div>
 
-              <RegistrationFormSection title={roleSectionTitles[role] ?? 'Additional Details'} />
+              <RegistrationFormSection title="Address Details" />
 
-              {/* Role-specific fields */}
-              {role === 'farmer' && (
-                <>
-                  <RegistrationFormField
-                    size={FIELD_SIZE}
-                    fieldId="farmName"
-                    label="Farm Name"
-                    icon="agriculture"
-                    error={errors.farmName}
-                  >
-                    <input
-                      type="text"
-                      value={formData.farmName || ''}
-                      onChange={(e) => handleFieldChange('farmName', e.target.value)}
-                      className={registrationInputClass(errors.farmName, { size: FIELD_SIZE })}
-                      placeholder="e.g., Green Valley Farms"
-                      required
-                    />
-                  </RegistrationFormField>
-                  <RegistrationFormField
-                    size={FIELD_SIZE}
-                    fieldId="farmLocation"
-                    label="Farm Location"
-                    icon="location_on"
-                    error={errors.farmLocation}
-                  >
-                    <input
-                      type="text"
-                      value={formData.farmLocation || ''}
-                      onChange={(e) => handleFieldChange('farmLocation', e.target.value)}
-                      className={registrationInputClass(errors.farmLocation, { size: FIELD_SIZE })}
-                      placeholder="e.g., Nashik, Maharashtra"
-                      required
-                    />
-                  </RegistrationFormField>
-                </>
-              )}
+              <RegistrationFormField
+                size={FIELD_SIZE}
+                fieldId="street"
+                label="Street Address"
+                icon="home"
+                error={errors.street}
+              >
+                <input
+                  type="text"
+                  value={formData.street}
+                  onChange={(e) => handleFieldChange('street', e.target.value)}
+                  className={registrationInputClass(errors.street, { size: FIELD_SIZE })}
+                  placeholder="Enter your street address"
+                  required
+                />
+              </RegistrationFormField>
 
-              {role === 'trader' && (
-                <>
-                  <RegistrationFormField
-                    size={FIELD_SIZE}
-                    fieldId="companyName"
-                    label="Company Name"
-                    icon="business"
-                    error={errors.companyName}
-                  >
-                    <input
-                      type="text"
-                      value={formData.companyName || ''}
-                      onChange={(e) => handleFieldChange('companyName', e.target.value)}
-                      className={registrationInputClass(errors.companyName, { size: FIELD_SIZE })}
-                      placeholder="Enter your company or trading name"
-                      required
-                    />
-                  </RegistrationFormField>
-                  <RegistrationFormField
-                    size={FIELD_SIZE}
-                    fieldId="businessType"
-                    label="Business Type"
-                    icon="work"
-                    error={errors.businessType}
-                  >
-                    <select
-                      value={formData.businessType || ''}
-                      onChange={(e) => handleFieldChange('businessType', e.target.value)}
-                      className={registrationSelectClass(errors.businessType, { size: FIELD_SIZE })}
-                      required
-                    >
-                      <option value="">Select business type</option>
-                      <option value="individual">Individual Trader</option>
-                      <option value="partnership">Partnership</option>
-                      <option value="corporation">Corporation</option>
-                      <option value="cooperative">Cooperative</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                      <span className="material-symbols-outlined text-base text-gray-400">
-                        expand_more
-                      </span>
-                    </div>
-                  </RegistrationFormField>
-                </>
-              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <RegistrationFormField
+                  size={FIELD_SIZE}
+                  fieldId="city"
+                  label="City / Area"
+                  icon="location_city"
+                  error={errors.city}
+                >
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => handleFieldChange('city', e.target.value)}
+                    className={registrationInputClass(errors.city, { size: FIELD_SIZE })}
+                    placeholder="Enter city or area"
+                    required
+                  />
+                </RegistrationFormField>
 
-              {role === 'warehouse' && (
-                <>
-                  <RegistrationFormField
-                    size={FIELD_SIZE}
-                    fieldId="warehouseName"
-                    label="Warehouse Name"
-                    icon="warehouse"
-                    error={errors.warehouseName}
+                <RegistrationFormField
+                  size={FIELD_SIZE}
+                  fieldId="state"
+                  label="State"
+                  icon="map"
+                  error={errors.state}
+                >
+                  <select
+                    value={formData.state}
+                    onChange={(e) => handleFieldChange('state', e.target.value)}
+                    className={registrationSelectClass(errors.state, { size: FIELD_SIZE })}
+                    required
                   >
-                    <input
-                      value={formData.warehouseName || ''}
-                      onChange={(e) => handleFieldChange('warehouseName', e.target.value)}
-                      className={registrationInputClass(errors.warehouseName, { size: FIELD_SIZE })}
-                      placeholder="Enter warehouse name"
-                      required
-                    />
-                  </RegistrationFormField>
-                  <RegistrationFormField
-                    size={FIELD_SIZE}
-                    fieldId="warehouseLocation"
-                    label="Warehouse Location"
-                    icon="location_on"
-                    error={errors.warehouseLocation}
-                  >
-                    <input
-                      value={formData.warehouseLocation || ''}
-                      onChange={(e) => handleFieldChange('warehouseLocation', e.target.value)}
-                      className={registrationInputClass(errors.warehouseLocation, {
-                        size: FIELD_SIZE,
-                      })}
-                      placeholder="e.g., Indore, Madhya Pradesh"
-                      required
-                    />
-                  </RegistrationFormField>
-                  <RegistrationFormField
-                    size={FIELD_SIZE}
-                    fieldId="capacity"
-                    label="Storage Capacity"
-                    icon="inventory"
-                    error={errors.capacity}
-                    hint="Total storage available in metric tons"
-                  >
-                    <input
-                      value={formData.capacity || ''}
-                      onChange={(e) => handleFieldChange('capacity', e.target.value)}
-                      className={registrationInputClass(errors.capacity, { size: FIELD_SIZE })}
-                      placeholder="e.g., 500 MT"
-                      required
-                    />
-                  </RegistrationFormField>
-                </>
-              )}
+                    <option value="">Select state</option>
+                    {INDIAN_STATES.map((stateName) => (
+                      <option key={stateName} value={stateName}>
+                        {stateName}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                    <span className="material-symbols-outlined text-base text-gray-400">
+                      expand_more
+                    </span>
+                  </div>
+                </RegistrationFormField>
+              </div>
 
-              {role === 'transporter' && (
-                <>
-                  <RegistrationFormField
-                    size={FIELD_SIZE}
-                    fieldId="vehicleType"
-                    label="Vehicle Type"
-                    icon="local_shipping"
-                    error={errors.vehicleType}
-                  >
-                    <select
-                      value={formData.vehicleType || ''}
-                      onChange={(e) => handleFieldChange('vehicleType', e.target.value)}
-                      className={registrationSelectClass(errors.vehicleType, { size: FIELD_SIZE })}
-                    >
-                      <option value="">Select vehicle type</option>
-                      <option value="truck">Truck</option>
-                      <option value="refrigerated_truck">Refrigerated Truck</option>
-                      <option value="flatbed">Flatbed</option>
-                      <option value="container">Container Truck</option>
-                      <option value="van">Van</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                      <span className="material-symbols-outlined text-base text-gray-400">
-                        expand_more
-                      </span>
-                    </div>
-                  </RegistrationFormField>
-                  <RegistrationFormField
-                    size={FIELD_SIZE}
-                    fieldId="serviceArea"
-                    label="Service Area"
-                    icon="route"
-                    error={errors.serviceArea}
-                  >
-                    <input
-                      type="text"
-                      value={formData.serviceArea || ''}
-                      onChange={(e) => handleFieldChange('serviceArea', e.target.value)}
-                      className={registrationInputClass(errors.serviceArea, { size: FIELD_SIZE })}
-                      placeholder="e.g., Mumbai to Pune"
-                      required
-                    />
-                  </RegistrationFormField>
-                </>
-              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <RegistrationFormField
+                  size={FIELD_SIZE}
+                  fieldId="pincode"
+                  label="Pincode"
+                  icon="pin_drop"
+                  error={errors.pincode}
+                >
+                  <input
+                    type="text"
+                    value={formData.pincode}
+                    onChange={(e) => handleFieldChange('pincode', e.target.value)}
+                    className={registrationInputClass(errors.pincode, { size: FIELD_SIZE })}
+                    placeholder="Enter pincode"
+                    required
+                  />
+                </RegistrationFormField>
+
+                <RegistrationFormField
+                  size={FIELD_SIZE}
+                  fieldId="country"
+                  label="Country"
+                  icon="public"
+                  error={errors.country}
+                >
+                  <input
+                    type="text"
+                    value={formData.country}
+                    readOnly
+                    className={`${registrationInputClass(errors.country, { size: FIELD_SIZE })} bg-gray-50 text-gray-500 cursor-not-allowed`}
+                    required
+                  />
+                </RegistrationFormField>
+              </div>
 
               <div
                 id="register-field-termsAccepted"
