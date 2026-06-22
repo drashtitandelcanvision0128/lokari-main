@@ -13,7 +13,7 @@ import { TabType } from '@/types/dashboard'
 import { getCurrentUser, getUserDisplayName } from '@/lib/auth'
 import { type User } from '@/lib/registration'
 import { useRoleGuard } from '@/lib/authGuard'
-import { SettingsProvider } from '@/backend/src/context/SettingsContext'
+import { SettingsProvider } from '@/lib/context/SettingsContext'
 
 // Tab component mapping for Transporter
 const TRANSPORTER_TAB_COMPONENTS = {

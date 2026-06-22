@@ -7,7 +7,7 @@ import { Icon } from '@/components/ui/Icon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { getCurrentUser, changePassword } from '@/lib/auth'
 import { useDashboardSearch } from '@/hooks/useSearchFilter'
-import { useSettings } from '@/backend/src/context/SettingsContext'
+import { useSettings } from '@/lib/context/SettingsContext'
 import { useSearchParams } from 'next/navigation'
 
 import ProfileCard from '@/components/profile/ProfileCard'

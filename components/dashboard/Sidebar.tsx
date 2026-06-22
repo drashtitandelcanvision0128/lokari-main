@@ -6,7 +6,7 @@ import { Icon } from '@/components/ui/Icon'
 import { DashboardTabs, TabType } from '@/types/dashboard'
 import { getUserRole } from '@/lib/auth'
 import { usePostListingNavigation } from '@/hooks/usePostListingNavigation'
-import { useSettings } from '@/backend/src/context/SettingsContext'
+import { useSettings } from '@/lib/context/SettingsContext'
 
 interface SidebarProps {
   activeTab: TabType

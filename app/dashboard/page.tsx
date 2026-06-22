@@ -12,7 +12,7 @@ import { TransactionsPage } from '@/components/dashboard/pages/TransactionsPage'
 import { SettingsPage } from '@/components/dashboard/pages/SettingsPage'
 import { dashboardMock } from '@/data/dashboardMock'
 import { TabType, DashboardTabs } from '@/types/dashboard'
-import { SettingsProvider } from '@/backend/src/context/SettingsContext'
+import { SettingsProvider } from '@/lib/context/SettingsContext'
 
 // Tab component mapping
 const TAB_COMPONENTS = {
