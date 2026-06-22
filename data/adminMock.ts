@@ -135,7 +135,8 @@ export const mockAdminListings: AdminListing[] = [
     seller: {
       id: '1',
       name: 'John Farmer',
-      email: 'john.farmer@lokhari.com'
+      email: 'john.farmer@lokhari.com',
+      location: 'Mumbai, Maharashtra',
     },
     price: 257.30,
     unit: 'kg',
@@ -148,6 +149,7 @@ export const mockAdminListings: AdminListing[] = [
     inquiries: 8,
     reports: 0,
     featured: false,
+    isBlocked: false,
     images: ['https://example.com/coffee1.jpg', 'https://example.com/coffee2.jpg']
   },
   {
@@ -158,7 +160,8 @@ export const mockAdminListings: AdminListing[] = [
     seller: {
       id: '1',
       name: 'John Farmer',
-      email: 'john.farmer@lokhari.com'
+      email: 'john.farmer@lokhari.com',
+      location: 'Mumbai, Maharashtra',
     },
     price: 120.35,
     unit: 'kg',
@@ -171,6 +174,7 @@ export const mockAdminListings: AdminListing[] = [
     inquiries: 5,
     reports: 0,
     featured: true,
+    isBlocked: false,
     images: ['https://example.com/maize1.jpg']
   },
   {
@@ -181,7 +185,8 @@ export const mockAdminListings: AdminListing[] = [
     seller: {
       id: '3',
       name: 'Mike Warehouse',
-      email: 'mike.warehouse@lokhari.com'
+      email: 'mike.warehouse@lokhari.com',
+      location: 'Ahmedabad, Gujarat',
     },
     price: 41500,
     unit: 'month',
@@ -194,6 +199,7 @@ export const mockAdminListings: AdminListing[] = [
     inquiries: 2,
     reports: 1,
     featured: false,
+    isBlocked: false,
     images: ['https://example.com/warehouse1.jpg', 'https://example.com/warehouse2.jpg']
   },
   {
@@ -204,7 +210,8 @@ export const mockAdminListings: AdminListing[] = [
     seller: {
       id: '4',
       name: 'Lisa Transport',
-      email: 'lisa.transport@lokhari.com'
+      email: 'lisa.transport@lokhari.com',
+      location: 'Delhi, NCR',
     },
     price: 41.50,
     unit: 'km',
@@ -217,6 +224,7 @@ export const mockAdminListings: AdminListing[] = [
     inquiries: 6,
     reports: 0,
     featured: false,
+    isBlocked: false,
     images: ['https://example.com/truck1.jpg']
   },
   {
@@ -227,7 +235,8 @@ export const mockAdminListings: AdminListing[] = [
     seller: {
       id: '1',
       name: 'John Farmer',
-      email: 'john.farmer@lokhari.com'
+      email: 'john.farmer@lokhari.com',
+      location: 'Mumbai, Maharashtra',
     },
     price: 182.60,
     unit: 'kg',
@@ -240,6 +249,7 @@ export const mockAdminListings: AdminListing[] = [
     inquiries: 1,
     reports: 2,
     featured: false,
+    isBlocked: false,
     images: ['https://example.com/tomatoes1.jpg']
   }
 ]

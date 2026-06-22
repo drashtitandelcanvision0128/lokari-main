@@ -61,6 +61,7 @@ export function AdminLayout({
 
   const getTabTitle = (tab: TabType | null): string => {
     if (pageTitle) return pageTitle
+    if (!tab) return 'Admin Panel'
 
     const titles: Record<TabType, string> = {
       users: 'User Management',
@@ -68,9 +69,9 @@ export function AdminLayout({
       orders: 'Order Management',
       disputes: 'Dispute Resolution',
       analytics: 'Analytics Dashboard',
-      auditLog: 'Audit Trail'
+      auditLog: 'Audit Trail',
     }
-    return titles[tab] || 'Admin Panel'
+    return titles[tab]
   }
 
   const headerTitle = pageTitle ?? (activeTab ? getTabTitle(activeTab) : 'Admin Panel')
