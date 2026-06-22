@@ -1,6 +1,5 @@
 # Docker meta
 Dockerfile
-dockerfile
 .dockerignore
 
 # Dependencies (reinstalled in Dockerfile)
