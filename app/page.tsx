@@ -33,6 +33,12 @@ const HERO_SLIDES = [
 const HERO_SLIDE_INTERVAL_MS = 3000;
 const HERO_FADE_MS = 700;
 
+const sectionPad = 'py-12 px-4 sm:py-16 sm:px-6 lg:py-24 lg:px-8';
+const heroBtnClass =
+  'w-full sm:w-auto bg-[#e89151] hover:bg-[#d67a3a] text-white px-5 py-3.5 sm:px-8 sm:py-4 rounded-xl font-headline text-sm sm:text-base font-bold transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl relative overflow-hidden group min-h-[44px]';
+const heroBtnSecondaryClass =
+  'w-full sm:w-auto bg-[#d55b39] hover:bg-[#c44928] text-white px-5 py-3.5 sm:px-8 sm:py-4 rounded-xl font-headline text-sm sm:text-base font-bold transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl relative overflow-hidden group min-h-[44px]';
+
 // Set up global event handler immediately (outside React component)
 if (typeof window !== 'undefined') {
   // Remove any existing handler first
@@ -212,7 +218,7 @@ export default function Home() {
     <main>
       {/* Hero Section */}
       <section
-        className="relative h-[770px] flex items-center overflow-hidden -mt-16"
+        className="relative -mt-16 flex min-h-[min(100svh,720px)] items-end overflow-hidden pt-20 pb-8 sm:min-h-0 sm:h-[560px] sm:items-center sm:pt-0 sm:pb-0 lg:h-[770px]"
         onMouseEnter={() => {
           heroPausedRef.current = true;
         }}
@@ -240,7 +246,7 @@ export default function Home() {
             }`}
           ></div>
         </div>
-        <div className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+        <div className="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 gap-1.5 sm:bottom-8 sm:gap-2">
           {HERO_SLIDES.map((slide, index) => (
             <button
               key={slide.src}
@@ -253,31 +259,30 @@ export default function Home() {
             />
           ))}
         </div>
-        <div className="container mx-auto px-8 relative z-10">
+        <div className="container relative z-10 mx-auto w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
-            <h1 className="font-headline text-6xl font-bold text-white leading-tight mb-6 tracking-tighter">
-              The Future of <br />{' '}
+            <h1 className="mb-4 font-headline text-[1.75rem] font-bold leading-[1.15] tracking-tighter text-white sm:mb-6 sm:text-4xl md:text-5xl lg:text-6xl">
+              The Future of{' '}
               <span className={isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}>
                 Agricultural Trade
               </span>
             </h1>
-            <p className="text-white/90 text-lg mb-10 font-body leading-relaxed max-w-lg">
-              A sophisticated ecosystem connecting farmers, traders, and logistics. Digitize your
-              harvest, secure storage, and optimize your supply chain with the Digital Agrarian
-              network.
+            <p className="mb-6 max-w-lg font-body text-sm leading-relaxed text-white/90 sm:mb-10 sm:text-base lg:text-lg">
+              Connect farmers, traders, and logistics in one digital marketplace. List produce,
+              find storage, and move crops with confidence.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Link href="/listings">
-                <button className="bg-[#e89151] hover:bg-[#d67a3a] text-white px-8 py-4 rounded-xl font-headline font-bold transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 relative overflow-hidden group">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+              <Link href="/listings" className="w-full sm:w-auto">
+                <button type="button" className={heroBtnClass}>
                   <span className="relative z-10">Explore Marketplace</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full"></div>
                 </button>
               </Link>
               {userRole !== 'trader' && (
-                <Link href="/create-listing">
-                  <button className="bg-[#d55b39] hover:bg-[#c44928] text-white px-8 py-4 rounded-xl font-headline font-bold transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 relative overflow-hidden group">
+                <Link href="/create-listing" className="w-full sm:w-auto">
+                  <button type="button" className={heroBtnSecondaryClass}>
                     <span className="relative z-10">List Inventory</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                    <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full"></div>
                   </button>
                 </Link>
               )}
@@ -287,37 +292,36 @@ export default function Home() {
       </section>
 
       {/* Role Entry Points (Bento Style) */}
-      <section className={`py-24 px-8 ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
+      <section className={`${sectionPad} ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
         <div className="max-w-7xl mx-auto">
-          <div className="mb-12">
+          <div className="mb-6 sm:mb-12">
             <h2
-              className={`font-headline text-3xl font-bold mb-2 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
+              className={`font-headline text-xl sm:text-2xl lg:text-3xl font-bold mb-2 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
             >
               Tailored for the Ecosystem
             </h2>
-            <p className={isDark ? 'text-gray-300' : 'text-[#666666]'}>
-              Join the exchange through specialized portals designed for your specific role in the
-              supply chain.
+            <p className={`text-sm sm:text-base ${isDark ? 'text-gray-300' : 'text-[#666666]'}`}>
+              Join through portals built for your role in the supply chain.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:gap-6">
             {/* Farmers */}
             <div
               data-role-card="farmer"
               data-dashboard-url="/farmer-dashboard"
-              className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-8 rounded-2xl group transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl border ${isDark ? 'border-gray-700 hover:border-[#2eb5c2]' : 'border-transparent hover:border-[#2eb5c2]'} relative overflow-hidden`}
+              className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl group transition-all duration-500 cursor-pointer active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl border ${isDark ? 'border-gray-700 hover:border-[#2eb5c2]' : 'border-gray-100 sm:border-transparent hover:border-[#2eb5c2]'} relative overflow-hidden`}
             >
               <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-transparent to-[#2eb5c2]/10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="w-14 h-14 bg-gradient-to-br from-[#2eb5c2] to-[#0b5d68] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                <span className="material-symbols-outlined text-white text-3xl">agriculture</span>
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-[#2eb5c2] to-[#0b5d68] rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                <span className="material-symbols-outlined text-white text-xl sm:text-3xl">agriculture</span>
               </div>
               <h3
-                className={`font-headline text-xl font-bold mb-3 transition-colors duration-300 ${isDark ? 'text-white group-hover:text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
+                className={`font-headline text-sm sm:text-xl font-bold mb-1.5 sm:mb-3 transition-colors duration-300 ${isDark ? 'text-white group-hover:text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
               >
                 Farmers
               </h3>
               <p
-                className={`text-sm mb-6 leading-relaxed transition-colors duration-300 ${isDark ? 'text-gray-300 group-hover:text-gray-200' : 'text-[#666666] group-hover:text-gray-700'}`}
+                className={`text-xs sm:text-sm mb-3 sm:mb-6 leading-relaxed line-clamp-2 sm:line-clamp-none transition-colors duration-300 ${isDark ? 'text-gray-300 group-hover:text-gray-200' : 'text-[#666666] group-hover:text-gray-700'}`}
               >
                 List your produce and manage farm operations with digital tools
               </p>
@@ -338,19 +342,19 @@ export default function Home() {
             <div
               data-role-card="trader"
               data-dashboard-url="/trader-dashboard"
-              className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-8 rounded-2xl group transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl border ${isDark ? 'border-gray-700 hover:border-[#e89151]' : 'border-transparent hover:border-[#e89151]'} relative overflow-hidden`}
+              className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl group transition-all duration-500 cursor-pointer active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl border ${isDark ? 'border-gray-700 hover:border-[#e89151]' : 'border-gray-100 sm:border-transparent hover:border-[#e89151]'} relative overflow-hidden`}
             >
               <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-transparent to-[#e89151]/10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="w-14 h-14 bg-gradient-to-br from-[#e89151] to-[#d55b39] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                <span className="material-symbols-outlined text-white text-3xl">monitoring</span>
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-[#e89151] to-[#d55b39] rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                <span className="material-symbols-outlined text-white text-xl sm:text-3xl">monitoring</span>
               </div>
               <h3
-                className={`font-headline text-xl font-bold mb-3 transition-colors duration-300 ${isDark ? 'text-white group-hover:text-[#e89151]' : 'text-[#0b5d68]'}`}
+                className={`font-headline text-sm sm:text-xl font-bold mb-1.5 sm:mb-3 transition-colors duration-300 ${isDark ? 'text-white group-hover:text-[#e89151]' : 'text-[#0b5d68]'}`}
               >
                 Traders
               </h3>
               <p
-                className={`text-sm mb-6 leading-relaxed transition-colors duration-300 ${isDark ? 'text-gray-300 group-hover:text-gray-200' : 'text-[#666666] group-hover:text-gray-700'}`}
+                className={`text-xs sm:text-sm mb-3 sm:mb-6 leading-relaxed line-clamp-2 sm:line-clamp-none transition-colors duration-300 ${isDark ? 'text-gray-300 group-hover:text-gray-200' : 'text-[#666666] group-hover:text-gray-700'}`}
               >
                 Real-time market insights and direct procurement channels from verified sources
               </p>
@@ -371,19 +375,19 @@ export default function Home() {
             <div
               data-role-card="warehouse"
               data-dashboard-url="/warehouse-dashboard"
-              className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-8 rounded-2xl group transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl border ${isDark ? 'border-gray-700 hover:border-[#d55b39]' : 'border-transparent hover:border-[#d55b39]'} relative overflow-hidden`}
+              className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl group transition-all duration-500 cursor-pointer active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl border ${isDark ? 'border-gray-700 hover:border-[#d55b39]' : 'border-gray-100 sm:border-transparent hover:border-[#d55b39]'} relative overflow-hidden`}
             >
               <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-transparent to-[#d55b39]/10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="w-14 h-14 bg-gradient-to-br from-[#d55b39] to-[#c44928] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                <span className="material-symbols-outlined text-white text-3xl">warehouse</span>
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-[#d55b39] to-[#c44928] rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                <span className="material-symbols-outlined text-white text-xl sm:text-3xl">warehouse</span>
               </div>
               <h3
-                className={`font-headline text-xl font-bold mb-3 transition-colors duration-300 ${isDark ? 'text-white group-hover:text-[#d55b39]' : 'text-[#0b5d68]'}`}
+                className={`font-headline text-sm sm:text-xl font-bold mb-1.5 sm:mb-3 transition-colors duration-300 ${isDark ? 'text-white group-hover:text-[#d55b39]' : 'text-[#0b5d68]'}`}
               >
                 Warehouse
               </h3>
               <p
-                className={`text-sm mb-6 leading-relaxed transition-colors duration-300 ${isDark ? 'text-gray-300 group-hover:text-gray-200' : 'text-[#666666] group-hover:text-gray-700'}`}
+                className={`text-xs sm:text-sm mb-3 sm:mb-6 leading-relaxed line-clamp-2 sm:line-clamp-none transition-colors duration-300 ${isDark ? 'text-gray-300 group-hover:text-gray-200' : 'text-[#666666] group-hover:text-gray-700'}`}
               >
                 Manage space availability and digitize warehouse receipts for financing
               </p>
@@ -404,21 +408,21 @@ export default function Home() {
             <div
               data-role-card="transporter"
               data-dashboard-url="/transporter-dashboard"
-              className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-8 rounded-2xl group transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl border ${isDark ? 'border-gray-700 hover:border-[#0b5d68]' : 'border-transparent hover:border-[#0b5d68]'} relative overflow-hidden`}
+              className={`${isDark ? 'bg-gray-800' : 'bg-white'} p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl group transition-all duration-500 cursor-pointer active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl border ${isDark ? 'border-gray-700 hover:border-[#0b5d68]' : 'border-gray-100 sm:border-transparent hover:border-[#0b5d68]'} relative overflow-hidden`}
             >
               <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-transparent to-[#0b5d68]/10 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="w-14 h-14 bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                <span className="material-symbols-outlined text-white text-3xl">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                <span className="material-symbols-outlined text-white text-xl sm:text-3xl">
                   local_shipping
                 </span>
               </div>
               <h3
-                className={`font-headline text-xl font-bold mb-3 transition-colors duration-300 ${isDark ? 'text-white group-hover:text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
+                className={`font-headline text-sm sm:text-xl font-bold mb-1.5 sm:mb-3 transition-colors duration-300 ${isDark ? 'text-white group-hover:text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
               >
                 Logistics
               </h3>
               <p
-                className={`text-sm mb-6 leading-relaxed transition-colors duration-300 ${isDark ? 'text-gray-300 group-hover:text-gray-200' : 'text-[#666666] group-hover:text-gray-700'}`}
+                className={`text-xs sm:text-sm mb-3 sm:mb-6 leading-relaxed line-clamp-2 sm:line-clamp-none transition-colors duration-300 ${isDark ? 'text-gray-300 group-hover:text-gray-200' : 'text-[#666666] group-hover:text-gray-700'}`}
               >
                 Optimize routes and secure consistent cargo from the exchange's vast network
               </p>
@@ -440,32 +444,31 @@ export default function Home() {
       </section>
 
       {/* Explore Categories Section */}
-      <section className={`py-24 px-8 ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+      <section className={`${sectionPad} ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8 sm:mb-16">
             <h2
-              className={`font-headline text-4xl font-bold mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
+              className={`font-headline text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
             >
               Explore Categories
             </h2>
             <p
-              className={`text-lg ${isDark ? 'text-gray-300' : 'text-[#666666]'} max-w-2xl mx-auto`}
+              className={`text-sm sm:text-base lg:text-lg px-2 ${isDark ? 'text-gray-300' : 'text-[#666666]'} max-w-2xl mx-auto`}
             >
-              Discover our comprehensive marketplace offerings across produce, storage, and
-              transportation solutions
+              Browse produce, storage, and transport across the marketplace
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3 md:gap-8">
             {/* Produce Category */}
             <Link href="/listings?category=produce" className="group">
               <div
-                className={`${isDark ? 'bg-gray-700' : 'bg-[#f9f9f7]'} rounded-2xl p-8 h-full transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer border ${isDark ? 'border-gray-600' : 'border-transparent'}`}
+                className={`${isDark ? 'bg-gray-700' : 'bg-[#f9f9f7]'} rounded-xl sm:rounded-2xl p-5 sm:p-8 h-full transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl cursor-pointer border ${isDark ? 'border-gray-600' : 'border-gray-100 sm:border-transparent'}`}
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-[#2eb5c2] to-[#0b5d68] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <span className="material-symbols-outlined text-white text-3xl">agriculture</span>
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#2eb5c2] to-[#0b5d68] rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">agriculture</span>
                 </div>
                 <h3
-                  className={`font-headline text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
+                  className={`font-headline text-lg sm:text-2xl font-bold mb-2 sm:mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
                 >
                   Produce
                 </h3>
@@ -487,13 +490,13 @@ export default function Home() {
             {/* Storage Category */}
             <Link href="/listings?category=storage" className="group">
               <div
-                className={`${isDark ? 'bg-gray-700' : 'bg-[#f9f9f7]'} rounded-2xl p-8 h-full transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer border ${isDark ? 'border-gray-600' : 'border-transparent'}`}
+                className={`${isDark ? 'bg-gray-700' : 'bg-[#f9f9f7]'} rounded-xl sm:rounded-2xl p-5 sm:p-8 h-full transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl cursor-pointer border ${isDark ? 'border-gray-600' : 'border-gray-100 sm:border-transparent'}`}
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-[#e89151] to-[#d55b39] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <span className="material-symbols-outlined text-white text-3xl">warehouse</span>
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#e89151] to-[#d55b39] rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">warehouse</span>
                 </div>
                 <h3
-                  className={`font-headline text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
+                  className={`font-headline text-lg sm:text-2xl font-bold mb-2 sm:mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
                 >
                   Storage
                 </h3>
@@ -515,15 +518,15 @@ export default function Home() {
             {/* Transport Category */}
             <Link href="/listings?category=transport" className="group">
               <div
-                className={`${isDark ? 'bg-gray-700' : 'bg-[#f9f9f7]'} rounded-2xl p-8 h-full transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer border ${isDark ? 'border-gray-600' : 'border-transparent'}`}
+                className={`${isDark ? 'bg-gray-700' : 'bg-[#f9f9f7]'} rounded-xl sm:rounded-2xl p-5 sm:p-8 h-full transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl cursor-pointer border ${isDark ? 'border-gray-600' : 'border-gray-100 sm:border-transparent'}`}
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <span className="material-symbols-outlined text-white text-3xl">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">
                     local_shipping
                   </span>
                 </div>
                 <h3
-                  className={`font-headline text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
+                  className={`font-headline text-lg sm:text-2xl font-bold mb-2 sm:mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
                 >
                   Transport
                 </h3>
@@ -546,39 +549,40 @@ export default function Home() {
       </section>
 
       {/* Featured Listings */}
-      <section className={`py-24 px-8 ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
+      <section className={`${sectionPad} ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-end mb-12">
+          <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:justify-between sm:items-end sm:mb-12">
             <div>
               <h2
-                className={`font-headline text-3xl font-bold mb-2 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
+                className={`font-headline text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
               >
                 Active Listings
               </h2>
-              <p className={isDark ? 'text-gray-300' : 'text-[#666666]'}>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-gray-300' : 'text-[#666666]'}`}>
                 Verified inventory ready for procurement.
               </p>
             </div>
-            <Link href="/listings">
+            <Link href="/listings" className="w-full sm:w-auto">
               <button
-                className={`px-6 py-3 rounded-xl font-headline font-bold transition-all duration-300 hover:scale-105 hover:shadow-2xl ${isDark ? 'bg-gradient-to-r from-[#2eb5c2] to-[#0b5d68] text-white hover:from-[#0b5d68] hover:to-[#2eb5c2]' : 'bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] text-white hover:from-[#2eb5c2] hover:to-[#0b5d68]'} flex items-center gap-3 group`}
+                type="button"
+                className={`w-full sm:w-auto px-5 py-3 sm:px-6 sm:py-3 rounded-xl font-headline text-sm sm:text-base font-bold transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl min-h-[44px] ${isDark ? 'bg-gradient-to-r from-[#2eb5c2] to-[#0b5d68] text-white hover:from-[#0b5d68] hover:to-[#2eb5c2]' : 'bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] text-white hover:from-[#2eb5c2] hover:to-[#0b5d68]'} flex items-center justify-center gap-2 sm:gap-3 group`}
               >
-                <span className="relative z-10">View All Marketplace</span>
+                <span className="relative z-10">View Marketplace</span>
                 <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform duration-300">
                   arrow_forward
                 </span>
               </button>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="-mx-4 flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-mandatory sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 md:grid-cols-4">
             {dummyListings
               .filter((listing) => ['12', '13', '14', '15'].includes(listing.id))
               .map((listing) => (
-                <Link href={`/listings/${listing.id}`} key={listing.id}>
+                <Link href={`/listings/${listing.id}`} key={listing.id} className="min-w-[82%] shrink-0 snap-center sm:min-w-0">
                   <div
-                    className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-2xl overflow-hidden group transition-all duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer`}
+                    className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl sm:rounded-2xl overflow-hidden group transition-all duration-500 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl cursor-pointer h-full`}
                   >
-                    <div className="h-48 relative overflow-hidden">
+                    <div className="h-40 sm:h-48 relative overflow-hidden">
                       <img
                         alt={listing.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -619,9 +623,9 @@ export default function Home() {
                         </button>
                       </div>
                     </div>
-                    <div className="p-6">
+                    <div className="p-4 sm:p-6">
                       <h4
-                        className={`font-headline font-bold text-lg mb-2 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'} group-hover:text-[#2eb5c2] transition-colors duration-300`}
+                        className={`font-headline font-bold text-base sm:text-lg mb-2 line-clamp-2 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'} group-hover:text-[#2eb5c2] transition-colors duration-300`}
                       >
                         {listing.title}
                       </h4>
@@ -664,32 +668,32 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className={`py-24 px-8 ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
+      <section className={`${sectionPad} ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8 sm:mb-16">
             <h2
-              className={`font-headline text-4xl font-bold mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
+              className={`font-headline text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
             >
               How It Works
             </h2>
             <p
-              className={`text-lg ${isDark ? 'text-gray-300' : 'text-[#666666]'} max-w-2xl mx-auto`}
+              className={`text-sm sm:text-base lg:text-lg px-2 ${isDark ? 'text-gray-300' : 'text-[#666666]'} max-w-2xl mx-auto`}
             >
               {currentUser
                 ? 'Navigate your agricultural trading journey with our streamlined platform'
                 : 'Get started in minutes and join the digital agricultural revolution'}
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
             {currentUser ? (
               // Logged IN content
               <>
                 {/* Step 1 */}
                 <div className="text-center group">
                   <div
-                    className={`w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${isDark ? 'bg-gradient-to-br from-[#2eb5c2] to-[#0b5d68]' : 'bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2]'}`}
+                    className={`w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${isDark ? 'bg-gradient-to-br from-[#2eb5c2] to-[#0b5d68]' : 'bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2]'}`}
                   >
-                    <span className="material-symbols-outlined text-white text-4xl">search</span>
+                    <span className="material-symbols-outlined text-white text-3xl sm:text-4xl">search</span>
                   </div>
                   <div className="mb-4">
                     <span
@@ -857,27 +861,30 @@ export default function Home() {
           </div>
 
           {/* CTA Section */}
-          <div className="text-center mt-16">
+          <div className="mt-10 px-2 text-center sm:mt-16 sm:px-0">
             {currentUser ? (
-              <Link href="/listings">
+              <Link href="/listings" className="inline-block w-full sm:w-auto">
                 <button
-                  className={`px-8 py-4 rounded-xl font-headline font-bold transition-all hover:scale-105 ${isDark ? 'bg-[#2eb5c2] text-white hover:bg-[#0b5d68]' : 'bg-[#0b5d68] text-white hover:bg-[#2eb5c2]'}`}
+                  type="button"
+                  className={`w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-headline text-sm sm:text-base font-bold transition-all active:scale-[0.98] sm:hover:scale-105 min-h-[44px] ${isDark ? 'bg-[#2eb5c2] text-white hover:bg-[#0b5d68]' : 'bg-[#0b5d68] text-white hover:bg-[#2eb5c2]'}`}
                 >
                   Start Trading
                 </button>
               </Link>
             ) : (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/register">
+              <div className="mx-auto flex max-w-md flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
+                <Link href="/register" className="w-full sm:w-auto">
                   <button
-                    className={`px-8 py-4 rounded-xl font-headline font-bold transition-all hover:scale-105 ${isDark ? 'bg-[#e89151] text-white hover:bg-[#d67a3a]' : 'bg-[#e89151] text-white hover:bg-[#d67a3a]'}`}
+                    type="button"
+                    className={`w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-headline text-sm sm:text-base font-bold transition-all active:scale-[0.98] sm:hover:scale-105 min-h-[44px] ${isDark ? 'bg-[#e89151] text-white hover:bg-[#d67a3a]' : 'bg-[#e89151] text-white hover:bg-[#d67a3a]'}`}
                   >
                     Get Started Now
                   </button>
                 </Link>
-                <Link href="/login">
+                <Link href="/login" className="w-full sm:w-auto">
                   <button
-                    className={`px-8 py-4 rounded-xl font-headline font-bold transition-all hover:scale-105 border-2 ${isDark ? 'border-[#2eb5c2] text-[#2eb5c2] hover:bg-[#2eb5c2] hover:text-white' : 'border-[#0b5d68] text-[#0b5d68] hover:bg-[#0b5d68] hover:text-white'}`}
+                    type="button"
+                    className={`w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-headline text-sm sm:text-base font-bold transition-all active:scale-[0.98] sm:hover:scale-105 border-2 min-h-[44px] ${isDark ? 'border-[#2eb5c2] text-[#2eb5c2] hover:bg-[#2eb5c2] hover:text-white' : 'border-[#0b5d68] text-[#0b5d68] hover:bg-[#0b5d68] hover:text-white'}`}
                   >
                     Sign in
                   </button>
@@ -889,16 +896,16 @@ export default function Home() {
       </section>
 
       {/* Market Trends Snapshot */}
-      <section className={`py-24 px-8 ${isDark ? 'bg-gray-800' : 'bg-[#2eb5c2]'}`}>
+      <section className={`${sectionPad} ${isDark ? 'bg-gray-800' : 'bg-[#2eb5c2]'}`}>
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+          <div className="grid grid-cols-1 gap-8 items-center lg:grid-cols-3 lg:gap-12">
             <div className="lg:col-span-1">
               <h2
-                className={`font-headline text-3xl font-bold mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}
+                className={`font-headline text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}
               >
                 Market Intelligence
               </h2>
-              <p className={`${isDark ? 'text-gray-300' : 'text-white/90'} mb-8`}>
+              <p className={`text-sm sm:text-base mb-6 sm:mb-8 ${isDark ? 'text-gray-300' : 'text-white/90'}`}>
                 Access real-time price volatility maps and harvest forecasting powered by satellite
                 telemetry.
               </p>
@@ -938,15 +945,15 @@ export default function Home() {
               </div>
             </div>
             <div
-              className={`lg:col-span-2 ${isDark ? 'bg-gray-700/50' : 'bg-white/20'} backdrop-blur border ${isDark ? 'border-gray-600' : 'border-white/20'} p-8 rounded-2xl h-80 relative`}
+              className={`lg:col-span-2 ${isDark ? 'bg-gray-700/50' : 'bg-white/20'} backdrop-blur border ${isDark ? 'border-gray-600' : 'border-white/20'} p-4 sm:p-8 rounded-xl sm:rounded-2xl h-56 sm:h-72 lg:h-80 relative`}
             >
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex flex-col gap-3 mb-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                 <span
-                  className={`font-bold font-headline ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}
+                  className={`font-bold font-headline text-sm sm:text-base ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}
                 >
-                  Price Trend Aggregate (30D)
+                  Price Trend (30D)
                 </span>
-                <div className="flex gap-4">
+                <div className="flex gap-3 sm:gap-4">
                   <div
                     className={`flex items-center gap-2 text-[10px] uppercase font-bold ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}
                   >
@@ -1030,11 +1037,11 @@ export default function Home() {
       </section>
 
       {/* Gap Section */}
-      <div className="h-16"></div>
+      <div className="h-8 sm:h-16"></div>
 
       {/* Premium Trust Section */}
       <section
-        className={`py-24 px-8 relative overflow-hidden ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-[#0b5d68] via-[#2eb5c2] to-[#0b5d68]'}`}
+        className={`${sectionPad} relative overflow-hidden ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-[#0b5d68] via-[#2eb5c2] to-[#0b5d68]'}`}
       >
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -1050,103 +1057,103 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="font-headline text-5xl font-bold text-white mb-6 animate-fade-in-up">
+          <div className="text-center mb-8 sm:mb-16">
+            <h2 className="font-headline text-2xl sm:text-3xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 animate-fade-in-up">
               Trusted by Thousands
             </h2>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto animate-fade-in-up animation-delay-200">
-              Join the leading digital agricultural marketplace with verified partners, secure
-              transactions, and proven track record
+            <p className="text-sm sm:text-base lg:text-xl text-white/90 max-w-3xl mx-auto px-2 animate-fade-in-up animation-delay-200">
+              Join India's digital agricultural marketplace with verified partners and secure
+              transactions
             </p>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-4 md:gap-8 mb-8 sm:mb-16">
             <div className="text-center group">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 transition-all duration-300 hover:scale-105 hover:bg-white/20">
-                <div className="text-4xl font-bold text-white mb-2 counter" data-target="50000">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:bg-white/20">
+                <div className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 counter" data-target="50000">
                   0
                 </div>
-                <div className="text-sm text-white/80 uppercase tracking-wider">Farmers</div>
+                <div className="text-[10px] sm:text-sm text-white/80 uppercase tracking-wider">Farmers</div>
               </div>
             </div>
             <div className="text-center group">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 transition-all duration-300 hover:scale-105 hover:bg-white/20">
-                <div className="text-4xl font-bold text-white mb-2 counter" data-target="1200">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:bg-white/20">
+                <div className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 counter" data-target="1200">
                   0
                 </div>
-                <div className="text-sm text-white/80 uppercase tracking-wider">Warehouses</div>
+                <div className="text-[10px] sm:text-sm text-white/80 uppercase tracking-wider">Warehouses</div>
               </div>
             </div>
             <div className="text-center group">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 transition-all duration-300 hover:scale-105 hover:bg-white/20">
-                <div className="text-4xl font-bold text-white mb-2 counter" data-target="3500">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:bg-white/20">
+                <div className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 counter" data-target="3500">
                   0
                 </div>
-                <div className="text-sm text-white/80 uppercase tracking-wider">Transporters</div>
+                <div className="text-[10px] sm:text-sm text-white/80 uppercase tracking-wider">Transporters</div>
               </div>
             </div>
-            <div className="text-center group">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 transition-all duration-300 hover:scale-105 hover:bg-white/20">
-                <div className="text-4xl font-bold text-white mb-2">
+            <div className="text-center group col-span-2 md:col-span-1">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:bg-white/20">
+                <div className="text-xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
                   ₹
                   <span className="counter" data-target="2500">
                     0
                   </span>
-                  Crore
+                  <span className="text-base sm:text-4xl"> Crore</span>
                 </div>
-                <div className="text-sm text-white/80 uppercase tracking-wider">Transactions</div>
+                <div className="text-[10px] sm:text-sm text-white/80 uppercase tracking-wider">Transactions</div>
               </div>
             </div>
           </div>
 
           {/* Trust Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 group hover:bg-white/20 transition-all duration-300">
-              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <span className="material-symbols-outlined text-white text-3xl">verified_user</span>
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3 md:gap-8 mb-8 sm:mb-16">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-5 sm:p-8 border border-white/20 group active:scale-[0.98] sm:hover:bg-white/20 transition-all duration-300">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">verified_user</span>
               </div>
-              <h3 className="font-headline text-xl font-bold text-white mb-4">Verified Partners</h3>
-              <p className="text-white/80 text-sm leading-relaxed">
-                Every farmer, warehouse, and transporter is thoroughly verified through KYC and
-                on-site inspections
+              <h3 className="font-headline text-lg sm:text-xl font-bold text-white mb-2 sm:mb-4">Verified Partners</h3>
+              <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+                Every partner is verified through KYC and on-site inspections
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 group hover:bg-white/20 transition-all duration-300">
-              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <span className="material-symbols-outlined text-white text-3xl">security</span>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-5 sm:p-8 border border-white/20 group active:scale-[0.98] sm:hover:bg-white/20 transition-all duration-300">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">security</span>
               </div>
-              <h3 className="font-headline text-xl font-bold text-white mb-4">Escrow Protection</h3>
-              <p className="text-white/80 text-sm leading-relaxed">
-                All transactions are protected by escrow accounts. Payment released only after
-                successful delivery
+              <h3 className="font-headline text-lg sm:text-xl font-bold text-white mb-2 sm:mb-4">Escrow Protection</h3>
+              <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+                Payments held in escrow until successful delivery
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 group hover:bg-white/20 transition-all duration-300">
-              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <span className="material-symbols-outlined text-white text-3xl">support_agent</span>
+            <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-5 sm:p-8 border border-white/20 group active:scale-[0.98] sm:hover:bg-white/20 transition-all duration-300">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
+                <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">support_agent</span>
               </div>
-              <h3 className="font-headline text-xl font-bold text-white mb-4">24/7 Support</h3>
-              <p className="text-white/80 text-sm leading-relaxed">
-                Round-the-clock customer support with dedicated relationship managers for enterprise
-                clients
+              <h3 className="font-headline text-lg sm:text-xl font-bold text-white mb-2 sm:mb-4">24/7 Support</h3>
+              <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+                Round-the-clock support for every trade on the platform
               </p>
             </div>
           </div>
 
           {/* CTA Section */}
-          <div className="text-center">
-            <div className="inline-flex items-center gap-4 bg-white/10 backdrop-blur-md rounded-2xl px-8 py-6 border border-white/20">
-              <div className="text-left">
-                <h4 className="font-headline text-2xl font-bold text-white mb-2">
+          <div className="text-center px-2 sm:px-0">
+            <div className="mx-auto flex max-w-lg flex-col items-stretch gap-4 rounded-xl sm:rounded-2xl border border-white/20 bg-white/10 px-5 py-5 backdrop-blur-md sm:max-w-none sm:inline-flex sm:flex-row sm:items-center sm:gap-4 sm:px-8 sm:py-6">
+              <div className="text-center sm:text-left">
+                <h4 className="font-headline text-lg sm:text-2xl font-bold text-white mb-1 sm:mb-2">
                   Ready to Get Started?
                 </h4>
-                <p className="text-white/80">Join 50,000+ trusted agricultural partners</p>
+                <p className="text-sm sm:text-base text-white/80">Join 50,000+ trusted partners</p>
               </div>
-              <Link href="/register">
-                <button className="px-8 py-4 bg-white text-[#0b5d68] rounded-xl font-headline font-bold transition-all hover:scale-105 hover:shadow-2xl">
+              <Link href="/register" className="w-full sm:w-auto">
+                <button
+                  type="button"
+                  className="w-full sm:w-auto min-h-[44px] px-6 py-3.5 sm:px-8 sm:py-4 bg-white text-[#0b5d68] rounded-xl font-headline text-sm sm:text-base font-bold transition-all active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl"
+                >
                   Join Now
                 </button>
               </Link>

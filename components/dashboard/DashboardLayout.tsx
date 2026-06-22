@@ -1,74 +1,62 @@
-'use client'
+'use client';
 
-import { ReactNode, useState } from 'react'
-import Link from 'next/link'
-import { Sidebar } from './Sidebar'
-import { DashboardTabs, TabType } from '@/types/dashboard'
+import { ReactNode, useState } from 'react';
+import { Sidebar, getDashboardTabLabel } from './Sidebar';
+import { DashboardTabs, TabType } from '@/types/dashboard';
+import { Icon } from '@/components/ui/Icon';
 
 interface DashboardLayoutProps {
-  activeTab: TabType
-  onTabChange: (tab: TabType) => void
-  dashboardTabs: DashboardTabs
-  userName: string
-  userAvatar?: string
-  children: ReactNode
-  searchQuery?: string
-  onSearchChange?: (query: string) => void
-  role?: string
+  activeTab: TabType;
+  onTabChange: (tab: TabType) => void;
+  dashboardTabs: DashboardTabs;
+  userName: string;
+  userAvatar?: string;
+  children: ReactNode;
+  searchQuery?: string;
+  onSearchChange?: (query: string) => void;
+  role?: string;
 }
 
 export function DashboardLayout({
   activeTab,
   onTabChange,
   dashboardTabs,
-  userName,
-  userAvatar,
   children,
-  searchQuery = '',
-  onSearchChange,
-  role = 'farmer'
 }: DashboardLayoutProps) {
-  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    // The actual filtering will be handled by the individual pages
-    // We just update the search state here
-    if (onSearchChange) {
-      onSearchChange(localSearchQuery)
-    }
-  }
-
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newQuery = e.target.value
-    setLocalSearchQuery(newQuery)
-    if (onSearchChange) {
-      onSearchChange(newQuery)
-    }
-  }
-
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed)
-  }
   return (
-    <div className="bg-surface text-on-surface flex min-h-screen pt-16">
-      {/* Sidebar */}
+    <div className="flex min-h-screen bg-surface pt-16 text-on-surface">
       <Sidebar
         activeTab={activeTab}
         onTabChange={onTabChange}
         dashboardTabs={dashboardTabs}
         isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={toggleSidebar}
+        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+        isMobileOpen={isMobileNavOpen}
+        onMobileClose={() => setIsMobileNavOpen(false)}
       />
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
-
-        <div className="flex-1 overflow-auto">
-          {children}
+      <main className="flex min-w-0 flex-1 flex-col">
+        <div className="sticky top-16 z-40 flex items-center gap-3 border-b border-outline bg-surface/95 px-4 py-3 backdrop-blur-md md:hidden">
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen(true)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-outline text-on-surface hover:bg-surface-container"
+            aria-label="Open navigation menu"
+          >
+            <Icon name="menu" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-on-surface">
+              {getDashboardTabLabel(activeTab)}
+            </p>
+          </div>
         </div>
+
+        <div className="flex-1 overflow-auto">{children}</div>
       </main>
     </div>
-  )
+  );
 }

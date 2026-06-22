@@ -8,6 +8,8 @@ interface AdminSidebarProps {
   adminTabs: AdminTabs;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 const TAB_META: Record<
@@ -29,19 +31,36 @@ const TAB_BADGES: Partial<Record<TabType, number>> = {
   disputes: 2,
 };
 
-export function AdminSidebar({
+export function getAdminTabLabel(tab: TabType): string {
+  return TAB_META[tab]?.label ?? tab;
+}
+
+function AdminSidebarNav({
   activeTab,
   onTabChange,
   adminTabs,
   isCollapsed,
   onToggleCollapse,
-}: AdminSidebarProps) {
+  onNavigate,
+}: {
+  activeTab: TabType | null;
+  onTabChange: (tab: TabType) => void;
+  adminTabs: AdminTabs;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+  onNavigate?: () => void;
+}) {
   const operationsTabs = (Object.keys(adminTabs) as TabType[]).filter(
     (tab) => adminTabs[tab] && TAB_META[tab].section === 'operations',
   );
   const insightsTabs = (Object.keys(adminTabs) as TabType[]).filter(
     (tab) => adminTabs[tab] && TAB_META[tab].section === 'insights',
   );
+
+  const handleTabChange = (tab: TabType) => {
+    onTabChange(tab);
+    onNavigate?.();
+  };
 
   const renderNavButton = (tab: TabType) => {
     const { label, icon } = TAB_META[tab];
@@ -52,7 +71,7 @@ export function AdminSidebar({
       <button
         key={tab}
         type="button"
-        onClick={() => onTabChange(tab)}
+        onClick={() => handleTabChange(tab)}
         title={isCollapsed ? label : undefined}
         className={`group relative flex w-full items-center rounded-xl transition-all duration-200 ${
           isCollapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5'
@@ -110,12 +129,7 @@ export function AdminSidebar({
   };
 
   return (
-    <aside
-      className={`sticky top-16 z-30 flex h-[calc(100vh-4rem)] shrink-0 flex-col border-r border-outline bg-surface shadow-sm transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-[4.75rem]' : 'w-64'
-      }`}
-    >
-      {/* Header */}
+    <>
       <div
         className={`relative overflow-hidden border-b border-outline/60 ${
           isCollapsed ? 'px-3 py-4' : 'px-4 py-5'
@@ -129,7 +143,9 @@ export function AdminSidebar({
           </div>
 
           {!isCollapsed && (
-            <p className="min-w-0 flex-1 text-sm font-medium text-on-surface-variant">System management</p>
+            <p className="min-w-0 flex-1 text-sm font-medium text-on-surface-variant">
+              System management
+            </p>
           )}
 
           {!isCollapsed && (
@@ -156,13 +172,11 @@ export function AdminSidebar({
         )}
       </div>
 
-      {/* Navigation */}
       <nav className={`flex-1 space-y-4 overflow-y-auto ${isCollapsed ? 'px-2 py-4' : 'px-3 py-4'}`}>
         {renderSection('Operations', operationsTabs)}
         {renderSection('Insights', insightsTabs)}
       </nav>
 
-      {/* Footer */}
       <div className={`border-t border-outline/60 ${isCollapsed ? 'p-2' : 'p-3'}`}>
         <div
           className={`rounded-xl border border-outline/50 bg-gradient-to-br from-surface-container to-surface-container-high ${
@@ -185,6 +199,68 @@ export function AdminSidebar({
           </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export function AdminSidebar({
+  activeTab,
+  onTabChange,
+  adminTabs,
+  isCollapsed,
+  onToggleCollapse,
+  isMobileOpen = false,
+  onMobileClose,
+}: AdminSidebarProps) {
+  return (
+    <>
+      <aside
+        className={`sticky top-16 z-30 hidden h-[calc(100vh-4rem)] shrink-0 flex-col border-r border-outline bg-surface shadow-sm transition-all duration-300 ease-in-out md:flex ${
+          isCollapsed ? 'w-[4.75rem]' : 'w-64'
+        }`}
+      >
+        <AdminSidebarNav
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          adminTabs={adminTabs}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={onToggleCollapse}
+        />
+      </aside>
+
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            aria-label="Close navigation menu"
+            onClick={onMobileClose}
+          />
+          <aside className="absolute left-0 top-0 flex h-full w-[min(18rem,88vw)] flex-col border-r border-outline bg-surface shadow-xl">
+            <div className="flex items-center justify-between border-b border-outline px-4 py-3">
+              <p className="text-sm font-semibold text-on-surface">Admin menu</p>
+              <button
+                type="button"
+                onClick={onMobileClose}
+                className="rounded-lg p-2 text-on-surface-variant hover:bg-surface-container"
+                aria-label="Close menu"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <AdminSidebarNav
+                activeTab={activeTab}
+                onTabChange={onTabChange}
+                adminTabs={adminTabs}
+                isCollapsed={false}
+                onToggleCollapse={onToggleCollapse}
+                onNavigate={onMobileClose}
+              />
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

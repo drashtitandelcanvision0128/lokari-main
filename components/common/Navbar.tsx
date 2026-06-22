@@ -169,18 +169,27 @@ const Navbar = () => {
 
   const isActive = (path: string) => pathname === path
   const isAdminUser = currentUser?.role === 'admin'
+  const isDashboardRoute =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/farmer-dashboard') ||
+    pathname.startsWith('/trader-dashboard') ||
+    pathname.startsWith('/transporter-dashboard') ||
+    pathname.startsWith('/warehouse-dashboard') ||
+    pathname.startsWith('/admin')
 
   return (
-    <nav className={`fixed top-0 w-full z-50 h-16 transition-all duration-300 ${isScrolled
+    <nav className={`fixed top-0 z-50 h-16 w-full transition-all duration-300 ${isScrolled
       ? isDark ? 'bg-gray-900/80 backdrop-blur-md' : 'bg-[#ece8e1]/80 backdrop-blur-md'
       : isDark ? 'bg-gray-900' : 'bg-[#ece8e1]'
       }`}>
-      <div className="flex justify-between items-center w-full px-8 h-full max-w-full">
-        <div className="flex items-center gap-8">
-          <Link href="/" className={`flex items-center gap-3 text-xl font-bold font-headline ${isDark ? 'text-white' : 'text-[#0b5d68]'
-            }`}>
-            <img src="/AgriwareLogo.svg" alt="Lokhari Logo" className="w-8 h-8" />
-            Lokhari
+      <div className="flex h-full w-full min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden sm:gap-8">
+          <Link
+            href="/"
+            className={`flex shrink-0 items-center gap-2 text-lg font-bold font-headline sm:gap-3 sm:text-xl ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
+          >
+            <img src="/AgriwareLogo.svg" alt="Lokhari Logo" className="h-8 w-8 shrink-0" />
+            <span className="hidden sm:inline">Lokhari</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 font-headline font-semibold tracking-tight">
             <Link
@@ -193,12 +202,7 @@ const Navbar = () => {
               Marketplace
             </Link>
             {/* Hide Marketplace, Services, and Insights tabs on all dashboard and admin pages */}
-            {!pathname.startsWith('/dashboard') &&
-              !pathname.startsWith('/farmer-dashboard') &&
-              !pathname.startsWith('/trader-dashboard') &&
-              !pathname.startsWith('/transporter-dashboard') &&
-              !pathname.startsWith('/warehouse-dashboard') &&
-              !pathname.startsWith('/admin') && (
+            {!isDashboardRoute && (
                 <>
 
                   <Link
@@ -232,10 +236,12 @@ const Navbar = () => {
               )}
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <button
+            type="button"
             onClick={toggleDark}
-            className={`p-2 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
+            className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg p-0 sm:p-2 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             <span className="material-symbols-outlined">
               {isDark ? 'light_mode' : 'dark_mode'}
