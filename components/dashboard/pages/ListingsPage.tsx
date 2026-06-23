@@ -115,7 +115,11 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                   : 'transport',
             price: `₹${item.price}`,
             priceType: item.price_type || '-',
-            listingLocation: item.listing_location || '-',
+            // listingLocation:
+            //   item.address?.city
+            //     ? `${item.address.city}`
+            //     : item.listing_location || '-',
+            listingLocation: item.address?.city ?? '-',
             image: '',
             createdAt: item.created_at,
           }));

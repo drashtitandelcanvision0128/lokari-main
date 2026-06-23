@@ -50,6 +50,7 @@ export default function ListingDetailPage() {
         }
 
         const d = result.data
+        // console.log(JSON.stringify(d, null, 2))
 
         setListing({
           id: d.listing_id,
@@ -60,7 +61,10 @@ export default function ListingDetailPage() {
           // priceType: d.price_type?.toLowerCase(),
           priceType: normalizePriceType(d.price_type),
           status: d.status?.toLowerCase(),
-          location: d.listing_location,
+          // location: d.listing_location,
+          location: d.address
+            ? `${d.address.city}, ${d.address.state}`
+            : 'Location not available',
           quantity:
             d.farmerProduce?.quantity ||
             d.warehouse?.capacity ||

@@ -19,6 +19,7 @@ export const getListingById = async (req, res) => {
         const listing = await prisma.marketplace.findUnique({
             where: { listing_id: id },
             include: {
+                address: true,
                 farmerProduce: true,
                 warehouse: true,
                 transport: true,
@@ -114,6 +115,7 @@ export const getAllListings = async (req, res) => {
                 [dbSortField]: cleanDirection === 'asc' ? 'asc' : 'desc'
             },
             include: {
+                address: true,
                 farmerProduce: true,
                 warehouse: true,
                 transport: true,
@@ -237,8 +239,13 @@ export const updateListing = async (req, res) => {
 
     try {
         const listing = await prisma.marketplace.findUnique({
-            where: { listing_id: id }
+            where: { listing_id: id },
+            include: {
+                address: true
+            }
         });
+
+
 
         if (!listing) {
             return res.status(404).json({ success: false, message: 'Listing not found' });
@@ -248,9 +255,6 @@ export const updateListing = async (req, res) => {
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
         if (price !== undefined) updateData.price = price;
-        if (listing_location !== undefined) {
-            updateData.listing_location = listing_location;
-        }
         const statusMap = {
             ACTIVE: "ACTIVE",
             DRAFT: "DRAFT",
@@ -266,6 +270,17 @@ export const updateListing = async (req, res) => {
             where: { listing_id: id },
             data: updateData
         });
+
+        if (listing_location !== undefined && listing.address) {
+            await prisma.marketplaceAddress.update({
+                where: {
+                    listing_id: id
+                },
+                data: {
+                    city: listing_location
+                }
+            });
+        }
 
         if (quantity !== undefined) {
             await prisma.farmerProduce.update({
