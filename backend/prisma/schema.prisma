@@ -162,13 +162,35 @@ model Marketplace {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  user          User           @relation(fields: [user_id], references: [user_id])
+  user          User                @relation(fields: [user_id], references: [user_id])
+  address       MarketplaceAddress?
   farmerProduce FarmerProduce?
   warehouse     Warehouse?
   transport     Transport?
   auction       Auction?
 
   @@map("marketplace")
+}
+
+model MarketplaceAddress {
+  marketplace_address_id String @id @default(uuid())
+
+  listing_id String @unique
+
+  street  String?
+  city    String
+  state   String
+  pincode String
+  country String
+
+  lat Float?
+  lng Float?
+
+  listing    Marketplace @relation(fields: [listing_id], references: [listing_id])
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+
+  @@map("marketplace_addresses")
 }
 
 model FarmerProduce {
