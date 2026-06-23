@@ -410,7 +410,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium border ${listing.priceType === 'AUCTION'
+                          className={`inline-block whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium border ${listing.priceType === 'AUCTION'
                             ? 'bg-amber-100 text-amber-800 border-amber-300'
                             : listing.priceType === 'FIXED_PRICE'
                               ? 'bg-emerald-100 text-emerald-700 border-emerald-200'

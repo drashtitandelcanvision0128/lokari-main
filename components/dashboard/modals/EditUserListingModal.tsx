@@ -15,21 +15,32 @@ interface EditUserListingModalProps {
 const SectionCard = ({
     title,
     children,
+    showHeader = true,
+    noPadding = false,
 }: {
     title: string
     children: React.ReactNode
+    showHeader?: boolean
+    noPadding?: boolean
 }) => (
-    <div className=" bg-white
-    rounded-3xl
-    border border-[#eef2f4]
-    p-6
-    shadow-[0_4px_20px_rgba(0,0,0,0.04)]
-    hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]
-    transition-all">
-        <h3 className="text-base font-bold text-[#0b5d68] mb-5">
-            {title}
-        </h3>
-        {children}
+    <div className="bg-white rounded-3xl border border-[#eef2f4] overflow-hidden">
+        {showHeader && (
+            <div className="
+                bg-gradient-to-r
+                from-[#e6f7f8]
+                to-[#d4f0f2]
+                px-6
+                py-4
+            ">
+                <h3 className="text-lg font-bold text-[#0b5d68]">
+                    {title}
+                </h3>
+            </div>
+        )}
+
+        <div className={noPadding ? "" : "p-6"}>
+            {children}
+        </div>
     </div>
 )
 
@@ -124,27 +135,50 @@ export default function EditUserListingModal({
                 </div>
                 {/* Product Preview */}
                 <div className="p-4">
-                    <div className="grid lg:grid-cols-3 gap-6">
+                    <div className="grid lg:grid-cols-3 gap-5 items-stretch">
                         {/* Left */}
-                        <div className="space-y-6">
-                            <SectionCard title="Product Image">
-                                <div className="overflow-hidden rounded-2xl">
-                                    <img
-                                        // src={listing?.images?.[0] || '/placeholder-image.jpg'}
-                                        src="https://images.pexels.com/photos/1414651/pexels-photo-1414651.jpeg"
-                                        alt={listing?.product}
-                                        // className="w-full h-64 object-cover"
-                                        className="w-full h-[320px] object-cover"
-                                    />
+                        {/* <div className="space-y-6"> */}
+                        <SectionCard
+                            title="Product Image"
+                            showHeader={false}
+                            noPadding={true}
+                        >
+                            <div className="h-[440px] relative h-48 bg-gradient-to-br from-[#f9f9f7] to-[#f5f5f3]">
+                                {/* Status Label */}
+                                <div className="absolute top-3 right-3">
+                                    <span
+                                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border ${listing.status === 'live'
+                                                ? 'bg-[#2eb5c2]/90 text-white border-[#2eb5c2]'
+                                                : 'bg-[#d55b39]/90 text-white border-[#d55b39]'
+                                            }`}
+                                    >
+                                        <span
+                                            className={`w-1.5 h-1.5 rounded-full mr-1.5 ${listing.status === 'live'
+                                                    ? 'bg-white'
+                                                    : 'bg-white'
+                                                }`}
+                                        />
+                                        {listing.status === 'live' ? 'Live' : 'Paused'}
+                                    </span>
                                 </div>
-                            </SectionCard>
+                                <img
+                                    src="https://images.pexels.com/photos/1414651/pexels-photo-1414651.jpeg"
+                                    alt={listing?.product}
+                                    className="
+                w-full
+                h-full
+                object-cover
+            "
+                                />
+                            </div>
+                        </SectionCard>
 
-                        </div>
+                        {/* </div> */}
 
                         {/* Right */}
-                        <div className="lg:col-span-2 space-y-6">
+                        <div className="lg:col-span-2 space-y-4">
                             <SectionCard title="Listing Information">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                                     <div className="space-y-4">
 
@@ -264,39 +298,37 @@ export default function EditUserListingModal({
 
 
                     </div>
-                    <SectionCard title="Description">
-                        <div>
-                            {/* <label className="text-sm font-semibold text-[#0b5d68]">
+                    <div className="mt-4 mb-6">
+                        <SectionCard title="Description">
+                            <div>
+                                {/* <label className="text-sm font-semibold text-[#0b5d68]">
                                 Description
                             </label> */}
 
-                            <textarea
-                                rows={4}
-                                value={formData.description}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        description: e.target.value,
-                                    })
-                                }
-                                className="
-        h-24
+                                <textarea
+                                    rows={4}
+                                    value={formData.description}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            description: e.target.value,
+                                        })
+                                    }
+                                    className="
         w-full
-        px-3
-        py-2
-        border
-        border-[#e0e0e0]
-        rounded-lg
-        shadow-sm
+        bg-transparent
+        border-0
+        p-0
+        resize-none
         text-sm
+        text-gray-700
         focus:outline-none
-        focus:ring-2
-        focus:ring-[#0b5d68]
-        focus:border-[#0b5d68]
+        focus:ring-0
     "
-                            />
-                        </div>
-                    </SectionCard>
+                                />
+                            </div>
+                        </SectionCard>
+                    </div>
                     <div className="sticky bottom-0 bg-white border-t p-5 flex justify-end gap-3">
                         <Button
                             variant="outline"
