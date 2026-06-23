@@ -16,11 +16,11 @@ export interface User {
   avatar?: string;
   createdAt: string;
   updatedAt: string;
-  location?: string;
-  farmName?: string;
-  companyName?: string;
-  warehouseName?: string;
-  vehicleType?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  country?: string;
 }
 
 export interface UserProfile {
@@ -42,13 +42,11 @@ export interface RegistrationData {
   role: 'farmer' | 'trader' | 'warehouse' | 'transporter';
   termsAccepted: boolean;
   otp?: string;
-  location?: string;
-  farmName?: string;
-  companyName?: string;
-  warehouseName?: string;
-  vehicleType?: string;
-  capacity?: string;
-  businessType?: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  country?: string;
 }
 
 export type PendingRegistration = RegistrationData & {

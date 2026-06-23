@@ -56,6 +56,11 @@ const register = async (req, res) => {
       location,
       capacity,
       businessType,
+      street,
+      city,
+      state,
+      pincode,
+      country,
     } = req.body;
 
     const fullName = fullNameField || name;
@@ -122,6 +127,18 @@ const register = async (req, res) => {
             capacity,
             businessType,
           }),
+        },
+        addresses: {
+          create: [
+            {
+              street: street?.trim() || 'Not Provided',
+              city: city?.trim() || 'Not Provided',
+              state: state?.trim() || 'Not Provided',
+              pincode: pincode?.trim() || 'Not Provided',
+              country: country?.trim() || 'Not Provided',
+              is_default: true,
+            },
+          ],
         },
       },
       include: userWithProfileInclude,

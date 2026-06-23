@@ -21,6 +21,7 @@ coverage
 .gitignore
 README.md
 scratch-fetch.js
+test-smtp.js
 
 # IDE / OS
 .vscode

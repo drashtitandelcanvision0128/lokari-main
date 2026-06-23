@@ -84,12 +84,7 @@ function SidebarNav({
           isCollapsed ? 'px-3' : 'px-4 sm:px-6',
         )}
       >
-        <div
-          className={cn(
-            'flex items-center mb-4',
-            isCollapsed ? 'justify-center' : 'gap-3',
-          )}
-        >
+        <div className={cn('flex items-center mb-4', isCollapsed ? 'justify-center' : 'gap-3')}>
           <button
             type="button"
             onClick={onToggleCollapse}
@@ -159,30 +154,35 @@ function SidebarNav({
                     </>
                   )}
                 </button>
-
-                {!isCollapsed && isSettingsOpen && (
-                  <div className="ml-4 mt-1 space-y-1 sm:ml-8">
-                    {settingsSubTabs.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className={cn(
-                          'flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm',
-                          activeSection === item.id
-                            ? 'bg-primary text-white'
-                            : 'hover:bg-accent/10',
-                        )}
-                        onClick={() => {
-                          handleTabChange('settings');
-                          setActiveSection(item.id as SettingsSection);
-                        }}
-                      >
-                        <Icon name={item.icon} />
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div
+                  className={cn(
+                    'overflow-hidden transition-all duration-300 ease-out',
+                    isSettingsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0',
+                  )}
+                >
+                  {!isCollapsed && isSettingsOpen && (
+                    <div className="ml-8 mt-1 space-y-1">
+                      {settingsSubTabs.map((item) => (
+                        <button
+                          className={cn(
+                            'w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-200 ease-out',
+                            activeTab === 'settings' && activeSection === item.id
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'hover:bg-accent/10 hover:translate-x-1',
+                          )}
+                          key={item.id}
+                          onClick={() => {
+                            onTabChange('settings');
+                            setActiveSection(item.id as any);
+                          }}
+                        >
+                          <Icon name={item.icon} />
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             );
           }
@@ -196,8 +196,8 @@ function SidebarNav({
                 'flex items-center rounded-md font-body text-sm font-medium transition-all',
                 isCollapsed ? 'w-full justify-center px-2 py-3' : 'w-full gap-3 px-4 py-3',
                 isActive
-                  ? 'bg-primary text-white'
-                  : 'text-on-surface-variant hover:bg-accent/10',
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'text-on-surface-variant hover:bg-accent/10 hover:translate-x-1',
               )}
               title={isCollapsed ? config.label : undefined}
             >

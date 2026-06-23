@@ -1,16 +1,31 @@
+###############################################
+# Stage 1 — install production dependencies  #
+###############################################
 FROM node:22-alpine AS deps
 WORKDIR /app
+
 COPY package*.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
+
+# Dummy URL so prisma generate works at build time (real URL injected at runtime)
 ENV DATABASE_URL="postgresql://build:build@127.0.0.1:5432/build"
+
 RUN npm ci --omit=dev
 
+###############################################
+# Stage 2 — production image                 #
+###############################################
 FROM node:22-alpine AS runner
 WORKDIR /app
+
 ENV NODE_ENV=production
 
-RUN apk add --no-cache openssl wget
+# openssl required by Prisma; wget used by healthcheck
+RUN apk add --no-cache openssl wget \
+    # non-root user for least-privilege
+    && addgroup --system --gid 1001 nodejs \
+    && adduser  --system --uid 1001 --ingroup nodejs nodeuser
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY package*.json ./
@@ -19,8 +34,13 @@ COPY prisma.config.ts ./
 COPY server.js ./
 COPY src ./src
 
+# Generate Prisma client (dummy URL is fine here — client is generated, not connected)
 ENV DATABASE_URL="postgresql://build:build@127.0.0.1:5432/build"
-RUN npx prisma generate
+RUN node_modules/.bin/prisma generate
+
+# Drop to non-root
+USER nodeuser
 
 EXPOSE 5000
-CMD ["npm", "start"]
+# Use node directly — faster startup, proper signal handling
+CMD ["node", "src/server.js"]

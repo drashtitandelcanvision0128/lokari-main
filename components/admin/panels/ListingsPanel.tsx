@@ -7,6 +7,8 @@ import { apiUrl, authHeaders } from '@/lib/api'
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
 import { EditListingModal } from './EditListingModal'
 
+import AdminTable from '@/components/admin/common/AdminTable'
+
 interface ListingsPanelProps {
   searchQuery?: string
 }
@@ -21,6 +23,23 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   const [editListingData, setEditListingData] = useState<AdminListing | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
+
+  // For Pagination
+  const [currentPage, setCurrentPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+
+  // For sorting
+  const [sortField, setSortField] = useState<'title' | 'seller' | 'location' | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+  const handleSort = (field: 'title' | 'seller' | 'location') => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
 
   const fetchListings = async () => {
     setLoading(true)
@@ -67,11 +86,13 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
             status:
               item.status === 'ACTIVE'
                 ? 'active'
-                : item.status === 'PENDING'
-                  ? 'pending'
-                  : item.status === 'REJECTED'
-                    ? 'rejected'
-                    : 'expired',
+                : item.status === 'DRAFT'
+                  ? 'draft'
+                  : item.status === 'SOLD'
+                    ? 'sold'
+                    : item.status === 'EXPIRED'
+                      ? 'expired'
+                      : 'draft',
             isBlocked: item.is_blocked || false,
             createdAt: item.created_at,
             expiresAt:
@@ -98,6 +119,10 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   useEffect(() => {
     fetchListings()
   }, [])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedCategory, selectedStatus])
 
   const handleAction = (action: string, item: any) => {
     if (action === 'block_toggled') {
@@ -188,9 +213,14 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
       case 'flagged':
         return 'bg-error text-on-error'
       case 'expired':
-        return 'bg-surface-container text-on-surface-variant'
+        return 'bg-orange-100 text-orange-700'
       default:
         return 'bg-surface-container text-on-surface-variant'
+      case 'draft':
+        return 'bg-gray-100 text-gray-700'
+
+      case 'sold':
+        return 'bg-green-100 text-green-700'
     }
   }
 
@@ -227,9 +257,43 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
     return priorities[status as keyof typeof priorities] || 999
   }
 
+  // const sortedListings = [...filteredListings].sort((a, b) => {
+  //   return getStatusPriority(a.status) - getStatusPriority(b.status)
+  // })
   const sortedListings = [...filteredListings].sort((a, b) => {
-    return getStatusPriority(a.status) - getStatusPriority(b.status)
+
+    if (!sortField) return 0
+
+    let valueA = ''
+    let valueB = ''
+
+    if (sortField === 'title') {
+      valueA = a.title
+      valueB = b.title
+    }
+
+    if (sortField === 'seller') {
+      valueA = a.seller.name
+      valueB = b.seller.name
+    }
+
+    if (sortField === 'location') {
+      valueA = a.location
+      valueB = b.location
+    }
+
+    return sortDirection === 'asc'
+      ? valueA.localeCompare(valueB)
+      : valueB.localeCompare(valueA)
   })
+
+  const totalPages = Math.ceil(sortedListings.length / rowsPerPage)
+
+  const paginatedListings = sortedListings.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  )
+
 
   return (
     <>
@@ -273,100 +337,351 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
         </div>
 
         {/* Listings Grid */}
-        <div className="grid gap-4">
-          {sortedListings.map((listing) => (
-            <div key={listing.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden hover:shadow-sm transition-shadow">
-              <div className="p-6">
-                <div className="flex items-start gap-4">
-                  {/* Left Content */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center">
-                        <span className="material-symbols-outlined text-lg text-on-surface-variant">
-                          {getCategoryIcon(listing.category)}
-                        </span>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-on-surface">{listing.title}</h3>
-                        <p className="text-sm text-on-surface-variant">by {listing.seller.name}</p>
-                      </div>
-                      {listing.featured && (
-                        <span className="material-symbols-outlined text-warning">star</span>
-                      )}
-                    </div>
+        <AdminTable>
 
-                    <p className="text-on-surface-variant mb-3 line-clamp-2">{listing.description}</p>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-outline-variant">
 
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant capitalize">
+              <thead className="bg-gray-50">
+                <tr>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('title')}
+                      className="flex items-center gap-1 hover:text-primary"
+                    >
+                      Title
+
+                      <span className="material-symbols-outlined text-sm">
+                        {sortField === 'title'
+                          ? sortDirection === 'asc'
+                            ? 'arrow_upward'
+                            : 'arrow_downward'
+                          : 'unfold_more'}
+                      </span>
+
+                    </button>
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('seller')}
+                      className="flex items-center gap-1 hover:text-primary"
+                    >
+                      Seller
+
+                      <span className="material-symbols-outlined text-sm">
+                        {sortField === 'seller'
+                          ? sortDirection === 'asc'
+                            ? 'arrow_upward'
+                            : 'arrow_downward'
+                          : 'unfold_more'}
+                      </span>
+
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Category
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('location')}
+                      className="flex items-center gap-1 hover:text-primary"
+                    >
+                      Location
+
+                      <span className="material-symbols-outlined text-sm">
+                        {sortField === 'location'
+                          ? sortDirection === 'asc'
+                            ? 'arrow_upward'
+                            : 'arrow_downward'
+                          : 'unfold_more'}
+                      </span>
+
+                    </button>
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Price
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Status
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Created
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Actions
+                  </th>
+
+                </tr>
+              </thead>
+
+
+              <tbody className="bg-white divide-y divide-gray-200">
+
+                {paginatedListings.map((listing) => (
+
+                  <tr
+                    key={listing.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+
+
+                    <td className="px-6 py-4">
+
+                      <div className="flex items-center gap-3">
+
+                        <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+
+                          <span className="material-symbols-outlined text-gray-500">
+                            {getCategoryIcon(listing.category)}
+                          </span>
+
+                        </div>
+
+
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {listing.title}
+                          </p>
+
+                          <p className="text-xs text-gray-500">
+                            {listing.quantity} {listing.unit}
+                          </p>
+
+                        </div>
+
+                      </div>
+
+                    </td>
+
+
+
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {listing.seller.name}
+                    </td>
+
+
+
+                    <td className="px-6 py-4">
+
+                      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs bg-gray-100">
                         {listing.category}
                       </span>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant">
-                        {listing.location}
-                      </span>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant">
-                        Available: {listing.quantity} {listing.unit}
-                      </span>
-                    </div>
 
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="font-semibold text-primary text-lg">
-                        Rs. {listing.price}/{listing.unit}
-                      </span>
-                      <span className="text-on-surface-variant">
-                        {listing.views} views
-                      </span>
-                      <span className="text-on-surface-variant">
-                        {listing.inquiries} inquiries
-                      </span>
-                      {listing.reports > 0 && (
-                        <span className="text-error font-medium">
-                          {listing.reports} reports
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    </td>
 
-                  {/* Right Content */}
-                  <div className="ml-6 flex flex-col items-end gap-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(listing.status)}`}>
-                      {listing.status}
-                    </span>
 
-                    <div className="text-xs text-on-surface-variant text-right">
-                      <div>Created {formatDate(listing.createdAt)}</div>
-                      <div>Expires {formatDate(listing.expiresAt)}</div>
-                    </div>
 
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleViewListing(listing)}
-                        className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white hover:bg-blue-100 hover:text-blue-900 transition-colors cursor-pointer"
-                      >
-                        View
-                      </button>
-                      {listing.status === 'pending' && (
-                        <>
-                          <button className="px-3 py-1.5 text-xs font-medium bg-purple-600 text-white hover:bg-purple-100 hover:text-purple-900 transition-colors cursor-pointer">
-                            Approve
-                          </button>
-                          <button className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-lg hover:bg-red-100 hover:text-red-900 transition-colors cursor-pointer">
-                            Reject
-                          </button>
-                        </>
-                      )}
-                      {listing.status === 'flagged' && (
-                        <button className="px-3 py-1.5 text-xs font-medium bg-green-600 text-white hover:bg-green-100 hover:text-green-900 transition-colors cursor-pointer">
-                          Review
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {listing.location}
+                    </td>
+
+
+
+                    <td className="px-6 py-4 text-sm font-medium">
+                      ₹{listing.price}/{listing.unit}
+                    </td>
+
+
+
+                    <td className="px-6 py-4">
+
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs ${getStatusColor(listing.status)}`}>
+                        {listing.status}
+                      </span>
+
+                    </td>
+
+
+
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {formatDate(listing.createdAt)}
+                    </td>
+
+
+
+                    <td className="px-6 py-4">
+
+                      <div className="flex gap-2">
+
+
+                        <button
+                          onClick={() => handleViewListing(listing)}
+                          className="text-primary hover:text-primary-container"
+                          title="View"
+                        >
+
+                          <span className="material-symbols-outlined text-lg">
+                            visibility
+                          </span>
+
                         </button>
-                      )}
-                    </div>
-                  </div>
+
+
+
+                        <button
+                          onClick={() => {
+                            setEditListingData(listing)
+                            setIsEditModalOpen(true)
+                          }}
+                          className="text-gray-600 hover:text-gray-900"
+                          title="Edit"
+                        >
+
+                          <span className="material-symbols-outlined text-lg">
+                            edit
+                          </span>
+
+                        </button>
+
+                        <button
+                          onClick={async () => {
+                            const response = await fetch(
+                              apiUrl(`/listings/${listing.id}/block`),
+                              {
+                                method: 'PATCH',
+                                headers: authHeaders()
+                              }
+                            )
+
+                            if (response.ok) {
+                              fetchListings()
+                            } else {
+                              alert('Failed to update listing block status')
+                            }
+                          }}
+                          className={`${listing.isBlocked
+                            ? 'text-red-600'
+                            : 'text-gray-600'
+                            } hover:text-red-700`}
+                          title={listing.isBlocked ? "Unblock" : "Block"}
+                        >
+                          <span className="material-symbols-outlined text-lg">
+                            block
+                          </span>
+                        </button>
+
+
+                      </div>
+
+                    </td>
+
+
+                  </tr>
+
+                ))}
+
+
+              </tbody>
+
+            </table>
+          </div>
+
+
+          {/* Footer pagination */}
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+
+              {/* Left */}
+              <p className="text-sm text-gray-500">
+                Showing{" "}
+                {(currentPage - 1) * rowsPerPage + 1}
+                {" - "}
+                {Math.min(currentPage * rowsPerPage, sortedListings.length)}
+                {" of "}
+                {sortedListings.length} listings
+              </p>
+
+
+              {/* Right */}
+              <div className="flex items-center gap-4">
+
+
+                {/* Rows dropdown */}
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+
+                  <span>Rows:</span>
+
+                  <select
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      setRowsPerPage(Number(e.target.value))
+                      setCurrentPage(1)
+                    }}
+                    className="border border-gray-200 rounded-md px-2 py-1 text-sm"
+                  >
+
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+
+                  </select>
+
                 </div>
+
+
+
+                {/* Pagination */}
+                <div className="flex items-center gap-2">
+
+
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(p => p - 1)}
+                    className="
+            px-3
+            py-1
+            text-sm
+            border
+            rounded-md
+            disabled:opacity-40
+          "
+                  >
+                    Previous
+                  </button>
+
+
+
+                  <span className="text-sm text-gray-600">
+                    {currentPage} / {totalPages}
+                  </span>
+
+
+
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    className="
+            px-3
+            py-1
+            text-sm
+            border
+            rounded-md
+            disabled:opacity-40
+          "
+                  >
+                    Next
+                  </button>
+
+
+                </div>
+
+
               </div>
+
             </div>
-          ))}
-        </div>
+          </div>
+
+
+
+        </AdminTable>
 
         {/* Empty State */}
         {sortedListings.length === 0 && (

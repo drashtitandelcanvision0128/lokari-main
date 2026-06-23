@@ -10,7 +10,7 @@ export async function runMigrations() {
 
   try {
     console.log('Running Prisma migrations...');
-    await execAsync('npx prisma migrate deploy');
+    await execAsync('node_modules/.bin/prisma migrate deploy');
     console.log('Migrations completed successfully');
   } catch (error) {
     console.error('Migration failed:', error.message);
