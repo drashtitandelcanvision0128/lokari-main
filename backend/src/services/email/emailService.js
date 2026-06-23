@@ -20,6 +20,10 @@ function getTransporter() {
     port,
     secure: port === 465,
     auth: { user, pass },
+    tls: {
+      // Prevents TLS errors on self-signed certs (optional, safe for Gmail/Brevo)
+      rejectUnauthorized: process.env.NODE_ENV === 'production',
+    },
   });
 
   return transporter;
