@@ -40,6 +40,8 @@ export type Listing = {
   price?: string
   image?: string
   createdAt: string
+  priceType?: string
+  listingLocation?: string
 }
 
 export type Bid = {

@@ -69,8 +69,50 @@ export const getListingById = async (req, res) => {
 
 export const getAllListings = async (req, res) => {
     try {
+        const {
+            page = 1,
+            limit = 10,
+            search = '',
+            status = 'all',
+            sortField = 'created_at',
+            sortDirection = 'desc'
+        } = req.query;
+
+
+        const cleanSearch = search.trim();
+        const cleanStatus = status.trim();
+        const cleanDirection = sortDirection.trim();
+
+        const where = {
+            is_deleted: false,
+        };
+
+        if (cleanSearch) {
+            where.title = {
+                contains: cleanSearch,
+                mode: 'insensitive'
+            }
+        }
+
+
+        if (cleanStatus !== 'all') {
+            where.status = cleanStatus;
+        }
+        const sortMap = {
+            product: 'title',
+            price: 'price',
+            listingLocation: 'listing_location'
+        };
+
+        const dbSortField = sortMap[sortField] || 'created_at';
         const listings = await prisma.marketplace.findMany({
-            where: { is_deleted: false },
+            // where: { is_deleted: false },
+            where,
+            skip: (Number(page) - 1) * Number(limit),
+            take: Number(limit),
+            orderBy: {
+                [dbSortField]: cleanDirection === 'asc' ? 'asc' : 'desc'
+            },
             include: {
                 farmerProduce: true,
                 warehouse: true,
@@ -98,10 +140,23 @@ export const getAllListings = async (req, res) => {
                     }
                 }
             },
-            orderBy: { created_at: 'desc' }
+            // orderBy: { created_at: 'desc' }
+            orderBy: {
+                [dbSortField]: sortDirection
+            }
+        });
+        const total = await prisma.marketplace.count({
+            where
         });
 
-        res.json({ success: true, data: listings });
+        // res.json({ success: true, data: listings });
+        res.json({
+            success: true,
+            data: listings,
+            total,
+            totalPages: Math.ceil(total / Number(limit)),
+            currentPage: Number(page)
+        });
     } catch (error) {
         console.error('❌ GET ALL LISTINGS ERROR:', error);
         res.status(500).json({ success: false, message: error.message });
@@ -122,7 +177,10 @@ export const getListingsByUser = async (req, res) => {
                 warehouse: true,
                 transport: true,
             },
-            orderBy: { created_at: 'desc' },
+            // orderBy: { created_at: 'desc' },
+            orderBy: {
+                [dbSortField]: sortDirection
+            }
         });
 
         res.json({ success: true, data: listings });
@@ -175,7 +233,7 @@ export const toggleBlockListing = async (req, res) => {
 
 export const updateListing = async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, status } = req.body;
+    const { title, description, price, listing_location, quantity, status } = req.body;
 
     try {
         const listing = await prisma.marketplace.findUnique({
@@ -190,6 +248,9 @@ export const updateListing = async (req, res) => {
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
         if (price !== undefined) updateData.price = price;
+        if (listing_location !== undefined) {
+            updateData.listing_location = listing_location;
+        }
         const statusMap = {
             ACTIVE: "ACTIVE",
             DRAFT: "DRAFT",
@@ -200,10 +261,22 @@ export const updateListing = async (req, res) => {
         if (status !== undefined) {
             updateData.status = statusMap[status];
         }
+        console.log("FINAL UPDATE DATA:", updateData);
         const updatedListing = await prisma.marketplace.update({
             where: { listing_id: id },
             data: updateData
         });
+
+        if (quantity !== undefined) {
+            await prisma.farmerProduce.update({
+                where: {
+                    listing_id: id
+                },
+                data: {
+                    quantity: Number(quantity)
+                }
+            });
+        }
 
         res.json({ success: true, data: updatedListing });
     } catch (err) {
@@ -290,7 +363,10 @@ export const getBidsByUser = async (req, res) => {
                     include: { listing: true }
                 }
             },
-            orderBy: { created_at: 'desc' }
+            // orderBy: { created_at: 'desc' }
+            orderBy: {
+                [dbSortField]: sortDirection
+            }
         });
 
         res.json({ success: true, data: bids });
