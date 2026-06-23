@@ -10,6 +10,8 @@ import { Listing } from '@/types/dashboard';
 import { apiUrl, authHeaders } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
 
+import EditUserListingModal from '@/components/dashboard/modals/EditUserListingModal';
+
 interface ListingsPageProps {
   searchQuery?: string;
 }
@@ -24,6 +26,13 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const statusDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const [localSearch, setLocalSearch] = useState(''); // local state for search
+
+
+  // Modal State
+  const [editOpen, setEditOpen] = useState(false)
+  // const [selectedListing, setSelectedListing] = useState<any>(null)
+  const [selectedListing, setSelectedListing] =
+    useState<Listing | null>(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -145,7 +154,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     const dbStatus =
       newStatus === 'live'
         ? 'ACTIVE'
-        : 'INACTIVE';
+        : 'DRAFT';
 
 
     const response = await fetch(
@@ -427,7 +436,17 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="hover:border-[#2eb5c2] hover:text-[#2eb5c2]" title="Edit">
+                          {/* <Button variant="outline" size="sm" className="hover:border-[#2eb5c2] hover:text-[#2eb5c2]" title="Edit">
+                            <Icon name="edit" />
+                          </Button> */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedListing(listing)
+                              setEditOpen(true)
+                            }}
+                          >
                             <Icon name="edit" />
                           </Button>
                           <div className="relative" ref={openStatusDropdown === listing.id ? statusDropdownRef : undefined}>
@@ -475,6 +494,12 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
               </tbody>
             </table>
           </div>
+          <EditUserListingModal
+            isOpen={editOpen}
+            listing={selectedListing}
+            onClose={() => setEditOpen(false)}
+            onSuccess={fetchListings}
+          />
 
           {/* Footer pagination */}
           {/* {sortedListings.length > 0 && ( */}

@@ -233,7 +233,7 @@ export const toggleBlockListing = async (req, res) => {
 
 export const updateListing = async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, status } = req.body;
+    const { title, description, price, listing_location, quantity, status } = req.body;
 
     try {
         const listing = await prisma.marketplace.findUnique({
@@ -248,6 +248,9 @@ export const updateListing = async (req, res) => {
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
         if (price !== undefined) updateData.price = price;
+        if (listing_location !== undefined) {
+            updateData.listing_location = listing_location;
+        }
         const statusMap = {
             ACTIVE: "ACTIVE",
             DRAFT: "DRAFT",
@@ -258,10 +261,22 @@ export const updateListing = async (req, res) => {
         if (status !== undefined) {
             updateData.status = statusMap[status];
         }
+        console.log("FINAL UPDATE DATA:", updateData);
         const updatedListing = await prisma.marketplace.update({
             where: { listing_id: id },
             data: updateData
         });
+
+        if (quantity !== undefined) {
+            await prisma.farmerProduce.update({
+                where: {
+                    listing_id: id
+                },
+                data: {
+                    quantity: Number(quantity)
+                }
+            });
+        }
 
         res.json({ success: true, data: updatedListing });
     } catch (err) {
