@@ -6,7 +6,7 @@ export const createListingService = async (body) => {
         price, price_type, crop_type, variety, quantity, unit,
         harvest_date, expiry_date, quality_grade,
         storage_temperature, storage_humidity,
-        starting_bid, reserve_price, auction_start, auction_end
+        starting_bid, reserve_price, auction_start, auction_end, images
     } = body;
 
     const result = await prisma.$transaction(async (tx) => {
@@ -98,6 +98,19 @@ export const createListingService = async (body) => {
                 }
             });
             listing.auction = auction;
+        }
+
+        if (images?.length) {
+            await tx.marketplace.update({
+                where: {
+                    listing_id: listing.listing_id
+                },
+                data: {
+                    product_images: images.map(
+                        file => `/uploads/productsImgs/${file.filename}`
+                    )
+                }
+            });
         }
 
         return listing;

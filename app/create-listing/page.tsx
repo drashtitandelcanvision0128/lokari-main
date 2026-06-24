@@ -104,10 +104,28 @@ export default function CreateListingPage() {
 
       console.log('📦 Submitting payload:', payload)
 
+      // const response = await fetch(apiUrl('/listings'), {
+      //   method: 'POST',
+      //   headers: authHeaders(),
+      //   body: JSON.stringify(payload)
+      // })
+
+
+      // We cannot use JSON anymore because images are binary files.
+      const formData = new FormData()
+
+      formData.append('data', JSON.stringify(payload))
+
+      listingData.product_images?.forEach((file: File) => {
+        formData.append('product_images', file)
+      })
+
       const response = await fetch(apiUrl('/listings'), {
         method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify(payload)
+        headers: {
+          Authorization: authHeaders().Authorization,
+        },
+        body: formData,
       })
 
       const result = await response.json()

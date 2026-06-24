@@ -160,6 +160,7 @@ export default function EditUserListingModal({
     useEffect(() => {
         if (!listing) return;
 
+        console.log("EDIT MODAL LISTING:", listing);
         setFormData({
             title: listing.product || '',
             price: listing.price || '',

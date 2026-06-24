@@ -3,8 +3,20 @@ import { createListingService } from '../services/listingService.js';
 
 export const createListing = async (req, res) => {
     try {
+        // console.log('FILES:', req.files); // To check if the req.files has product_images 
+        // console.log('BODY:', req.body);
+
+        // const listingData = JSON.parse(req.body.data);
+        // const user_id = req.user.user_id;
+        // const data = await createListingService({ ...req.body, user_id });
+        const listingData = JSON.parse(req.body.data);
         const user_id = req.user.user_id;
-        const data = await createListingService({ ...req.body, user_id });
+
+        const data = await createListingService({
+            ...listingData,
+            user_id,
+            images: req.files
+        });
         res.status(201).json({ success: true, message: 'Listing created', data });
     } catch (error) {
         console.error('❌ CONTROLLER ERROR:', error);

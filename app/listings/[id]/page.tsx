@@ -56,6 +56,7 @@ export default function ListingDetailPage() {
           id: d.listing_id,
           title: d.title,
           description: d.description,
+          images: d.product_images || [],
           type: d.type?.toLowerCase(),
           price: Number(d.price ?? 0),
           // priceType: d.price_type?.toLowerCase(),

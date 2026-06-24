@@ -152,9 +152,12 @@ model Marketplace {
   title            String
   description      String?
   listing_location String?
-  price            Decimal
-  price_type       PriceType     @default(FIXED_PRICE)
-  status           ListingStatus @default(DRAFT)
+
+  product_images String[] @default([])
+
+  price      Decimal
+  price_type PriceType     @default(FIXED_PRICE)
+  status     ListingStatus @default(DRAFT)
 
   is_deleted Boolean @default(false)
   is_blocked Boolean @default(false)

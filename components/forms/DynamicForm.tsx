@@ -500,13 +500,22 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
           <label className="block text-sm font-medium text-[#0b5d68] mb-2">
             Photos (Upload 1-8 images)
           </label>
-          <div className="border-2 border-dashed border-[#e0e0e0] rounded-lg p-6 text-center">
-            <div className="text-[#666666]">
-              <span className="material-symbols-outlined text-3xl text-[#2eb5c2]">cloud_upload</span>
-              <p className="mt-2">Click to upload or drag and drop</p>
-              <p className="text-xs">PNG, JPG up to 10MB each</p>
-            </div>
-          </div>
+
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) =>
+              updateFormData(
+                'product_images',
+                Array.from(e.target.files || [])
+              )
+            }
+          />
+
+          <p className="text-sm mt-2">
+            {listingData.product_images?.length || 0} images selected
+          </p>
         </div>
       </>
     )}
