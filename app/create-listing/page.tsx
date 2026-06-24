@@ -64,7 +64,16 @@ export default function CreateListingPage() {
         type: typeMap[listingType],
         title: data.title,
         description: data.description,
-        listing_location: data.location || null,
+        // listing_location: data.location || null,
+        address: {
+          street: data.street || null,
+          city: data.city || null,
+          state: data.state || null,
+          pincode: data.pincode || null,
+          country: 'India',
+          // lat: data.lat ? Number(data.lat) : null,
+          // lng: data.lng ? Number(data.lng) : null,
+        },
         price: Number(data.price) || 0,
         price_type: data.priceType?.toUpperCase() === 'AUCTION' ? 'AUCTION' : 'FIXED_PRICE',
         // Produce fields

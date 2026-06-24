@@ -70,7 +70,7 @@ function ListingsPageContent() {
       try {
         setLoadingListings(true)
 
-        const res = await fetch(apiUrl('/listings'))
+        const res = await fetch(apiUrl('/listings?marketplace=true'))
         const result = await res.json()
 
         // console.log("DB listings:", result)
@@ -83,27 +83,31 @@ function ListingsPageContent() {
 
         setDbListings(dbArray)
 
-        const normalizedDB = dbArray.map((item: any) => ({
-          id: item.listing_id,
-          title: item.title,
-          description: item.description,
-          type: item.type.toLowerCase(),
-          price: Number(item.price),
-          quantity:
-            Number(item.farmerProduce?.quantity) ||
-            item.warehouse?.capacity ||
-            1,
-          unit:
-            item.farmerProduce?.unit ||
-            item.transport?.vehicleType ||
-            "unit",
-          location:
-            item.listing_location ||
-            "Unknown",
-          status: item.status.toLowerCase(),
-          images: [],
-          isDb: true
-        }))
+        const normalizedDB = dbArray
+          // Safety net: only show ACTIVE, non-blocked listings in the marketplace
+          .filter((item: any) => item.status === 'ACTIVE' && !item.is_blocked)
+          .map((item: any) => ({
+            id: item.listing_id,
+            title: item.title,
+            description: item.description,
+            type: item.type.toLowerCase(),
+            price: Number(item.price),
+            quantity:
+              Number(item.farmerProduce?.quantity) ||
+              item.warehouse?.capacity ||
+              1,
+            unit:
+              item.farmerProduce?.unit ||
+              item.transport?.vehicleType ||
+              "unit",
+            location:
+              item.listing_location ||
+              "Unknown",
+            status: item.status.toLowerCase(),
+            is_blocked: item.is_blocked || false,
+            images: [],
+            isDb: true
+          }))
 
         const merged = [...normalizedDB, ...dummyListings]
 

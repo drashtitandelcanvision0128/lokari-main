@@ -12,13 +12,13 @@ interface DynamicFormProps {
   setListingData: (data: any) => void
 }
 
-const DynamicForm = ({ 
-  listingType, 
-  currentStep, 
-  setCurrentStep, 
-  onSubmit, 
-  listingData, 
-  setListingData 
+const DynamicForm = ({
+  listingType,
+  currentStep,
+  setCurrentStep,
+  onSubmit,
+  listingData,
+  setListingData
 }: DynamicFormProps) => {
   const [errors, setErrors] = useState<any>({})
 
@@ -35,6 +35,17 @@ const DynamicForm = ({
     if (step === 1) {
       if (!listingData.title?.trim()) newErrors.title = 'Title is required'
       if (!listingData.description?.trim()) newErrors.description = 'Description is required'
+      if (!listingData.street?.trim())
+        newErrors.street = 'Street address is required'
+
+      if (!listingData.city?.trim())
+        newErrors.city = 'City is required'
+
+      if (!listingData.state?.trim())
+        newErrors.state = 'State is required'
+
+      if (!listingData.pincode?.trim())
+        newErrors.pincode = 'Pincode is required'
     } else if (step === 2) {
       if (listingType === 'produce') {
         if (!listingData.cropName?.trim()) newErrors.cropName = 'Crop name is required'
@@ -94,7 +105,7 @@ const DynamicForm = ({
   return (
     <div>
       {renderStepContent()}
-      
+
       {/* Navigation Buttons */}
       <div className="flex justify-between mt-8">
         <div>
@@ -108,7 +119,7 @@ const DynamicForm = ({
             </Button>
           )}
         </div>
-        
+
         <div className="flex gap-3">
           {currentStep < 4 ? (
             <Button
@@ -140,6 +151,35 @@ const DynamicForm = ({
   )
 }
 
+const INDIAN_STATES = [
+  'Andaman and Nicobar Islands',
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chandigarh',
+  'Chhattisgarh',
+  'Delhi',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jammu and Kashmir',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Tamil Nadu',
+  'Telangana',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal'
+];
 // Step Components
 const BasicInfoStep = ({ listingData, updateFormData, errors }: any) => (
   <div className="space-y-6">
@@ -151,9 +191,8 @@ const BasicInfoStep = ({ listingData, updateFormData, errors }: any) => (
         type="text"
         value={listingData.title || ''}
         onChange={(e) => updateFormData('title', e.target.value)}
-        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-          errors.title ? 'border-red-500' : 'border-[#e0e0e0]'
-        }`}
+        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.title ? 'border-red-500' : 'border-[#e0e0e0]'
+          }`}
         placeholder="Enter a descriptive title for your listing"
       />
       {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
@@ -167,15 +206,14 @@ const BasicInfoStep = ({ listingData, updateFormData, errors }: any) => (
         value={listingData.description || ''}
         onChange={(e) => updateFormData('description', e.target.value)}
         rows={4}
-        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-          errors.description ? 'border-red-500' : 'border-[#e0e0e0]'
-        }`}
+        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.description ? 'border-red-500' : 'border-[#e0e0e0]'
+          }`}
         placeholder="Provide detailed information about your listing"
       />
       {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
     </div>
 
-    <div>
+    {/* <div>
       <label className="block text-sm font-medium text-[#0b5d68] mb-2">
         Location
       </label>
@@ -186,7 +224,134 @@ const BasicInfoStep = ({ listingData, updateFormData, errors }: any) => (
         className="w-full px-4 py-2 border border-[#e0e0e0] rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2]"
         placeholder="City, State/Region"
       />
+    </div> */}
+    <div>
+      <label className="block text-sm font-medium text-[#0b5d68] mb-2">
+        Street Address *
+      </label>
+      <input
+        type="text"
+        value={listingData.street || ''}
+        onChange={(e) => updateFormData('street', e.target.value)}
+        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] ${errors.street
+          ? 'border-red-500'
+          : 'border-[#e0e0e0]'
+          }`}
+        placeholder="Street / Village"
+      />
+      {errors.street && (
+        <p className="text-red-500 text-sm mt-1">
+          {errors.street}
+        </p>
+      )}
     </div>
+
+
+    <div className="grid grid-cols-2 gap-4">
+
+      <div>
+        <label className="block text-sm font-medium text-[#0b5d68] mb-2">
+          City *
+        </label>
+
+        <input
+          type="text"
+          value={listingData.city || ''}
+          onChange={(e) => updateFormData('city', e.target.value)}
+          className={`w-full px-4 py-2 border rounded-lg ${errors.city ? 'border-red-500' : 'border-[#e0e0e0]'
+            }`}
+          placeholder="City"
+        />
+        {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+      </div>
+
+
+      <div>
+        <label className="block text-sm font-medium text-[#0b5d68] mb-2">
+          State *
+        </label>
+
+        <select
+          value={listingData.state || ''}
+          onChange={(e) => updateFormData('state', e.target.value)}
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] ${errors.state ? 'border-red-500' : 'border-[#e0e0e0]'
+            }`}
+        >
+          <option value="">Select state</option>
+
+          {INDIAN_STATES.map((stateName) => (
+            <option key={stateName} value={stateName}>
+              {stateName}
+            </option>
+          ))}
+
+        </select>
+
+        {errors.state && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.state}
+          </p>
+        )}
+      </div>
+
+    </div>
+
+
+    <div className="grid grid-cols-2 gap-4">
+
+      <div>
+        <label className="block text-sm font-medium text-[#0b5d68] mb-2">
+          Pincode *
+        </label>
+
+        <input
+          type="text"
+          value={listingData.pincode || ''}
+          onChange={(e) => updateFormData('pincode', e.target.value)}
+          className={`w-full px-4 py-2 border rounded-lg ${errors.pincode ? 'border-red-500' : 'border-[#e0e0e0]'
+            }`}
+          placeholder="Pincode"
+        />
+        {errors.pincode && <p className="text-red-500 text-sm mt-1">{errors.pincode}</p>}
+      </div>
+
+
+      <div>
+        <label className="block text-sm font-medium text-[#0b5d68] mb-2">
+          Country
+        </label>
+
+        <input
+          type="text"
+          value="India"
+          readOnly
+          className="w-full px-4 py-2 border border-[#e0e0e0] rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+        />
+      </div>
+
+    </div>
+
+
+    {/* <div className="grid grid-cols-2 gap-4">
+
+      <input
+        type="number"
+        value={listingData.lat || ''}
+        onChange={(e) => updateFormData('lat', e.target.value)}
+        className="w-full px-4 py-2 border border-[#e0e0e0] rounded-lg"
+        placeholder="Latitude"
+      />
+
+
+      <input
+        type="number"
+        value={listingData.lng || ''}
+        onChange={(e) => updateFormData('lng', e.target.value)}
+        className="w-full px-4 py-2 border border-[#e0e0e0] rounded-lg"
+        placeholder="Longitude"
+      />
+
+    </div> */}
   </div>
 )
 
@@ -202,9 +367,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
             type="text"
             value={listingData.cropName || ''}
             onChange={(e) => updateFormData('cropName', e.target.value)}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-              errors.cropName ? 'border-red-500' : 'border-[#e0e0e0]'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.cropName ? 'border-red-500' : 'border-[#e0e0e0]'
+              }`}
             placeholder="e.g., Wheat, Rice, Tomatoes"
           />
           {errors.cropName && <p className="text-red-500 text-sm mt-1">{errors.cropName}</p>}
@@ -251,9 +415,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
               type="number"
               value={listingData.quantity || ''}
               onChange={(e) => updateFormData('quantity', e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-                errors.quantity ? 'border-red-500' : 'border-[#e0e0e0]'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.quantity ? 'border-red-500' : 'border-[#e0e0e0]'
+                }`}
               placeholder="0"
             />
             {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
@@ -286,9 +449,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
               type="date"
               value={listingData.harvestDate || ''}
               onChange={(e) => updateFormData('harvestDate', e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-                errors.harvestDate ? 'border-red-500' : 'border-[#e0e0e0]'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.harvestDate ? 'border-red-500' : 'border-[#e0e0e0]'
+                }`}
             />
             {errors.harvestDate && <p className="text-red-500 text-sm mt-1">{errors.harvestDate}</p>}
           </div>
@@ -359,9 +521,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
             type="text"
             value={listingData.facilityName || ''}
             onChange={(e) => updateFormData('facilityName', e.target.value)}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-              errors.facilityName ? 'border-red-500' : 'border-[#e0e0e0]'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.facilityName ? 'border-red-500' : 'border-[#e0e0e0]'
+              }`}
             placeholder="Enter facility name"
           />
           {errors.facilityName && <p className="text-red-500 text-sm mt-1">{errors.facilityName}</p>}
@@ -376,9 +537,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
               type="text"
               value={listingData.address || ''}
               onChange={(e) => updateFormData('address', e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-                errors.address ? 'border-red-500' : 'border-[#e0e0e0]'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.address ? 'border-red-500' : 'border-[#e0e0e0]'
+                }`}
               placeholder="Street address"
             />
             <div className="grid grid-cols-2 gap-2">
@@ -436,9 +596,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
               type="number"
               value={listingData.capacity || ''}
               onChange={(e) => updateFormData('capacity', e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-                errors.capacity ? 'border-red-500' : 'border-[#e0e0e0]'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.capacity ? 'border-red-500' : 'border-[#e0e0e0]'
+                }`}
               placeholder="0"
             />
             {errors.capacity && <p className="text-red-500 text-sm mt-1">{errors.capacity}</p>}
@@ -488,7 +647,7 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
       </>
     )}
 
-    
+
     {listingType === 'transport' && (
       <>
         <div>
@@ -498,9 +657,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
           <select
             value={listingData.vehicleType || ''}
             onChange={(e) => updateFormData('vehicleType', e.target.value)}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-              errors.vehicleType ? 'border-red-500' : 'border-[#e0e0e0]'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.vehicleType ? 'border-red-500' : 'border-[#e0e0e0]'
+              }`}
           >
             <option value="">Select Vehicle Type</option>
             <option value="truck">Truck</option>
@@ -520,9 +678,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
               type="number"
               value={listingData.capacity || ''}
               onChange={(e) => updateFormData('capacity', e.target.value)}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-                errors.capacity ? 'border-red-500' : 'border-[#e0e0e0]'
-              }`}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.capacity ? 'border-red-500' : 'border-[#e0e0e0]'
+                }`}
               placeholder="0"
             />
             {errors.capacity && <p className="text-red-500 text-sm mt-1">{errors.capacity}</p>}
@@ -553,9 +710,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
                 type="text"
                 value={listingData.routes?.from || ''}
                 onChange={(e) => updateFormData('routes', { ...listingData.routes, from: e.target.value })}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-                  errors['routes.from'] ? 'border-red-500' : 'border-[#e0e0e0]'
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors['routes.from'] ? 'border-red-500' : 'border-[#e0e0e0]'
+                  }`}
                 placeholder="Starting location"
               />
               {errors['routes.from'] && <p className="text-red-500 text-sm mt-1">{errors['routes.from']}</p>}
@@ -566,9 +722,8 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
                 type="text"
                 value={listingData.routes?.to || ''}
                 onChange={(e) => updateFormData('routes', { ...listingData.routes, to: e.target.value })}
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-                  errors['routes.to'] ? 'border-red-500' : 'border-[#e0e0e0]'
-                }`}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors['routes.to'] ? 'border-red-500' : 'border-[#e0e0e0]'
+                  }`}
                 placeholder="Destination"
               />
               {errors['routes.to'] && <p className="text-red-500 text-sm mt-1">{errors['routes.to']}</p>}
@@ -632,9 +787,8 @@ const PricingStep = ({ listingType, listingData, updateFormData, errors }: any) 
       <select
         value={listingData.priceType || ''}
         onChange={(e) => updateFormData('priceType', e.target.value)}
-        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-          errors.priceType ? 'border-red-500' : 'border-[#e0e0e0]'
-        }`}
+        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.priceType ? 'border-red-500' : 'border-[#e0e0e0]'
+          }`}
       >
         <option value="">Select Price Type</option>
         <option value="fixed">Fixed Price</option>
@@ -653,9 +807,8 @@ const PricingStep = ({ listingType, listingData, updateFormData, errors }: any) 
           type="number"
           value={listingData.price || ''}
           onChange={(e) => updateFormData('price', e.target.value)}
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-            errors.price ? 'border-red-500' : 'border-[#e0e0e0]'
-          }`}
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.price ? 'border-red-500' : 'border-[#e0e0e0]'
+            }`}
           placeholder="0.00"
         />
         {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
@@ -672,9 +825,8 @@ const PricingStep = ({ listingType, listingData, updateFormData, errors }: any) 
             type="number"
             value={listingData.startingBid || ''}
             onChange={(e) => updateFormData('startingBid', e.target.value)}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${
-              errors.startingBid ? 'border-red-500' : 'border-[#e0e0e0]'
-            }`}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#2eb5c2] focus:border-[#2eb5c2] ${errors.startingBid ? 'border-red-500' : 'border-[#e0e0e0]'
+              }`}
             placeholder="0.00"
           />
           {errors.startingBid && <p className="text-red-500 text-sm mt-1">{errors.startingBid}</p>}
@@ -756,7 +908,7 @@ const ReviewStep = ({ listingType, listingData }: any) => (
   <div className="space-y-6">
     <div className="bg-[#f5f5f5] rounded-lg p-6">
       <h3 className="text-lg font-semibold text-[#0b5d68] mb-4">Listing Preview</h3>
-      
+
       <div className="space-y-4">
         <div>
           <h4 className="font-medium text-[#0b5d68]">{listingData.title || 'Untitled Listing'}</h4>
@@ -784,7 +936,7 @@ const ReviewStep = ({ listingType, listingData }: any) => (
           </div>
         )}
 
-        
+
         {listingType === 'warehouse' && (
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>

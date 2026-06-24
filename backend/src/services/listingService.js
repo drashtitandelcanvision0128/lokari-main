@@ -2,7 +2,7 @@ import { prisma } from '../config/db.js';
 
 export const createListingService = async (body) => {
     const {
-        user_id, type, title, description, listing_location,
+        user_id, type, title, description, address,
         price, price_type, crop_type, variety, quantity, unit,
         harvest_date, expiry_date, quality_grade,
         storage_temperature, storage_humidity,
@@ -16,7 +16,7 @@ export const createListingService = async (body) => {
                 type,
                 title,
                 description,
-                listing_location,
+                // listing_location,
                 price,
                 price_type,
                 status: 'ACTIVE',
@@ -64,8 +64,26 @@ export const createListingService = async (body) => {
                 farmerProduce: true,
                 warehouse: true,
                 transport: true,
+                address: true
             },
         });
+
+        if (address) {
+            await tx.marketplaceAddress.create({
+                data: {
+                    listing_id: listing.listing_id,
+
+                    street: address.street,
+                    city: address.city,
+                    state: address.state,
+                    pincode: address.pincode,
+                    country: address.country,
+
+                    lat: address.lat,
+                    lng: address.lng,
+                }
+            });
+        }
 
         if (price_type === 'AUCTION') {
             const auction = await tx.auction.create({
