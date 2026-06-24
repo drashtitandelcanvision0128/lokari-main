@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import DashboardLoader from '@/components/ui/DashboardLoader'
 import { AdminListing } from '@/types/admin'
 // import { mockAdminListings } from '@/data/adminMock's
 import { apiUrl, authHeaders } from '@/lib/api'
@@ -188,7 +189,7 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   }
 
   if (loading) {
-    return <div className="p-6">Loading listings...</div>
+    return <DashboardLoader />
   }
   const filteredListings = listings.filter(listing => {
     const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

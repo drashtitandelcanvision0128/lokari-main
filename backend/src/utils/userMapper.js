@@ -20,6 +20,8 @@ export const mapDbUserToFrontendUser = (user) => {
     companyName: profile?.company_name || undefined,
     warehouseName: profile?.warehouse_name || undefined,
     vehicleType: profile?.vehicle_type || undefined,
+    avatarUrl: profile?.avatar_url || undefined,
+    bio: profile?.bio || undefined,
   };
 };
 

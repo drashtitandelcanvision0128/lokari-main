@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 
 export default function Footer() {
@@ -68,8 +69,8 @@ export default function Footer() {
         <div>
           <h5 className="font-['Inter'] text-xs uppercase tracking-wider text-white font-bold mb-6">Legal</h5>
           <ul className={`space-y-4 font-['Inter'] text-xs uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-stone-400'}`}>
-            <li className={`transition-colors cursor-pointer ${isDark ? 'hover:text-gray-200' : 'hover:text-white'}`}>Privacy Policy</li>
-            <li className={`transition-colors cursor-pointer ${isDark ? 'hover:text-gray-200' : 'hover:text-white'}`}>Terms of Service</li>
+            <li><Link href="/privacy-policy" className={`transition-colors ${isDark ? 'hover:text-gray-200' : 'hover:text-white'}`}>Privacy Policy</Link></li>
+            <li><Link href="/terms" className={`transition-colors ${isDark ? 'hover:text-gray-200' : 'hover:text-white'}`}>Terms of Service</Link></li>
             <li className={`transition-colors cursor-pointer ${isDark ? 'hover:text-gray-200' : 'hover:text-white'}`}>Compliance</li>
           </ul>
         </div>

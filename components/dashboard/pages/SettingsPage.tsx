@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { getCurrentUser, changePassword } from '@/lib/auth'
+import { fetchMyProfile } from '@/lib/profile'
 import { useDashboardSearch } from '@/hooks/useSearchFilter'
 import { useSettings } from '@/lib/context/SettingsContext'
 import { useSearchParams } from 'next/navigation'
@@ -181,6 +182,28 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
         bio: ''
       })
     }
+
+    // Fetch full profile from DB — DB is the source of truth for all editable fields
+    fetchMyProfile().then((profile) => {
+      if (!profile) return
+      setProfileData((prev) => ({
+        ...prev,
+        // Overwrite with DB values so hard-refresh always shows persisted data
+        ...(profile.fullName && { name: profile.fullName }),
+        ...(profile.phone    && { phone: profile.phone }),
+        bio:     profile.bio     || '',
+        address: profile.address ?? undefined,
+      }))
+      // Also sync localStorage so subsequent reads are fresh
+      if (profile.fullName || profile.phone) {
+        import('@/lib/auth/session').then(({ patchLocalUser }) => {
+          patchLocalUser({
+            ...(profile.fullName && { fullName: profile.fullName }),
+            ...(profile.phone    && { phone:    profile.phone    }),
+          })
+        })
+      }
+    })
   }, [])
 
   useEffect(() => {
@@ -284,7 +307,7 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
                   location: currentUser?.location,
                   listings: profileStats.listings,
                   completed: profileStats.completed,
-                  createdAt: profileStats.createdAt
+                  createdAt: currentUser?.createdAt,
                 }}
               />
 
@@ -445,146 +468,196 @@ export function SettingsPage({ searchQuery = '' }: SettingsPageProps) {
 
           {/* Reset Password Section */}
           {activeSection === 'security' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Reset Password</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <div className="mx-auto max-w-lg">
+              <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg">
 
-                <div className="flex items-start gap-3 p-4 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-600">
-                  <Icon name="info" className="text-primary mt-0.5" />
-                  <span>Choose a strong password with at least 8 characters, one uppercase letter, and one number.</span>
+                {/* Header */}
+                <div className="relative bg-gradient-to-br from-[#0b5d68] via-[#1a8a96] to-[#2eb5c2] px-6 py-5">
+                  <div
+                    className="pointer-events-none absolute inset-0 opacity-10"
+                    style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+                  />
+                  <div className="relative flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 shadow-inner">
+                      <Icon name="lock_reset" className="text-[1.25rem] text-white" />
+                    </div>
+                    <div>
+                      <h2 className="font-headline text-base font-bold text-white">Reset Password</h2>
+                      <p className="text-[11px] text-white/70">Update your account password</p>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-2">Current Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPasswords.current ? 'text' : 'password'}
-                      value={passwords.current}
-                      onChange={(e) => handlePasswordChange('current', e.target.value)}
-                      className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent ${passwordErrors.current ? 'border-red-400' : 'border-outline'
-                        }`}
-                      placeholder="Enter your current password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleShowPassword('current')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                    >
-                      <Icon name={showPasswords.current ? 'visibility_off' : 'visibility'} />
-                    </button>
-                  </div>
-                  {passwordErrors.current && <p className="text-red-600 text-xs mt-1">{passwordErrors.current}</p>}
+                {/* Tip banner */}
+                <div className="flex items-start gap-2.5 border-b border-gray-100 bg-[#f0fafb] px-6 py-3">
+                  <span className="material-symbols-outlined mt-0.5 text-[1rem] text-[#2eb5c2]">info</span>
+                  <p className="text-[11px] leading-relaxed text-[#0b5d68]">
+                    Use at least <strong>8 characters</strong> with one uppercase letter and one number for a strong password.
+                  </p>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-2">New Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPasswords.next ? 'text' : 'password'}
-                      value={passwords.next}
-                      onChange={(e) => handlePasswordChange('next', e.target.value)}
-                      className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent ${passwordErrors.next ? 'border-red-400' : 'border-outline'
-                        }`}
-                      placeholder="Enter your new password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleShowPassword('next')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                    >
-                      <Icon name={showPasswords.next ? 'visibility_off' : 'visibility'} />
-                    </button>
-                  </div>
-                  {passwordErrors.next && <p className="text-red-600 text-xs mt-1">{passwordErrors.next}</p>}
+                {/* Fields */}
+                <div className="space-y-5 p-6">
 
-                  {passwords.next && (
-                    <div className="mt-2 space-y-1">
-                      <div className="h-1.5 w-full rounded-full bg-stone-200 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-300 ${passwordStrength.color}`}
-                          style={{ width: passwordStrength.width }}
-                        />
+                  {/* Current Password */}
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-gray-600">Current Password</label>
+                    <div className={`flex overflow-hidden rounded border transition-all focus-within:ring-2 ${
+                      passwordErrors.current
+                        ? 'border-red-400 focus-within:ring-red-400/20'
+                        : 'border-gray-200 hover:border-gray-300 focus-within:border-[#2eb5c2] focus-within:ring-[#2eb5c2]/30'
+                    }`}>
+                      <input
+                        type={showPasswords.current ? 'text' : 'password'}
+                        value={passwords.current}
+                        onChange={(e) => handlePasswordChange('current', e.target.value)}
+                        placeholder="Enter current password"
+                        className="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-700 focus:outline-none"
+                      />
+                      <button type="button" onClick={() => toggleShowPassword('current')}
+                        className="flex items-center px-3 text-gray-400 hover:text-gray-600">
+                        <span className="material-symbols-outlined text-[1.1rem]">
+                          {showPasswords.current ? 'visibility_off' : 'visibility'}
+                        </span>
+                      </button>
+                    </div>
+                    {passwordErrors.current && (
+                      <p className="mt-1 text-[11px] text-red-500">{passwordErrors.current}</p>
+                    )}
+                  </div>
+
+                  {/* New Password */}
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-gray-600">New Password</label>
+                    <div className={`flex overflow-hidden rounded border transition-all focus-within:ring-2 ${
+                      passwordErrors.next
+                        ? 'border-red-400 focus-within:ring-red-400/20'
+                        : 'border-gray-200 hover:border-gray-300 focus-within:border-[#2eb5c2] focus-within:ring-[#2eb5c2]/30'
+                    }`}>
+                      <input
+                        type={showPasswords.next ? 'text' : 'password'}
+                        value={passwords.next}
+                        onChange={(e) => handlePasswordChange('next', e.target.value)}
+                        placeholder="Enter new password"
+                        className="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-700 focus:outline-none"
+                      />
+                      <button type="button" onClick={() => toggleShowPassword('next')}
+                        className="flex items-center px-3 text-gray-400 hover:text-gray-600">
+                        <span className="material-symbols-outlined text-[1.1rem]">
+                          {showPasswords.next ? 'visibility_off' : 'visibility'}
+                        </span>
+                      </button>
+                    </div>
+                    {passwordErrors.next && (
+                      <p className="mt-1 text-[11px] text-red-500">{passwordErrors.next}</p>
+                    )}
+
+                    {/* Strength meter */}
+                    {passwords.next && (
+                      <div className="mt-2.5 space-y-1.5">
+                        <div className="flex gap-1">
+                          {[25, 50, 75, 100].map((threshold) => (
+                            <div key={threshold} className="h-1 flex-1 overflow-hidden rounded-full bg-gray-200">
+                              <div
+                                className={`h-full rounded-full transition-all duration-300 ${
+                                  parseInt(passwordStrength.width) >= threshold ? passwordStrength.color : ''
+                                }`}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-gray-500">
+                          Strength:{' '}
+                          <span className={`font-semibold ${
+                            passwordStrength.label === 'Strong' ? 'text-emerald-600' :
+                            passwordStrength.label === 'Good'   ? 'text-[#2eb5c2]'  :
+                            passwordStrength.label === 'Fair'   ? 'text-amber-500'  : 'text-red-500'
+                          }`}>{passwordStrength.label}</span>
+                        </p>
                       </div>
-                      <p className="text-xs text-stone-500">
-                        Strength: <span className="font-semibold text-on-surface">{passwordStrength.label}</span>
+                    )}
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-gray-600">Confirm New Password</label>
+                    <div className={`flex overflow-hidden rounded border transition-all focus-within:ring-2 ${
+                      passwordErrors.confirm
+                        ? 'border-red-400 focus-within:ring-red-400/20'
+                        : passwords.confirm && passwords.next === passwords.confirm
+                          ? 'border-emerald-400 focus-within:ring-emerald-400/20'
+                          : 'border-gray-200 hover:border-gray-300 focus-within:border-[#2eb5c2] focus-within:ring-[#2eb5c2]/30'
+                    }`}>
+                      <input
+                        type={showPasswords.confirm ? 'text' : 'password'}
+                        value={passwords.confirm}
+                        onChange={(e) => handlePasswordChange('confirm', e.target.value)}
+                        placeholder="Re-enter new password"
+                        className="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-700 focus:outline-none"
+                      />
+                      <button type="button" onClick={() => toggleShowPassword('confirm')}
+                        className="flex items-center px-3 text-gray-400 hover:text-gray-600">
+                        <span className="material-symbols-outlined text-[1.1rem]">
+                          {showPasswords.confirm ? 'visibility_off' : 'visibility'}
+                        </span>
+                      </button>
+                    </div>
+                    {passwordErrors.confirm && (
+                      <p className="mt-1 text-[11px] text-red-500">{passwordErrors.confirm}</p>
+                    )}
+                    {passwords.confirm && passwords.next === passwords.confirm && !passwordErrors.confirm && (
+                      <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-emerald-600">
+                        <span className="material-symbols-outlined text-[0.9rem]">check_circle</span>
+                        Passwords match
                       </p>
+                    )}
+                  </div>
+
+                  {/* Feedback banners */}
+                  {passwordSuccess && (
+                    <div className="flex items-center gap-2 rounded bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700">
+                      <span className="material-symbols-outlined text-[1rem]">check_circle</span>
+                      Password updated successfully!
+                    </div>
+                  )}
+                  {passwordErrors.general && (
+                    <div className="flex items-center gap-2 rounded bg-red-50 px-4 py-2.5 text-sm text-red-700">
+                      <span className="material-symbols-outlined text-[1rem]">error</span>
+                      {passwordErrors.general}
                     </div>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-2">Confirm New Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPasswords.confirm ? 'text' : 'password'}
-                      value={passwords.confirm}
-                      onChange={(e) => handlePasswordChange('confirm', e.target.value)}
-                      className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent ${passwordErrors.confirm ? 'border-red-400' : 'border-outline'
-                        }`}
-                      placeholder="Re-enter your new password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleShowPassword('confirm')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                    >
-                      <Icon name={showPasswords.confirm ? 'visibility_off' : 'visibility'} />
-                    </button>
-                  </div>
-                  {passwordErrors.confirm && <p className="text-red-600 text-xs mt-1">{passwordErrors.confirm}</p>}
-                  {passwords.confirm && passwords.next === passwords.confirm && !passwordErrors.confirm && (
-                    <p className="text-xs text-primary mt-1 flex items-center gap-1">
-                      <Icon name="check_circle" className="text-sm" />
-                      Passwords match
-                    </p>
-                  )}
-                </div>
-
-                {passwordSuccess && (
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm">
-                    <Icon name="check_circle" />
-                    Password updated successfully!
-                  </div>
-                )}
-                {passwordErrors.general && (
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-                    <Icon name="error" />
-                    {passwordErrors.general}
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3">
+                {/* Footer actions */}
+                <div className="flex items-center justify-end gap-2 border-t border-gray-100 px-6 py-4">
+                  <button
+                    type="button"
+                    onClick={handlePasswordClear}
+                    className="inline-flex h-9 w-36 items-center justify-center rounded border border-gray-200 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
+                  >
+                    Clear
+                  </button>
                   <button
                     type="button"
                     onClick={handlePasswordUpdate}
                     disabled={passwordSaving}
-                    className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-[#0a4e58] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+                    className="inline-flex h-9 w-36 items-center justify-center gap-1.5 rounded bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] text-xs font-semibold text-white shadow-sm transition-all hover:shadow-md disabled:opacity-60"
                   >
                     {passwordSaving ? (
                       <>
-                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
                         Updating…
                       </>
                     ) : (
                       <>
-                        <Icon name="lock_reset" className="text-[16px]" />
+                        <span className="material-symbols-outlined text-[0.9rem]">lock_reset</span>
                         Update Password
                       </>
                     )}
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={handlePasswordClear}
-                    className="px-4 py-2 rounded-lg text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer border border-outline"
-                  >
-                    Clear
-                  </button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
       </div>

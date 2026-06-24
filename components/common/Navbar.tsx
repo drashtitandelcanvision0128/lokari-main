@@ -3,15 +3,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { useAppSelector } from '@/lib/store/hooks'
+import { useAppSelector, useAppDispatch } from '@/lib/store/hooks'
 import {
   selectCurrentUser,
   selectIsAuthenticated,
   selectUserDisplayName,
   selectAuthHydrated,
+  selectAvatarUrl,
+  setUser as setReduxUser,
 } from '@/lib/store/slices/authSlice'
-import { selectCartCount } from '@/lib/store/slices/cartSlice'
-import { selectWishlistCount } from '@/lib/store/slices/wishlistSlice'
 import ProfileDropdown from '@/components/ui/ProfileDropdown'
 import NavbarAuthActions from '@/components/layout/NavbarAuthActions'
 import { AdminHeaderNotifications } from '@/components/admin/AdminHeaderNotifications'
@@ -19,128 +19,95 @@ import { AdminHeaderSettings } from '@/components/admin/AdminHeaderSettings'
 import { isAdminAuthenticated } from '@/lib/adminAuth'
 import { useLogout } from '@/hooks/useLogout'
 
+const NAV_LINKS = [
+  { href: '/listings', label: 'Marketplace' },
+  { href: '/insights',  label: 'Insights'    },
+  { href: '/about',     label: 'About'       },
+  { href: '/contact',   label: 'Contact'     },
+]
+
+const DASHBOARD_PREFIXES = [
+  '/dashboard', '/farmer-dashboard', '/trader-dashboard',
+  '/transporter-dashboard', '/warehouse-dashboard', '/admin',
+]
+
 const Navbar = () => {
   const pathname = usePathname()
-  const currentRole = "farmer" // Hardcoded role as specified
   const [isDark, setIsDark] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [kycBypassEnabled, setKycBypassEnabled] = useState(false)
   const [isAdminSession, setIsAdminSession] = useState(false)
 
+  const dispatch       = useAppDispatch()
   const isAuthHydrated = useAppSelector(selectAuthHydrated)
-  const isLoggedIn = useAppSelector(selectIsAuthenticated)
-  const currentUser = useAppSelector(selectCurrentUser)
-  const userName = useAppSelector(selectUserDisplayName)
-  const cartCount = useAppSelector(selectCartCount)
-  const wishlistCount = useAppSelector(selectWishlistCount)
-  const logout = useLogout()
+  const isLoggedIn     = useAppSelector(selectIsAuthenticated)
+  const currentUser    = useAppSelector(selectCurrentUser)
+  const userName       = useAppSelector(selectUserDisplayName)
+  const avatarUrl      = useAppSelector(selectAvatarUrl)
+  const logout         = useLogout()
 
+  const isDashboardRoute = DASHBOARD_PREFIXES.some(p => pathname.startsWith(p))
+  const isActive = (path: string) => pathname === path
+
+  // ── theme + auth state ──────────────────────────────────────────────────────
   const checkAuthState = () => {
     const stored = localStorage.getItem('theme')
-    const shouldBeDark = stored === 'dark'
-    setIsDark(shouldBeDark)
-    if (shouldBeDark) {
-      document.documentElement.classList.add('dark')
-    }
+    const dark   = stored === 'dark'
+    setIsDark(dark)
+    document.documentElement.classList.toggle('dark', dark)
 
     if (typeof window !== 'undefined') {
       setIsAdminSession(isAdminAuthenticated())
-
-      const user = currentUser
-      if (user) {
-        const bypassStatus = localStorage.getItem(`dev_kyc_bypass_${user.id}`)
-        setKycBypassEnabled(bypassStatus === 'true')
-      } else {
-        setKycBypassEnabled(false)
-      }
     }
   }
 
   useEffect(() => {
     if (!isAuthHydrated) return
     checkAuthState()
-
-    // Re-check auth state when window gets focus (handles back navigation)
-    const handleFocus = () => {
-      checkAuthState()
+    const onFocus      = () => checkAuthState()
+    const onVisible    = () => { if (document.visibilityState === 'visible') checkAuthState() }
+    const onStorage    = (e: StorageEvent) => {
+      if (['currentUser', 'userProfile', 'adminSession'].includes(e.key ?? '')) checkAuthState()
     }
-
-    // Re-check auth state when page becomes visible (handles back navigation)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        checkAuthState()
-      }
-    }
-
-    // Listen for storage changes that might affect auth
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'currentUser' || e.key === 'userProfile' || e.key === 'adminSession') {
-        checkAuthState()
-      }
-    }
-
-    // Add event listeners
-    if (typeof window !== 'undefined') {
-      window.addEventListener('focus', handleFocus)
-      window.addEventListener('visibilitychange', handleVisibilityChange)
-    }
-
-    window.addEventListener('storage', handleStorageChange)
-
-    // Cleanup event listeners
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('storage', onStorage)
     return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('focus', handleFocus)
-        window.removeEventListener('visibilitychange', handleVisibilityChange)
-      }
-      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('storage', onStorage)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthHydrated, currentUser])
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    const onScroll = () => setIsScrolled(window.scrollY > 8)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Fetch avatar from DB once after auth hydration so Navbar always shows it
+  useEffect(() => {
+    if (!isAuthHydrated || !isLoggedIn || !currentUser) return
+    import('@/lib/profile').then(({ fetchMyProfile }) => {
+      fetchMyProfile().then((profile) => {
+        if (profile?.avatarUrl) {
+          localStorage.setItem('lokhari_profile_avatar', profile.avatarUrl)
+          dispatch(setReduxUser({ ...currentUser, avatar: profile.avatarUrl }))
+        }
+      })
+    })
+  // Run once when auth is ready — currentUser intentionally omitted to avoid re-fetching on every Redux update
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthHydrated, isLoggedIn])
+
+  // ── handlers ────────────────────────────────────────────────────────────────
   const toggleDark = () => {
-    const newTheme = isDark ? 'light' : 'dark'
-    setIsDark(!isDark)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.classList.toggle('dark')
+    const next = !isDark
+    setIsDark(next)
+    localStorage.setItem('theme', next ? 'dark' : 'light')
+    document.documentElement.classList.toggle('dark', next)
   }
 
-  const toggleKycBypass = () => {
-    if (!currentUser) return
-
-    const newStatus = !kycBypassEnabled
-    setKycBypassEnabled(newStatus)
-
-    if (newStatus) {
-      // Enable KYC bypass
-      localStorage.setItem(`dev_kyc_bypass_${currentUser.id}`, 'true')
-      localStorage.setItem(`kyc_${currentUser.id}`, JSON.stringify({
-        aadhaarNumber: '000000000000',
-        otp: '000000',
-        documentUrl: '/mock-document.pdf',
-        status: 'verified'
-      }))
-      console.log('KYC bypass ENABLED for demonstration')
-    } else {
-      // Disable KYC bypass
-      localStorage.removeItem(`dev_kyc_bypass_${currentUser.id}`)
-      localStorage.removeItem(`kyc_${currentUser.id}`)
-      console.log('KYC bypass DISABLED - real KYC verification required')
-    }
-
-    // Force page refresh to re-evaluate verification status
-    setTimeout(() => {
-      window.location.reload()
-    }, 100)
-  }
 
   const handleLogout = () => {
     if (isAdminSession) {
@@ -153,121 +120,87 @@ const Navbar = () => {
     }
   }
 
-  const toggleLoginState = () => {
-    const newState = !isLoggedIn
-    localStorage.setItem('isLoggedIn', newState ? 'true' : 'false')
-    console.log(`Login state toggled to: ${newState ? 'LOGGED IN' : 'LOGGED OUT'}`)
+  // ── styles ──────────────────────────────────────────────────────────────────
+  const navBg = isScrolled
+    ? isDark
+      ? 'bg-gray-900/90 backdrop-blur-lg shadow-lg shadow-black/20 border-b border-white/5'
+      : 'bg-[#ece8e1]/90 backdrop-blur-lg shadow-md shadow-black/5 border-b border-[#d6d2cb]/60'
+    : isDark
+      ? 'bg-gray-900 border-b border-white/5'
+      : 'bg-[#ece8e1] border-b border-[#d6d2cb]/40'
 
-    if (!newState) {
-      logout()
-      const protectedPages = ['/notifications', '/dashboard']
-      if (protectedPages.some(page => pathname.startsWith(page))) {
-        window.location.href = '/'
-      }
-    }
-  }
+  const linkBase = 'relative px-3 py-1.5 text-sm font-semibold font-headline rounded-full transition-all duration-200'
+  const linkActive = isDark
+    ? 'bg-[#2eb5c2]/15 text-[#2eb5c2]'
+    : 'bg-[#0b5d68]/10 text-[#0b5d68]'
+  const linkInactive = isDark
+    ? 'text-gray-400 hover:text-white hover:bg-white/5'
+    : 'text-gray-500 hover:text-[#0b5d68] hover:bg-gray-100'
 
-  const isActive = (path: string) => pathname === path
-  const isAdminUser = currentUser?.role === 'admin'
-  const isDashboardRoute =
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/farmer-dashboard') ||
-    pathname.startsWith('/trader-dashboard') ||
-    pathname.startsWith('/transporter-dashboard') ||
-    pathname.startsWith('/warehouse-dashboard') ||
-    pathname.startsWith('/admin')
+  const iconBtn = `relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
+    isDark ? 'text-gray-300 hover:bg-white/10 hover:text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-[#0b5d68]'
+  }`
 
   return (
-    <nav className={`fixed top-0 z-50 h-16 w-full transition-all duration-300 ${isScrolled
-      ? isDark ? 'bg-gray-900/80 backdrop-blur-md' : 'bg-[#ece8e1]/80 backdrop-blur-md'
-      : isDark ? 'bg-gray-900' : 'bg-[#ece8e1]'
-      }`}>
-      <div className="flex h-full w-full min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 flex-1 items-center gap-3 overflow-hidden sm:gap-8">
-          <Link
-            href="/"
-            className={`flex shrink-0 items-center gap-2 text-lg font-bold font-headline sm:gap-3 sm:text-xl ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
-          >
-            <img src="/AgriwareLogo.svg" alt="Lokhari Logo" className="h-8 w-8 shrink-0" />
-            <span className="hidden sm:inline">Lokhari</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-6 font-headline font-semibold tracking-tight">
-            <Link
-              href="/listings"
-              className={`border-b-2 pb-1 transition-colors ${isActive('/listings')
-                ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
-                : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-                }`}
-            >
-              Marketplace
-            </Link>
-            {/* Hide Marketplace, Services, and Insights tabs on all dashboard and admin pages */}
-            {!isDashboardRoute && (
-                <>
+    <nav className={`fixed top-0 z-50 h-16 w-full transition-all duration-300 ${navBg}`}>
+      <div className="flex h-full w-full min-w-0 items-center gap-2 px-3 sm:px-5 lg:px-8">
 
-                  <Link
-                    href="/insights"
-                    className={`border-b-2 pb-1 transition-colors ${isActive('/insights')
-                      ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
-                      : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-                      }`}
-                  >
-                    Insights
-                  </Link>
-                  <Link
-                    href="/about"
-                    className={`border-b-2 pb-1 transition-colors ${isActive('/about')
-                      ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
-                      : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-                      }`}
-                  >
-                    About Us
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className={`border-b-2 pb-1 transition-colors ${isActive('/contact')
-                      ? isDark ? 'text-[#2eb5c2] border-[#2eb5c2]' : 'text-[#2eb5c2] border-[#2eb5c2]'
-                      : isDark ? 'text-gray-300 border-transparent hover:text-white' : 'text-[#666666] border-transparent hover:text-[#0b5d68]'
-                      }`}
-                  >
-                    Contact Us
-                  </Link>
-                </>
-              )}
-          </div>
+        {/* ── Logo ──────────────────────────────────────────────────── */}
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-90"
+        >
+          <img src="/AgriwareLogo.svg" alt="Lokhari Logo" className="h-8 w-8 shrink-0" />
+          <span className={`hidden font-headline text-lg font-bold sm:inline ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}>
+            Lokhari
+          </span>
+        </Link>
+
+        {/* ── Desktop nav links ──────────────────────────────────────── */}
+        <div className="hidden flex-1 items-center gap-1 px-4 md:flex">
+          <Link href="/listings" className={`${linkBase} ${isActive('/listings') ? linkActive : linkInactive}`}>
+            Marketplace
+          </Link>
+          <Link href="/insights" className={`${linkBase} ${isActive('/insights') ? linkActive : linkInactive}`}>
+            Insights
+          </Link>
+          <Link href="/about" className={`${linkBase} ${isActive('/about') ? linkActive : linkInactive}`}>
+            About
+          </Link>
+          <Link href="/contact" className={`${linkBase} ${isActive('/contact') ? linkActive : linkInactive}`}>
+            Contact
+          </Link>
+
+          {isLoggedIn && (
+            <Link
+              href={`/${currentUser?.role || 'farmer'}-dashboard`}
+              className={`${linkBase} ${isDashboardRoute ? linkActive : linkInactive}`}
+            >
+              Dashboard
+            </Link>
+          )}
         </div>
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+
+        {/* Spacer on mobile so actions stay right-aligned */}
+        <div className="flex-1 md:hidden" />
+
+        {/* ── Right actions ─────────────────────────────────────────── */}
+        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+
+          {/* Dark mode toggle */}
           <button
             type="button"
             onClick={toggleDark}
-            className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg p-0 sm:p-2 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
+            className={iconBtn}
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
           >
-            <span className="material-symbols-outlined">
+            <span className="material-symbols-outlined text-[1.2rem]">
               {isDark ? 'light_mode' : 'dark_mode'}
             </span>
           </button>
 
-          {/* KYC Bypass Toggle - Development Only */}
-          {process.env.NODE_ENV === 'development' && isLoggedIn && (
-            <div className="relative">
-              <button
-                onClick={toggleKycBypass}
-                className={`p-2 rounded-lg transition-colors ${kycBypassEnabled
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                title={`KYC Bypass: ${kycBypassEnabled ? 'Enabled' : 'Disabled'}`}
-              >
-                <span className="material-symbols-outlined text-sm">
-                  {kycBypassEnabled ? 'verified_user' : 'gpp_maybe'}
-                </span>
-              </button>
-              <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${kycBypassEnabled ? 'bg-green-500' : 'bg-gray-400'
-                }`} />
-            </div>
-          )}
 
+          {/* Authenticated actions */}
           <NavbarAuthActions
             isDark={isDark}
             isAuthHydrated={isAuthHydrated}
@@ -275,50 +208,33 @@ const Navbar = () => {
             isLoggedIn={isLoggedIn}
             onAdminLogout={handleLogout}
           >
-            {isAdminUser ? (
+            {currentUser?.role === 'admin' ? (
               <>
                 <AdminHeaderNotifications isDark={isDark} />
                 <AdminHeaderSettings isDark={isDark} />
               </>
             ) : (
-              <>
-                <Link href="/notifications" className={`p-2 ${isDark ? 'text-gray-200' : 'text-[#0b5d68]'}`}>
-                  <span className="material-symbols-outlined">notifications</span>
-                </Link>
-                <Link href="/wishlist" className={`p-2 relative ${isDark ? 'text-gray-200' : 'text-[#0b5d68]'}`}>
-                  <span className="material-symbols-outlined">favorite</span>
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#d55b39] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                      {wishlistCount > 99 ? '99+' : wishlistCount}
-                    </span>
-                  )}
-                </Link>
-                <Link href="/cart" className={`p-2 relative ${isDark ? 'text-gray-200' : 'text-[#0b5d68]'}`}>
-                  <span className="material-symbols-outlined">shopping_cart</span>
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#0b5d68] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                      {cartCount > 99 ? '99+' : cartCount}
-                    </span>
-                  )}
-                </Link>
-              </>
+              <Link href="/notifications" className={iconBtn} aria-label="Notifications">
+                <span className="material-symbols-outlined text-[1.2rem]">notifications</span>
+              </Link>
             )}
 
-            <div className="hidden md:flex items-center gap-2 ml-4">
-              <span className="text-sm text-on-surface-variant">Welcome,</span>
-              <span className="text-sm font-medium text-[#2eb5c2] font-headline">
+            {/* Welcome chip — md+ */}
+            <div className={`ml-1 hidden items-center gap-1.5 rounded-full border px-3 py-1 md:flex ${
+              isDark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-gray-50'
+            }`}>
+              <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.7)]" />
+              <span className={`text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                 {userName || 'User'}
               </span>
               {currentUser?.role && (
-                <>
-                  <span className="text-sm text-on-surface-variant">•</span>
-                  <span className="text-sm font-medium text-[#e89151] capitalize font-headline">
-                    {currentUser.role}
-                  </span>
-                </>
+                <span className="rounded-full bg-[#0b5d68]/10 px-1.5 py-0.5 text-[10px] font-semibold capitalize text-[#0b5d68]">
+                  {currentUser.role}
+                </span>
               )}
             </div>
-            <ProfileDropdown userName={userName} userRole={currentUser?.role} />
+
+            <ProfileDropdown userName={userName} userRole={currentUser?.role} avatarUrl={avatarUrl ?? undefined} />
           </NavbarAuthActions>
         </div>
       </div>

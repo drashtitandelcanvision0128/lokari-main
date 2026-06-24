@@ -8,6 +8,8 @@ import { getUserRole } from '@/lib/auth';
 import { usePostListingNavigation } from '@/hooks/usePostListingNavigation';
 import { useSettings, type SettingsSection } from '@/lib/context/SettingsContext';
 
+// ─── Config ──────────────────────────────────────────────────────────────────
+
 interface SidebarProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
@@ -18,28 +20,28 @@ interface SidebarProps {
   onMobileClose?: () => void;
 }
 
-const tabConfig: Record<TabType, { icon: string; label: string }> = {
-  overview: { icon: 'dashboard', label: 'Overview' },
-  listings: { icon: 'inventory_2', label: 'Listings' },
-  bids: { icon: 'gavel', label: 'Bids' },
-  requirements: { icon: 'receipt_long', label: 'Requirements' },
-  logistics: { icon: 'local_shipping', label: 'Logistics' },
-  orders: { icon: 'shopping_cart', label: 'Orders' },
-  transactions: { icon: 'payments', label: 'Transactions' },
-  settings: { icon: 'settings', label: 'Settings' },
+const tabConfig: Record<TabType, { icon: string; label: string; group: 'main' | 'account' }> = {
+  overview: { icon: 'dashboard', label: 'Overview', group: 'main' },
+  listings: { icon: 'inventory_2', label: 'Listings', group: 'main' },
+  bids: { icon: 'gavel', label: 'Bids', group: 'main' },
+  requirements: { icon: 'receipt_long', label: 'Requirements', group: 'main' },
+  logistics: { icon: 'local_shipping', label: 'Logistics', group: 'main' },
+  orders: { icon: 'shopping_bag', label: 'Orders', group: 'main' },
+  transactions: { icon: 'payments', label: 'Transactions', group: 'account' },
+  settings: { icon: 'tune', label: 'Settings', group: 'account' },
 };
 
-const settingsSubTabs = [
-  { id: 'profile', label: 'Profile', icon: 'person' },
-  { id: 'kyc', label: 'KYC Verification', icon: 'verified_user' },
-  { id: 'addresses', label: 'Addresses', icon: 'location_on' },
-  { id: 'notifications', label: 'Notifications', icon: 'notifications' },
-  { id: 'security', label: 'Reset Password', icon: 'lock' },
+const settingsSubTabs: { id: SettingsSection; label: string; icon: string }[] = [
+  { id: 'profile',   label: 'Profile',  icon: 'person'        },
+  { id: 'security',  label: 'Reset Password', icon: 'lock_reset' },
+  { id: 'kyc',       label: 'KYC',      icon: 'verified_user' },
 ];
 
 export function getDashboardTabLabel(tab: TabType): string {
   return tabConfig[tab]?.label ?? tab;
 }
+
+// ─── Inner nav ───────────────────────────────────────────────────────────────
 
 function SidebarNav({
   activeTab,
@@ -60,15 +62,11 @@ function SidebarNav({
   const [isSettingsOpen, setIsSettingsOpen] = useState(activeTab === 'settings');
   const { navigateToCreateListing } = usePostListingNavigation();
   const { activeSection, setActiveSection } = useSettings();
-
   useEffect(() => {
     setUserRole(getUserRole());
   }, []);
-
   useEffect(() => {
-    if (activeTab === 'settings') {
-      setIsSettingsOpen(true);
-    }
+    if (activeTab === 'settings') setIsSettingsOpen(true);
   }, [activeTab]);
 
   const handleTabChange = (tab: TabType) => {
@@ -76,140 +74,234 @@ function SidebarNav({
     onNavigate?.();
   };
 
+  const visibleMainTabs = Object.entries(dashboardTabs)
+    .filter(([t, v]) => v && tabConfig[t as TabType]?.group === 'main')
+    .map(([t]) => t as TabType);
+  const visibleAccountTabs = Object.entries(dashboardTabs)
+    .filter(([t, v]) => v && tabConfig[t as TabType]?.group === 'account')
+    .map(([t]) => t as TabType);
+
   return (
-    <>
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* ── Brand header ─────────────────────────────────────────── */}
       <div
         className={cn(
-          'mb-6 transition-all duration-300 ease-in-out',
-          isCollapsed ? 'px-3' : 'px-4 sm:px-6',
+          'relative flex shrink-0 items-center gap-2.5 px-3 pb-4 pt-1',
+          isCollapsed && 'justify-center px-2',
         )}
       >
-        <div className={cn('flex items-center mb-4', isCollapsed ? 'justify-center' : 'gap-3')}>
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          className={cn(
+            'relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+            'bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] shadow-md',
+            'transition-transform duration-200 hover:scale-105 active:scale-95',
+          )}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <Icon name="agriculture" className="text-[1rem] text-white" />
+        </button>
+
+        {!isCollapsed && (
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-headline text-[13px] font-bold leading-tight text-[#0b5d68] dark:text-[#2eb5c2]">
+              Lokhari
+            </p>
+            <p className="truncate text-[10px] font-medium tracking-wide text-on-surface-variant">
+              Exchange Dashboard
+            </p>
+          </div>
+        )}
+
+        {!isCollapsed && (
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 transition-colors hover:bg-accent/20 group"
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-on-surface-variant transition-colors hover:bg-surface-container hover:text-on-surface"
+            aria-label="Collapse sidebar"
           >
-            <Icon
-              name="agriculture"
-              className="text-accent transition-transform group-hover:scale-110"
-            />
+            <Icon name="chevron_left" className="text-[0.9rem]" />
           </button>
-          {!isCollapsed && (
-            <div className="min-w-0">
-              <h1 className="font-headline text-lg font-bold leading-tight text-primary">
-                Exchange Dashboard
-              </h1>
-              <p className="text-xs font-medium text-on-surface-variant">Verified Account</p>
-            </div>
-          )}
-        </div>
+        )}
+      </div>
 
-        {userRole !== 'trader' && (
+      {/* ── Post Listing CTA ─────────────────────────────────────── */}
+      {userRole !== 'trader' && (
+        <div className={cn('mb-3 px-3', isCollapsed && 'px-2')}>
           <button
             type="button"
             onClick={() => {
               navigateToCreateListing();
               onNavigate?.();
             }}
+            title="New Post"
             className={cn(
-              'bg-[#e89151] font-body text-sm font-medium text-white transition-all hover:bg-[#e89151]/90 active:scale-[0.98]',
+              'group relative overflow-hidden rounded-lg font-body text-xs font-semibold text-white',
+              'bg-gradient-to-r from-[#e89151] to-[#d55b39] shadow-sm',
+              'transition-all duration-200 hover:shadow-md hover:brightness-105 active:scale-[0.97]',
               isCollapsed
-                ? 'mx-auto flex h-10 w-10 items-center justify-center rounded-md'
-                : 'flex w-full items-center justify-center gap-2 rounded-md px-4 py-3',
+                ? 'mx-auto flex h-8 w-8 items-center justify-center'
+                : 'flex w-full items-center gap-1.5 px-3 py-2',
             )}
-            title="Post Listing"
           >
-            <Icon name="add" />
-            {!isCollapsed && <span>Post Listing</span>}
+            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
+            <Icon name="add_circle" className="shrink-0 text-[1rem]" />
+            {!isCollapsed && <span>New Post</span>}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-2 pb-4">
-        {Object.entries(dashboardTabs).map(([tab, isVisible]) => {
-          if (!isVisible) return null;
-
-          const tabKey = tab as TabType;
+      {/* ── Nav ─────────────────────────────────────────── */}
+      <nav className="flex-1 space-y-px overflow-y-auto px-2 pb-4 scrollbar-thin">
+        {visibleMainTabs.map((tabKey) => {
           const config = tabConfig[tabKey];
           const isActive = activeTab === tabKey;
+          return (
+            <NavItem
+              key={tabKey}
+              icon={config.icon}
+              label={config.label}
+              isActive={isActive}
+              isCollapsed={isCollapsed}
+              onClick={() => handleTabChange(tabKey)}
+            />
+          );
+        })}
 
+
+        {visibleAccountTabs.map((tabKey) => {
           if (tabKey === 'settings') {
             return (
               <div key="settings">
-                <button
-                  type="button"
-                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                  className={cn(
-                    'flex w-full items-center rounded-md px-4 py-3 text-on-surface-variant hover:bg-accent/10',
-                    isCollapsed && 'justify-center px-2',
-                  )}
-                >
-                  <Icon name="settings" />
-                  {!isCollapsed && (
-                    <>
-                      <span className="ml-3 flex-1 text-left">Settings</span>
-                      <Icon name={isSettingsOpen ? 'expand_less' : 'expand_more'} />
-                    </>
-                  )}
-                </button>
+                <NavItem
+                  icon={tabConfig.settings.icon}
+                  label="Settings"
+                  isActive={activeTab === 'settings'}
+                  isCollapsed={isCollapsed}
+                  onClick={() => {
+                    if (!isCollapsed) setIsSettingsOpen((p) => !p);
+                    handleTabChange('settings');
+                  }}
+                  trailingIcon={
+                    !isCollapsed ? (isSettingsOpen ? 'expand_less' : 'expand_more') : undefined
+                  }
+                />
+
+                {/* Settings sub-items */}
                 <div
                   className={cn(
                     'overflow-hidden transition-all duration-300 ease-out',
-                    isSettingsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0',
+                    !isCollapsed && isSettingsOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0',
                   )}
                 >
-                  {!isCollapsed && isSettingsOpen && (
-                    <div className="ml-8 mt-1 space-y-1">
-                      {settingsSubTabs.map((item) => (
+                  <div className="ml-2.5 mt-0.5 space-y-px border-l-2 border-[#2eb5c2]/30 pl-2.5">
+                    {settingsSubTabs.map((item) => {
+                      const isSubActive = activeTab === 'settings' && activeSection === item.id;
+                      return (
                         <button
-                          className={cn(
-                            'w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-200 ease-out',
-                            activeTab === 'settings' && activeSection === item.id
-                              ? 'bg-primary text-white shadow-sm'
-                              : 'hover:bg-accent/10 hover:translate-x-1',
-                          )}
                           key={item.id}
+                          type="button"
                           onClick={() => {
                             onTabChange('settings');
-                            setActiveSection(item.id as any);
+                            setActiveSection(item.id as SettingsSection);
+                            onNavigate?.();
                           }}
+                          className={cn(
+                            'flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition-all duration-150',
+                            isSubActive
+                              ? 'bg-[#2eb5c2]/15 text-[#0b5d68] dark:text-[#2eb5c2]'
+                              : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface',
+                          )}
                         >
-                          <Icon name={item.icon} />
+                          <Icon name={item.icon} className="text-[0.85rem]" />
                           {item.label}
+                          {isSubActive && (
+                            <div className="ml-auto h-1.5 w-1.5 rounded-full bg-[#2eb5c2]" />
+                          )}
                         </button>
-                      ))}
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             );
           }
 
+          const config = tabConfig[tabKey];
+          const isActive = activeTab === tabKey;
           return (
-            <button
+            <NavItem
               key={tabKey}
-              type="button"
+              icon={config.icon}
+              label={config.label}
+              isActive={isActive}
+              isCollapsed={isCollapsed}
               onClick={() => handleTabChange(tabKey)}
-              className={cn(
-                'flex items-center rounded-md font-body text-sm font-medium transition-all',
-                isCollapsed ? 'w-full justify-center px-2 py-3' : 'w-full gap-3 px-4 py-3',
-                isActive
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'text-on-surface-variant hover:bg-accent/10 hover:translate-x-1',
-              )}
-              title={isCollapsed ? config.label : undefined}
-            >
-              <Icon name={config.icon} />
-              {!isCollapsed && <span>{config.label}</span>}
-            </button>
+            />
           );
         })}
       </nav>
-    </>
+    </div>
   );
 }
+
+// ─── Reusable nav item ────────────────────────────────────────────────────────
+
+function NavItem({
+  icon,
+  label,
+  isActive,
+  isCollapsed,
+  onClick,
+  trailingIcon,
+}: {
+  icon: string;
+  label: string;
+  isActive: boolean;
+  isCollapsed: boolean;
+  onClick: () => void;
+  trailingIcon?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={isCollapsed ? label : undefined}
+      className={cn(
+        'group relative flex w-full items-center rounded-lg text-[13px] font-medium transition-all duration-150',
+        isCollapsed ? 'justify-center px-1.5 py-2' : 'gap-2.5 px-2.5 py-2',
+        isActive
+          ? 'bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] text-white shadow-sm'
+          : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface',
+      )}
+    >
+      {/* Active left bar */}
+      {isActive && !isCollapsed && (
+        <div className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-white/60" />
+      )}
+
+      {/* Icon */}
+      <span
+        className={cn(
+          'flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-all duration-150',
+          isActive ? 'bg-white/20' : 'group-hover:bg-surface-container-high',
+        )}
+      >
+        <Icon name={icon} className="text-[1rem]" />
+      </span>
+
+      {!isCollapsed && (
+        <>
+          <span className="flex-1 text-left font-body">{label}</span>
+          {trailingIcon && <Icon name={trailingIcon} className="text-[0.9rem] opacity-60" />}
+        </>
+      )}
+    </button>
+  );
+}
+
+// ─── Sidebar shell ────────────────────────────────────────────────────────────
 
 export function Sidebar({
   activeTab,
@@ -220,51 +312,56 @@ export function Sidebar({
   isMobileOpen = false,
   onMobileClose,
 }: SidebarProps) {
+  const sharedNavProps = { activeTab, onTabChange, dashboardTabs, isCollapsed, onToggleCollapse };
+
   return (
     <>
+      {/* Desktop sidebar */}
       <aside
         className={cn(
-          'sticky top-16 hidden h-[calc(100vh-4rem)] shrink-0 flex-col gap-2 border-r border-outline bg-surface py-6 transition-all duration-300 ease-in-out md:flex',
-          isCollapsed ? 'w-20' : 'w-64',
+          'sticky top-16 hidden h-[calc(100vh-4rem)] shrink-0 flex-col',
+          'border-r border-outline/50 bg-surface py-4',
+          'transition-all duration-300 ease-in-out md:flex',
+          isCollapsed ? 'w-[4.5rem]' : 'w-64',
         )}
       >
-        <SidebarNav
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          dashboardTabs={dashboardTabs}
-          isCollapsed={isCollapsed}
-          onToggleCollapse={onToggleCollapse}
-        />
+        <SidebarNav {...sharedNavProps} />
       </aside>
 
+      {/* Mobile drawer */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
           <button
             type="button"
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             aria-label="Close navigation menu"
             onClick={onMobileClose}
           />
-          <aside className="absolute left-0 top-0 flex h-full w-[min(18rem,88vw)] flex-col border-r border-outline bg-surface py-6 shadow-xl">
-            <div className="flex items-center justify-between px-4 pb-2">
-              <p className="text-sm font-semibold text-on-surface">Menu</p>
+
+          {/* Drawer panel */}
+          <aside
+            className={cn(
+              'absolute left-0 top-0 flex h-full w-[min(17rem,90vw)] flex-col',
+              'border-r border-outline/50 bg-surface py-4 shadow-2xl',
+            )}
+          >
+            {/* Mobile drawer header */}
+            <div className="mb-2 flex items-center justify-between px-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+                Navigation
+              </span>
               <button
                 type="button"
                 onClick={onMobileClose}
-                className="rounded-lg p-2 text-on-surface-variant hover:bg-surface-container"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
                 aria-label="Close menu"
               >
-                <Icon name="close" />
+                <Icon name="close" className="text-base" />
               </button>
             </div>
-            <SidebarNav
-              activeTab={activeTab}
-              onTabChange={onTabChange}
-              dashboardTabs={dashboardTabs}
-              isCollapsed={false}
-              onToggleCollapse={onToggleCollapse}
-              onNavigate={onMobileClose}
-            />
+
+            <SidebarNav {...sharedNavProps} isCollapsed={false} onNavigate={onMobileClose} />
           </aside>
         </div>
       )}

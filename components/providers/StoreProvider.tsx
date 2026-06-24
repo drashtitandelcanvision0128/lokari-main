@@ -32,6 +32,11 @@ function StoreHydrator({ store }: { store: AppStore }) {
   useEffect(() => {
     const user = registrationService.getCurrentUser()
     const profile = registrationService.getUserProfile()
+    // Hydrate avatar from localStorage cache so Navbar shows it on first render
+    if (user) {
+      const cachedAvatar = localStorage.getItem('lokhari_profile_avatar')
+      if (cachedAvatar) user.avatar = cachedAvatar
+    }
     store.dispatch(hydrateAuth({ user, profile }))
 
     try {
@@ -50,6 +55,8 @@ function StoreHydrator({ store }: { store: AppStore }) {
       store.dispatch(hydrateWishlist([]))
     }
 
+    const AVATAR_CACHE_KEY = 'lokhari_profile_avatar'
+
     const handleStorage = (event: StorageEvent) => {
       if (event.key === 'currentUser') {
         if (!event.newValue) {
@@ -57,9 +64,24 @@ function StoreHydrator({ store }: { store: AppStore }) {
           return
         }
         try {
-          store.dispatch(hydrateAuth({ user: JSON.parse(event.newValue), profile: registrationService.getUserProfile() }))
+          const parsedUser = JSON.parse(event.newValue)
+          // Carry across any cached avatar
+          const cachedAvatar = localStorage.getItem(AVATAR_CACHE_KEY)
+          if (cachedAvatar && parsedUser) parsedUser.avatar = cachedAvatar
+          store.dispatch(hydrateAuth({ user: parsedUser, profile: registrationService.getUserProfile() }))
         } catch {
           store.dispatch(logout())
+        }
+      }
+
+      // Avatar cache updated in another tab
+      if (event.key === AVATAR_CACHE_KEY) {
+        const state = store.getState()
+        if (state.auth.user) {
+          store.dispatch(hydrateAuth({
+            user: { ...state.auth.user, avatar: event.newValue ?? undefined },
+            profile: state.auth.profile,
+          }))
         }
       }
 

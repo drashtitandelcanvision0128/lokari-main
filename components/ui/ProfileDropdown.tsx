@@ -8,22 +8,29 @@ import { useLogout } from '@/hooks/useLogout'
 interface ProfileDropdownProps {
   userName?: string
   userRole?: string
+  avatarUrl?: string
 }
 
-const ProfileDropdown = ({ userName, userRole }: ProfileDropdownProps) => {
+const ROLE_COLORS: Record<string, string> = {
+  farmer:      'bg-emerald-100 text-emerald-700',
+  trader:      'bg-blue-100 text-blue-700',
+  transporter: 'bg-amber-100 text-amber-700',
+  warehouse:   'bg-purple-100 text-purple-700',
+  admin:       'bg-rose-100 text-rose-700',
+}
+
+const ProfileDropdown = ({ userName, userRole, avatarUrl }: ProfileDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const logout = useLogout()
 
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false)
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
@@ -34,156 +41,115 @@ const ProfileDropdown = ({ userName, userRole }: ProfileDropdownProps) => {
     setIsOpen(false)
   }
 
-  const menuItems = [
-    {
-      icon: 'person',
-      label: 'Profile',
-      // href: '/profile',
-      href: `/${userRole || 'farmer'}-dashboard?tab=settings&section=profile`,
-      description: 'View and edit your profile'
-    },
-    {
-      icon: 'dashboard',
-      label: 'Dashboard',
-      href: `/${userRole || 'farmer'}-dashboard`,
-      description: 'Overview and analytics'
-    },
-    {
-      icon: 'shopping_bag',
-      label: 'Orders',
-      href: `/${userRole || 'farmer'}-dashboard?tab=orders`,
-      description: 'View your order history'
-    },
-    {
-      icon: 'settings',
-      label: 'Settings',
-      href: `/${userRole || 'farmer'}-dashboard?tab=settings`,
-      description: 'Account preferences'
-    },
-    {
-      icon: 'logout',
-      label: 'Logout',
-      action: handleLogout,
-      description: 'Sign out of your account',
-      isDanger: true
-    }
+  const initial = (userName || 'U').charAt(0).toUpperCase()
+  const roleColor = ROLE_COLORS[userRole?.toLowerCase() ?? ''] ?? 'bg-gray-100 text-gray-600'
+
+  const navItems = [
+    { icon: 'person',       label: 'Profile',   href: `/${userRole || 'farmer'}-dashboard?tab=settings&section=profile` },
+    { icon: 'dashboard',    label: 'Dashboard', href: `/${userRole || 'farmer'}-dashboard` },
+    { icon: 'shopping_bag', label: 'Orders',    href: `/${userRole || 'farmer'}-dashboard?tab=orders` },
+    { icon: 'tune',         label: 'Settings',  href: `/${userRole || 'farmer'}-dashboard?tab=settings` },
   ]
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Profile Avatar Button */}
+
+      {/* ── Avatar button ──────────────────────────────────────────── */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="h-8 w-8 rounded-full overflow-hidden bg-surface-container ml-2 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#0b5d68]/20"
         aria-label="Profile menu"
         aria-expanded={isOpen}
+        className={`
+          relative ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full
+          overflow-hidden shadow-sm ring-2 ring-transparent transition-all duration-200
+          hover:scale-105 hover:ring-[#2eb5c2]/40 focus:outline-none
+          ${isOpen ? 'ring-[#2eb5c2]/50 scale-105' : ''}
+        `}
       >
-        <div className="h-full w-full bg-[#a5dce4] flex items-center justify-center">
-          <span className="material-symbols-outlined text-[#0b5d68] text-sm">person</span>
-        </div>
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={userName || 'User'} className="h-full w-full object-cover" />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] text-sm font-bold text-white">
+            {initial}
+          </span>
+        )}
       </button>
 
-      {/* Dropdown Menu */}
-      <div className={`
-        absolute right-0 mt-2 w-80 rounded-2xl shadow-2xl border border-[#e5e2de] bg-white overflow-hidden
-        transform transition-all duration-300 ease-out origin-top-right
-        ${isOpen
-          ? 'opacity-100 scale-100 translate-y-0'
-          : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
-        }
-      `}>
-        {/* User Info Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#f9f9f7] to-[#f5f5f5] border-b border-[#e5e2de]">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-[#a5dce4] flex items-center justify-center">
-              <span className="material-symbols-outlined text-[#0b5d68]">person</span>
+      {/* ── Dropdown ───────────────────────────────────────────────── */}
+      <div
+        className={`
+          absolute right-0 mt-2.5 w-56 origin-top-right overflow-hidden
+          rounded-2xl border border-gray-100 bg-white
+          shadow-[0_8px_30px_rgba(0,0,0,0.12)] backdrop-blur-sm
+          transition-all duration-200 ease-out
+          ${isOpen ? 'pointer-events-auto translate-y-0 opacity-100 scale-100' : 'pointer-events-none -translate-y-2 opacity-0 scale-95'}
+        `}
+      >
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <div className="relative overflow-hidden px-5 pb-4 pt-5">
+          {/* background gradient blobs */}
+          <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#2eb5c2]/10" />
+          <div className="pointer-events-none absolute -left-4 bottom-0 h-16 w-16 rounded-full bg-[#0b5d68]/8" />
+
+          <div className="relative flex items-center gap-3">
+            {/* Large avatar */}
+            <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl shadow-md">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={userName || 'User'} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] text-lg font-bold text-white">
+                  {initial}
+                </div>
+              )}
             </div>
-            <div>
-              <p className="font-semibold text-[#0b5d68] font-['Manrope']">
+            <div className="min-w-0">
+              <p className="truncate font-headline text-[15px] font-bold text-gray-800">
                 {userName || 'User'}
               </p>
-              <p className="text-xs text-[#717973] capitalize">
+              <span className={`mt-0.5 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${roleColor}`}>
                 {userRole || 'farmer'}
-              </p>
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Menu Items */}
-        <div className="py-2">
-          {menuItems.map((item, index) => (
-            <div key={index}>
-              {item.href ? (
-                <Link
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`
-                    flex items-center gap-4 px-6 py-3 transition-all duration-200
-                    hover:bg-[#f9f9f7] group
-                    ${item.isDanger ? 'hover:bg-red-50' : ''}
-                  `}
-                >
-                  <div className={`
-                    w-10 h-10 rounded-lg flex items-center justify-center transition-colors
-                    ${item.isDanger
-                      ? 'bg-red-100 text-red-600 group-hover:bg-red-200'
-                      : 'bg-[#f0ede9] text-[#0b5d68] group-hover:bg-[#e5e2de]'
-                    }
-                  `}>
-                    <span className="material-symbols-outlined text-lg">
-                      {item.icon}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <p className={`
-                      font-medium font-['Manrope']
-                      ${item.isDanger ? 'text-red-600' : 'text-[#0b5d68]'}
-                    `}>
-                      {item.label}
-                    </p>
-                    <p className="text-xs text-[#717973] mt-0.5">
-                      {item.description}
-                    </p>
-                  </div>
-                  <span className="material-symbols-outlined text-[#717973] text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    chevron_right
-                  </span>
-                </Link>
-              ) : (
-                <button
-                  onClick={item.action}
-                  className={`
-                    w-full flex items-center gap-4 px-6 py-3 transition-all duration-200
-                    hover:bg-red-50 group text-left
-                  `}
-                >
-                  <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center transition-colors group-hover:bg-red-200">
-                    <span className="material-symbols-outlined text-lg">
-                      {item.icon}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-red-600 font-['Manrope']">
-                      {item.label}
-                    </p>
-                    <p className="text-xs text-[#717973] mt-0.5">
-                      {item.description}
-                    </p>
-                  </div>
-                  <span className="material-symbols-outlined text-red-600 text-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                    chevron_right
-                  </span>
-                </button>
-              )}
-            </div>
+        {/* ── Nav items ──────────────────────────────────────────── */}
+        <div className="border-t border-gray-100 py-1.5">
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={() => setIsOpen(false)}
+              className="group flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-gray-50"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition-colors group-hover:bg-[#0b5d68]/10 group-hover:text-[#0b5d68]">
+                <span className="material-symbols-outlined text-[1rem]">{item.icon}</span>
+              </span>
+              <span className="flex-1 text-[13px] font-medium text-gray-700 group-hover:text-gray-900">
+                {item.label}
+              </span>
+              <span className="material-symbols-outlined translate-x-0 text-[0.9rem] text-gray-300 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100">
+                chevron_right
+              </span>
+            </Link>
           ))}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-3 bg-[#f9f9f7] border-t border-[#e5e2de]">
-          <p className="text-xs text-[#717973] text-center">
-            Lokhari Agricultural Exchange
-          </p>
+        {/* ── Logout ─────────────────────────────────────────────── */}
+        <div className="border-t border-gray-100 px-3 py-2">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-red-50"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-500 transition-colors group-hover:bg-red-100">
+              <span className="material-symbols-outlined text-[1rem]">logout</span>
+            </span>
+            <span className="flex-1 text-left text-[13px] font-medium text-red-600">
+              Sign out
+            </span>
+          </button>
         </div>
       </div>
     </div>

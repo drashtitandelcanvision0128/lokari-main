@@ -3,6 +3,7 @@ import authRoutes from './authRoutes.js';
 import adminRoutes from './adminRoutes.js';
 import listingRoutes from './listingRoutes.js';
 import contactRoutes from './contactRoutes.js';
+import profileRoutes from './profileRoutes.js';
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.get('/', (_req, res) => {
       admin: '/api/admin',
       listings: '/api/listings',
       contact: '/api/contact',
+      profile: '/api/profile',
     },
   });
 });
@@ -34,5 +36,6 @@ router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
 router.use('/listings', listingRoutes);
 router.use('/contact', contactRoutes);
+router.use('/profile', profileRoutes);
 
 export default router;

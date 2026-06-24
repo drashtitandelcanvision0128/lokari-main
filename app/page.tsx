@@ -1161,6 +1161,138 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Mobile App Section */}
+      <section className={`${sectionPad} relative overflow-hidden ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+        <div className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: 'radial-gradient(circle, #0b5d68 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
+
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16">
+
+            {/* ── Left: text + CTAs ─────────────────────────────────── */}
+            <div className="flex-1">
+              <div className={`mb-4 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-widest ${isDark ? 'border-[#2eb5c2]/30 bg-[#2eb5c2]/10 text-[#2eb5c2]' : 'border-[#0b5d68]/20 bg-[#0b5d68]/5 text-[#0b5d68]'}`}>
+                <span className="material-symbols-outlined text-[0.85rem]">smartphone</span>
+                Coming Soon
+              </div>
+              <h2 className={`font-headline text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 leading-tight ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}>
+                Lokhari in Your Pocket
+              </h2>
+              <p className={`text-sm sm:text-base leading-relaxed mb-8 max-w-lg ${isDark ? 'text-gray-300' : 'text-[#666666]'}`}>
+                Manage listings, track bids, and monitor market prices on the go.
+                Our app brings the full Lokhari marketplace experience to your smartphone.
+              </p>
+              <div className="mb-8 flex flex-wrap gap-2">
+                {[
+                  { icon: 'notifications_active', label: 'Real-time Bid Alerts' },
+                  { icon: 'bar_chart',            label: 'Live Price Trends'   },
+                  { icon: 'inventory_2',          label: 'Manage Listings'     },
+                  { icon: 'wifi_off',             label: 'Works Offline'       },
+                  { icon: 'verified_user',        label: 'Secure Payments'     },
+                  { icon: 'gps_fixed',            label: 'Live Tracking'       },
+                ].map(({ icon, label }) => (
+                  <span key={label} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${isDark ? 'bg-gray-700 text-gray-300' : 'bg-[#f9f9f7] text-[#444]'}`}>
+                    <span className={`material-symbols-outlined text-[0.9rem] ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}>{icon}</span>
+                    {label}
+                  </span>
+                ))}
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <button type="button" className={`group flex items-center gap-3 rounded-xl border-2 px-5 py-3.5 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-xl ${isDark ? 'border-white/20 bg-white/5 hover:bg-white/10 text-white' : 'border-[#0b5d68]/20 bg-[#0b5d68] hover:bg-[#0a4e58] text-white'}`}>
+                  <span className="material-symbols-outlined text-[2rem]">android</span>
+                  <div className="text-left">
+                    <p className={`text-[10px] font-medium leading-none mb-0.5 ${isDark ? 'text-white/60' : 'text-white/80'}`}>GET IT ON</p>
+                    <p className="text-[15px] font-bold leading-tight tracking-tight">Google Play</p>
+                  </div>
+                  <span className={`material-symbols-outlined ml-auto text-[1rem] opacity-40 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}>arrow_forward</span>
+                </button>
+                <button type="button" className={`group flex items-center gap-3 rounded-xl border-2 px-5 py-3.5 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-xl ${isDark ? 'border-white/20 bg-white/5 hover:bg-white/10 text-white' : 'border-[#0b5d68] bg-white hover:bg-[#f0fafb] text-[#0b5d68]'}`}>
+                  <span className="material-symbols-outlined text-[2rem]">apple</span>
+                  <div className="text-left">
+                    <p className={`text-[10px] font-medium leading-none mb-0.5 ${isDark ? 'text-white/60' : 'text-[#0b5d68]/60'}`}>DOWNLOAD ON THE</p>
+                    <p className="text-[15px] font-bold leading-tight tracking-tight">App Store</p>
+                  </div>
+                  <span className={`material-symbols-outlined ml-auto text-[1rem] opacity-40 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}>arrow_forward</span>
+                </button>
+              </div>
+              <div className={`mt-6 flex items-center gap-4 text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                <div className="flex items-center gap-1">
+                  {[1,2,3,4,5].map(i => (
+                    <span key={i} className="material-symbols-outlined text-[0.9rem] text-amber-400" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  ))}
+                  <span className="ml-1 font-semibold">4.8</span>
+                </div>
+                <span>·</span><span>10,000+ downloads</span><span>·</span><span>Free</span>
+              </div>
+            </div>
+
+            {/* ── Right: phone mockup ───────────────────────────────── */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="relative w-56 sm:w-64">
+                <div className={`absolute inset-0 scale-110 rounded-[3rem] blur-3xl ${isDark ? 'bg-[#2eb5c2]/20' : 'bg-[#0b5d68]/10'}`} />
+                <div className={`relative mx-auto w-52 rounded-[2.5rem] border-4 shadow-2xl ${isDark ? 'border-gray-600 bg-gray-900' : 'border-[#0b5d68]/30 bg-[#0b5d68]'}`}>
+                  <div className={`mx-auto mt-3 h-4 w-20 rounded-full ${isDark ? 'bg-gray-700' : 'bg-[#0a4e58]'}`} />
+                  <div className={`mx-2 my-2 overflow-hidden rounded-[1.75rem] ${isDark ? 'bg-gray-800' : 'bg-[#f0fafb]'}`}>
+                    <div className={`flex items-center justify-between px-4 py-2 text-[9px] font-semibold ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}>
+                      <span>9:41</span>
+                      <div className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[0.7rem]">signal_cellular_alt</span>
+                        <span className="material-symbols-outlined text-[0.7rem]">wifi</span>
+                        <span className="material-symbols-outlined text-[0.7rem]">battery_full</span>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] px-4 py-3 flex items-center gap-2">
+                      <div className="h-5 w-5 rounded-md bg-white/20 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[0.7rem] text-white">agriculture</span>
+                      </div>
+                      <span className="text-[11px] font-bold text-white">Lokhari</span>
+                    </div>
+                    <div className="space-y-2 p-3">
+                      {[
+                        { label: 'Wheat — Grade A', price: '₹2,450/qtl', up: true  },
+                        { label: 'Mustard',         price: '₹5,800/qtl', up: false },
+                        { label: 'Soybean',         price: '₹4,200/qtl', up: true  },
+                      ].map(({ label, price, up }) => (
+                        <div key={label} className={`flex items-center justify-between rounded-xl p-2.5 ${isDark ? 'bg-gray-700' : 'bg-white'} shadow-sm`}>
+                          <div>
+                            <p className={`text-[9px] font-semibold ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}>{label}</p>
+                            <p className={`text-[8px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{price}</p>
+                          </div>
+                          <span className={`material-symbols-outlined text-[0.85rem] ${up ? 'text-emerald-500' : 'text-red-400'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                            {up ? 'trending_up' : 'trending_down'}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="rounded-xl bg-gradient-to-r from-[#e89151] to-[#d55b39] p-2.5 text-center">
+                        <p className="text-[9px] font-bold text-white">Place a Bid →</p>
+                      </div>
+                    </div>
+                    <div className={`flex justify-around border-t px-2 py-2 ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
+                      {['home', 'inventory_2', 'gavel', 'person'].map((icon) => (
+                        <span key={icon} className={`material-symbols-outlined text-[1.1rem] ${isDark ? 'text-gray-400' : 'text-[#0b5d68]/50'}`}>{icon}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={`mx-auto mb-3 mt-1 h-1 w-16 rounded-full ${isDark ? 'bg-gray-600' : 'bg-[#0a4e58]/40'}`} />
+                </div>
+                <div className={`absolute -right-4 top-16 rounded-2xl px-3 py-2 shadow-xl ${isDark ? 'bg-gray-700 border border-gray-600' : 'bg-white border border-gray-100'}`}>
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100">
+                      <span className="material-symbols-outlined text-[0.85rem] text-emerald-600" style={{ fontVariationSettings: "'FILL' 1" }}>notifications_active</span>
+                    </span>
+                    <div>
+                      <p className={`text-[9px] font-bold leading-tight ${isDark ? 'text-white' : 'text-gray-800'}`}>New Bid!</p>
+                      <p className={`text-[8px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>₹2,480/qtl</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

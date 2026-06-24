@@ -23,6 +23,19 @@ export function persistUserSession(user: User, token: string): UserProfile {
   return profile
 }
 
+/** Patch the cached user in localStorage without replacing the whole object */
+export function patchLocalUser(patch: Partial<User>): void {
+  if (typeof window === 'undefined') return
+  const raw = localStorage.getItem(USER_KEY)
+  if (!raw) return
+  try {
+    const user: User = JSON.parse(raw)
+    localStorage.setItem(USER_KEY, JSON.stringify({ ...user, ...patch }))
+  } catch {
+    // ignore parse errors
+  }
+}
+
 export function clearUserSession(): void {
   setAuthToken(null)
   localStorage.removeItem(USER_KEY)

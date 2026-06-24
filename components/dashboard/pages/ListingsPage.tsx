@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import DashboardLoader from '@/components/ui/DashboardLoader';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
@@ -197,11 +198,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   }, [filter, localSearch, listingTypeFilter]);
 
   if (loading) {
-    return (
-      <div className="p-6">
-        <p>Loading listings...</p>
-      </div>
-    );
+    return <DashboardLoader />;
   }
 
   // const filteredListings = listings.filter((listing) => {

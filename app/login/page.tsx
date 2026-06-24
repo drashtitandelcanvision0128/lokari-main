@@ -17,8 +17,14 @@ import {
   resendPasswordResetOtp,
 } from '@/lib/auth/password';
 
-const inputClass =
-  'w-full rounded-[0.3125rem] border border-[#2eb5c2] bg-white py-3 pl-12 pr-4 text-[0.875rem] text-[#0b5d68] placeholder:text-gray-500 transition-all focus:border-[#2eb5c2] focus:outline-none focus:ring-2 focus:ring-[#2eb5c2]/30';
+const inputClass = (err?: boolean) =>
+  `w-full rounded-[0.3125rem] border bg-white py-3 pl-12 pr-4 text-[0.875rem] text-[#0b5d68] placeholder:text-gray-500 transition-all focus:outline-none focus:ring-2 ${
+    err
+      ? 'border-red-400 focus:border-red-400 focus:ring-red-400/20'
+      : 'border-[#2eb5c2] focus:border-[#2eb5c2] focus:ring-[#2eb5c2]/30'
+  }`;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type AuthView = 'login' | 'forgot-email' | 'forgot-reset' | 'forgot-success';
 
@@ -48,6 +54,7 @@ function LoginPageContent() {
   const dispatch = useAppDispatch();
   const guestStatus = useGuestGuard();
 
+  const [mounted, setMounted] = useState(false);
   const [view, setView] = useState<AuthView>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,6 +65,9 @@ function LoginPageContent() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
+
+  // Ensure server & first client render are identical, then show real content
+  useEffect(() => { setMounted(true); }, []);
 
   const resetForgotForm = () => {
     setOtp('');
@@ -108,9 +118,37 @@ function LoginPageContent() {
     navigateAuth('forgot-email', { email });
   };
 
+  const validateLogin = (): boolean => {
+    const errs: Record<string, string> = {};
+    const trimEmail = email.trim();
+    if (!trimEmail) {
+      errs.email = 'Email is required.';
+    } else if (!EMAIL_RE.test(trimEmail)) {
+      errs.email = 'Enter a valid email address.';
+    }
+    if (!password) {
+      errs.password = 'Password is required.';
+    }
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const validateForgotEmail = (): boolean => {
+    const errs: Record<string, string> = {};
+    const trimEmail = email.trim();
+    if (!trimEmail) {
+      errs.email = 'Email is required.';
+    } else if (!EMAIL_RE.test(trimEmail)) {
+      errs.email = 'Enter a valid email address.';
+    }
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!validateLogin()) return;
 
     setIsLoading(true);
 
@@ -144,6 +182,7 @@ function LoginPageContent() {
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (!validateForgotEmail()) return;
 
     setIsLoading(true);
 
@@ -177,13 +216,21 @@ function LoginPageContent() {
     const errors: Record<string, string> = {};
 
     if (otp.trim().length !== 6) {
-      errors.otp = 'Enter the 6-digit code from your email';
+      errors.otp = 'Enter the 6-digit code sent to your email.';
     }
-    if (newPassword.length < 8) {
-      errors.newPassword = 'Password must be at least 8 characters';
+    if (!newPassword) {
+      errors.newPassword = 'New password is required.';
+    } else if (newPassword.length < 8) {
+      errors.newPassword = 'Password must be at least 8 characters.';
+    } else if (!/[A-Z]/.test(newPassword)) {
+      errors.newPassword = 'Include at least one uppercase letter.';
+    } else if (!/[0-9]/.test(newPassword)) {
+      errors.newPassword = 'Include at least one number.';
     }
-    if (newPassword !== confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+    if (!confirmPassword) {
+      errors.confirmPassword = 'Please confirm your new password.';
+    } else if (newPassword !== confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match.';
     }
 
     setFieldErrors(errors);
@@ -210,7 +257,8 @@ function LoginPageContent() {
     }
   };
 
-  if (guestStatus !== 'allowed') return <GuestPageShell />;
+  // Before client mounts, always show the shell so server & client HTML match
+  if (!mounted || guestStatus !== 'allowed') return <GuestPageShell />;
 
   const headerTitle =
     view === 'login'
@@ -294,7 +342,7 @@ function LoginPageContent() {
               </Button>
             </div>
           ) : showLogin ? (
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} noValidate className="space-y-5">
               <div>
                 <label
                   htmlFor="email"
@@ -304,19 +352,24 @@ function LoginPageContent() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                    <span className="material-symbols-outlined text-lg text-[#2eb5c2]">email</span>
+                    <span className={`material-symbols-outlined text-lg ${fieldErrors.email ? 'text-red-400' : 'text-[#2eb5c2]'}`}>email</span>
                   </div>
                   <input
                     id="email"
                     type="text"
                     autoComplete="username"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={inputClass}
+                    onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors(p => ({ ...p, email: '' })); }}
+                    className={inputClass(!!fieldErrors.email)}
                     placeholder="Enter your email"
-                    required
                   />
                 </div>
+                {fieldErrors.email && (
+                  <p className="mt-1 flex items-center gap-1 text-xs text-red-500">
+                    <span className="material-symbols-outlined text-[0.85rem]">error</span>
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -328,19 +381,24 @@ function LoginPageContent() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                    <span className="material-symbols-outlined text-lg text-[#2eb5c2]">lock</span>
+                    <span className={`material-symbols-outlined text-lg ${fieldErrors.password ? 'text-red-400' : 'text-[#2eb5c2]'}`}>lock</span>
                   </div>
                   <input
                     id="password"
                     type="password"
                     autoComplete="current-password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={inputClass}
+                    onChange={(e) => { setPassword(e.target.value); if (fieldErrors.password) setFieldErrors(p => ({ ...p, password: '' })); }}
+                    className={inputClass(!!fieldErrors.password)}
                     placeholder="Enter your password"
-                    required
                   />
                 </div>
+                {fieldErrors.password && (
+                  <p className="mt-1 flex items-center gap-1 text-xs text-red-500">
+                    <span className="material-symbols-outlined text-[0.85rem]">error</span>
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
 
               {error && (
@@ -378,7 +436,7 @@ function LoginPageContent() {
               </div>
             </form>
           ) : view === 'forgot-email' ? (
-            <form onSubmit={handleSendCode} className="space-y-5">
+            <form onSubmit={handleSendCode} noValidate className="space-y-5">
               <div>
                 <label
                   htmlFor="reset-email"
@@ -388,19 +446,24 @@ function LoginPageContent() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                    <span className="material-symbols-outlined text-lg text-[#2eb5c2]">email</span>
+                    <span className={`material-symbols-outlined text-lg ${fieldErrors.email ? 'text-red-400' : 'text-[#2eb5c2]'}`}>email</span>
                   </div>
                   <input
                     id="reset-email"
-                    type="email"
+                    type="text"
                     autoComplete="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={inputClass}
-                    placeholder="Enter your email"
-                    required
+                    onChange={(e) => { setEmail(e.target.value); if (fieldErrors.email) setFieldErrors(p => ({ ...p, email: '' })); }}
+                    className={inputClass(!!fieldErrors.email)}
+                    placeholder="Enter your registered email"
                   />
                 </div>
+                {fieldErrors.email && (
+                  <p className="mt-1 flex items-center gap-1 text-xs text-red-500">
+                    <span className="material-symbols-outlined text-[0.85rem]">error</span>
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               {error && (
@@ -431,7 +494,7 @@ function LoginPageContent() {
               </div>
             </form>
           ) : (
-            <form onSubmit={handleResetPassword} className="space-y-5">
+            <form onSubmit={handleResetPassword} noValidate className="space-y-5">
               <div>
                 <label className="mb-2 block text-[0.875rem] font-medium text-[#0b5d68] text-center">
                   Verification Code
@@ -448,27 +511,26 @@ function LoginPageContent() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                    <span className="material-symbols-outlined text-lg text-[#2eb5c2]">lock</span>
+                    <span className={`material-symbols-outlined text-lg ${fieldErrors.newPassword ? 'text-red-400' : 'text-[#2eb5c2]'}`}>lock</span>
                   </div>
                   <input
                     id="newPassword"
                     type="password"
                     autoComplete="new-password"
-                    required
-                    minLength={8}
                     value={newPassword}
                     onChange={(e) => {
                       setNewPassword(e.target.value);
-                      if (fieldErrors.newPassword) {
-                        setFieldErrors((prev) => ({ ...prev, newPassword: '' }));
-                      }
+                      if (fieldErrors.newPassword) setFieldErrors((prev) => ({ ...prev, newPassword: '' }));
                     }}
-                    className={inputClass}
+                    className={inputClass(!!fieldErrors.newPassword)}
                     placeholder="At least 8 characters"
                   />
                 </div>
                 {fieldErrors.newPassword && (
-                  <p className="mt-1 text-xs text-red-600">{fieldErrors.newPassword}</p>
+                  <p className="mt-1 flex items-center gap-1 text-xs text-red-500">
+                    <span className="material-symbols-outlined text-[0.85rem]">error</span>
+                    {fieldErrors.newPassword}
+                  </p>
                 )}
               </div>
 
@@ -481,27 +543,26 @@ function LoginPageContent() {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                    <span className="material-symbols-outlined text-lg text-[#2eb5c2]">lock</span>
+                    <span className={`material-symbols-outlined text-lg ${fieldErrors.confirmPassword ? 'text-red-400' : 'text-[#2eb5c2]'}`}>lock</span>
                   </div>
                   <input
                     id="confirmPassword"
                     type="password"
                     autoComplete="new-password"
-                    required
-                    minLength={8}
                     value={confirmPassword}
                     onChange={(e) => {
                       setConfirmPassword(e.target.value);
-                      if (fieldErrors.confirmPassword) {
-                        setFieldErrors((prev) => ({ ...prev, confirmPassword: '' }));
-                      }
+                      if (fieldErrors.confirmPassword) setFieldErrors((prev) => ({ ...prev, confirmPassword: '' }));
                     }}
-                    className={inputClass}
+                    className={inputClass(!!fieldErrors.confirmPassword)}
                     placeholder="Re-enter new password"
                   />
                 </div>
                 {fieldErrors.confirmPassword && (
-                  <p className="mt-1 text-xs text-red-600">{fieldErrors.confirmPassword}</p>
+                  <p className="mt-1 flex items-center gap-1 text-xs text-red-500">
+                    <span className="material-symbols-outlined text-[0.85rem]">error</span>
+                    {fieldErrors.confirmPassword}
+                  </p>
                 )}
               </div>
 

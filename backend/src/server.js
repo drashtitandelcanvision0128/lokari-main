@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { connectDB, disconnectDB } from './config/db.js';
 import { connectRedis, disconnectRedis } from './config/redis.js';
 import { runMigrations } from './config/migrate.js';
@@ -12,6 +14,8 @@ import authRoutes from './routes/authRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import listingRoutes from './routes/listingRoutes.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const app = express();
 
 app.use(requestLogger);
@@ -19,6 +23,10 @@ app.use(createCorsMiddleware());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files (avatars, etc.)
+// backend/src/ → ../ → backend/uploads
+app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
 
 app.get('/health', (_req, res) => {
   res.status(200).json({

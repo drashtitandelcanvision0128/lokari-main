@@ -9,6 +9,7 @@ import ListingCard from '@/components/listings/ListingCard'
 import Button from '@/components/common/Button'
 import Input from '@/components/common/Input'
 import SidebarFilters from '@/components/listings/SidebarFilters'
+import DashboardLoader from '@/components/ui/DashboardLoader'
 
 interface FilterState {
   categories: string[]
@@ -233,7 +234,7 @@ function ListingsPageContent() {
   }
 
   if (loadingListings) {
-    return <div className="p-6">Loading marketplace...</div>
+    return <DashboardLoader />
   }
 
   return (
@@ -380,7 +381,7 @@ function ListingsPageContent() {
 
 export default function ListingsPage() {
   return (
-    <Suspense fallback={<div>Loading listings...</div>}>
+    <Suspense fallback={<DashboardLoader />}>
       <ListingsPageContent />
     </Suspense>
   )

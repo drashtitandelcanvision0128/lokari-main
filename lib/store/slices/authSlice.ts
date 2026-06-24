@@ -45,3 +45,6 @@ export const selectIsAuthenticated = (state: { auth: AuthState }) => Boolean(sta
 export const selectAuthHydrated = (state: { auth: AuthState }) => state.auth.isHydrated
 export const selectUserDisplayName = (state: { auth: AuthState }) =>
   state.auth.user?.fullName ?? ''
+
+export const selectAvatarUrl = (state: { auth: AuthState }) =>
+  state.auth.user?.avatar ?? null
