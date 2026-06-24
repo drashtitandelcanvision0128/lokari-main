@@ -108,7 +108,7 @@ export const getAllListings = async (req, res) => {
         const sortMap = {
             product: 'title',
             price: 'price',
-            listingLocation: 'listing_location'
+            // listingLocation: 'listing_location'
         };
 
         const dbSortField = sortMap[sortField] || 'created_at';
@@ -241,7 +241,16 @@ export const toggleBlockListing = async (req, res) => {
 
 export const updateListing = async (req, res) => {
     const { id } = req.params;
-    const { title, description, price, listing_location, quantity, status } = req.body;
+    const {
+        title,
+        description,
+        price,
+        address,
+        quantity,
+        status
+    } = req.body;
+
+    console.log("ADDRESS RECEIVED:", address);
 
     try {
         const listing = await prisma.marketplace.findUnique({
@@ -277,13 +286,17 @@ export const updateListing = async (req, res) => {
             data: updateData
         });
 
-        if (listing_location !== undefined && listing.address) {
+        if (address && listing.address) {
             await prisma.marketplaceAddress.update({
                 where: {
                     listing_id: id
                 },
                 data: {
-                    city: listing_location
+                    street: address.street,
+                    city: address.city,
+                    state: address.state,
+                    pincode: address.pincode,
+                    country: address.country
                 }
             });
         }

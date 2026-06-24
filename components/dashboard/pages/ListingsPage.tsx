@@ -57,7 +57,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const [sortField, setSortField] = useState<'product' | 'price' | 'listingLocation' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const handleSort = (field: 'product' | 'price' | 'listingLocation') => {
+  const handleSort = (field: 'product' | 'price') => {
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
@@ -120,6 +120,11 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
             //   item.address?.city
             //     ? `${item.address.city}`
             //     : item.listing_location || '-',
+
+            // listingLocation: item.address?.city ?? '-',
+
+            address: item.address || null,
+
             listingLocation: item.address?.city ?? '-',
             image: '',
             createdAt: item.created_at,
@@ -360,14 +365,15 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                     </button>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Price Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
                     <button onClick={() => handleSort('listingLocation')} className="flex items-center gap-1 hover:text-primary">
                       Location
                       <span className="material-symbols-outlined text-sm">
                         {sortField === 'listingLocation' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
                       </span>
                     </button>
-                  </th>
+                  </th> */}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Location</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Quantity</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Stats</th>

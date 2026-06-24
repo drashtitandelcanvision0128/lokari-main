@@ -125,33 +125,76 @@ export default function EditUserListingModal({
 }: EditUserListingModalProps) {
 
     const [formData, setFormData] = useState({
-        product: '',
-        listingLocation: '',
+        title: '',
         price: '',
         priceType: '',
         listingType: '',
         quantity: '',
         description: '',
     })
+    const [address, setAddress] = useState({
+        street: '',
+        city: '',
+        state: '',
+        pincode: '',
+        country: 'India',
+    })
+
+    const [tempAddress, setTempAddress] = useState({
+        street: '',
+        city: '',
+        state: '',
+        pincode: '',
+        country: 'India',
+    })
     const [saving, setSaving] = useState(false)
+
+    const [addressError, setAddressError] = useState<string | null>(null)
+    const [addressSaved, setAddressSaved] = useState(false)
+    const [addressErrors, setAddressErrors] = useState<any>({})
+
+
     const [isEditingDescription, setIsEditingDescription] = useState(false)
     const [isEditingInfo, setIsEditingInfo] = useState(false)
-
+    const [addressModalOpen, setAddressModalOpen] = useState(false)
     useEffect(() => {
-        if (listing) {
-            setFormData({
-                product: listing.product || '',
-                listingLocation: listing.listingLocation || '',
-                price: listing.price || '',
-                priceType: listing.priceType || '',
-                listingType: listing.listingType || '',
-                quantity: listing.quantity || '',
-                description: listing.description || '',
-            })
+        if (!listing) return;
+
+        setFormData({
+            title: listing.product || '',
+            price: listing.price || '',
+            priceType: listing.priceType || '',
+            listingType: listing.listingType || '',
+            quantity: listing.quantity || '',
+            description: listing.description || '',
+        });
+
+        const loadedAddress = {
+            street: listing.address?.street || '',
+            city: listing.address?.city || '',
+            state: listing.address?.state || '',
+            pincode: listing.address?.pincode || '',
+            country: listing.address?.country || 'India',
         }
-    }, [listing])
+
+        setAddress(loadedAddress)
+        setTempAddress(loadedAddress)
+
+    }, [listing]);
 
     const handleSave = async () => {
+
+        // console.log("SAVE CLICKED")
+        // console.log("CURRENT LISTING:", listing)
+        // console.log("CURRENT FORM:", formData)
+        // console.log("SENDING PAYLOAD:", {
+        //     title: formData.title,
+        //     description: formData.description,
+        //     price: formData.price.replace('₹', ''),
+        //     quantity: formData.quantity.replace(/[^0-9.]/g, ''),
+        //     address
+        // })
+
         try {
             setSaving(true)
             console.log("EDIT LISTING:", listing)
@@ -164,16 +207,24 @@ export default function EditUserListingModal({
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        title: formData.product,
+                        title: formData.title,
                         description: formData.description,
                         price: formData.price.replace('₹', ''),
-                        listing_location: formData.listingLocation,
-                        quantity: formData.quantity.replace(' kg', ''),
+                        quantity: formData.quantity.replace(/[^0-9.]/g, ''),
+
+                        address: {
+                            street: address.street,
+                            city: address.city,
+                            state: address.state,
+                            pincode: address.pincode,
+                            country: address.country
+                        }
                     }),
                 }
             )
 
             const result = await response.json()
+            console.log("UPDATE RESPONSE:", result)
 
             if (result.success) {
                 await onSuccess()
@@ -184,6 +235,57 @@ export default function EditUserListingModal({
         } finally {
             setSaving(false)
         }
+    }
+
+    const validateAddress = () => {
+        const errs: Record<string, string> = {}
+        const street = (tempAddress.street || '').trim()
+        const city = (tempAddress.city || '').trim()
+        const state = (tempAddress.state || '').trim()
+        const pincode = (tempAddress.pincode || '').trim()
+
+        if (!street) errs.street = 'Street address is required.'
+        else if (street.length < 5) errs.street = 'Enter a more complete street address.'
+        else if (street.length > 200) errs.street = 'Street address is too long.'
+
+        if (!city) errs.city = 'City is required.'
+        else if (city.length < 2) errs.city = 'Enter a valid city name.'
+
+        if (!state) errs.state = 'Please select a state.'
+
+        if (!pincode) errs.pincode = 'Pincode is required.'
+        else if (!/^\d{6}$/.test(pincode)) errs.pincode = 'Pincode must be exactly 6 digits.'
+
+        return errs
+    }
+
+    const closeAddressModal = () => {
+        setTempAddress(address)
+        setAddressErrors({})
+        setAddressError(null)
+        setAddressModalOpen(false)
+    }
+
+    const handleSaveAddress = () => {
+        const errs = validateAddress()
+
+        if (Object.keys(errs).length) {
+            setAddressErrors(errs)
+            return
+        }
+
+        setAddressErrors({})
+        setAddressError(null)
+
+        // Commit changes
+        setAddress(tempAddress)
+
+        setAddressSaved(true)
+
+        setTimeout(() => {
+            setAddressSaved(false)
+            setAddressModalOpen(false)
+        }, 1200)
     }
 
     if (!isOpen) return null
@@ -258,7 +360,7 @@ export default function EditUserListingModal({
                     <div className="grid lg:grid-cols-3 gap-3 items-start">
 
                         {/* Image card */}
-                        <SectionCard title="Product Image" showHeader={false} noPadding>
+                        <SectionCard title="title Image" showHeader={false} noPadding>
                             <div className="relative h-[295px] bg-gradient-to-br from-[#e8f4f5] to-[#d0ecee] overflow-hidden rounded">
                                 <div className="absolute inset-0 opacity-10"
                                     style={{
@@ -268,7 +370,7 @@ export default function EditUserListingModal({
                                 />
                                 <img
                                     src="https://images.pexels.com/photos/1414651/pexels-photo-1414651.jpeg"
-                                    alt={listing?.product}
+                                    alt={listing?.title}
                                     className="w-full h-full object-cover"
                                 />
                                 {/* Gradient overlay at bottom */}
@@ -299,32 +401,47 @@ export default function EditUserListingModal({
                                     <Field label="Title" icon="title">
                                         {isEditingInfo ? (
                                             <PremiumInput
-                                                value={formData.product}
+                                                value={formData.title}
                                                 placeholder="e.g. Premium Organic Wheat"
                                                 onChange={(e) =>
-                                                    setFormData({ ...formData, product: e.target.value })
+                                                    setFormData({ ...formData, title: e.target.value })
                                                 }
                                             />
                                         ) : (
-                                            <ReadOnlyField value={formData.product} />
+                                            <ReadOnlyField value={formData.title} />
                                         )}
                                     </Field>
 
                                     <Field label="Location" icon="location_on">
-                                        {isEditingInfo ? (
-                                            <PremiumInput
-                                                value={formData.listingLocation}
-                                                placeholder="e.g. Pune, Maharashtra"
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        listingLocation: e.target.value,
-                                                    })
+                                        <div className="relative">
+                                            <ReadOnlyField
+                                                value={
+                                                    address.city && address.state
+                                                        ? `${address.city}, ${address.state}`
+                                                        : 'Not added'
                                                 }
                                             />
-                                        ) : (
-                                            <ReadOnlyField value={formData.listingLocation} />
-                                        )}
+
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setTempAddress(address)
+                                                    setAddressErrors({})
+                                                    setAddressError(null)
+                                                    setAddressModalOpen(true)
+                                                }}
+                                                className="
+        absolute right-2 top-2
+        text-[#888]
+        hover:text-[#0b5d68]
+    "
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">
+                                                    edit_location
+                                                </span>
+                                            </button>
+                                        </div>
+
                                     </Field>
 
                                     <Field label="Quantity" icon="scale">
@@ -495,6 +612,281 @@ export default function EditUserListingModal({
                     </div>
                 </div>
             </div>
+
+            {addressModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+                    <div
+                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={closeAddressModal}
+                    />
+
+
+                    <div className="
+        relative w-full max-w-sm
+        overflow-hidden rounded-2xl
+        bg-white shadow-2xl
+    ">
+
+
+                        {/* Header */}
+                        <div className="
+          flex items-center justify-between
+          border-b border-gray-100
+          px-5 py-4
+        ">
+
+                            <div className="flex items-center gap-2">
+
+                                <span className="
+              material-symbols-outlined
+              text-[#2eb5c2]
+            ">
+                                    home_pin
+                                </span>
+
+
+                                <h3 className="
+              font-bold
+              text-[#0b5d68]
+            ">
+                                    Update Address
+                                </h3>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                onClick={closeAddressModal}
+                                className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                            >
+                                <span className="material-symbols-outlined text-[1rem]">
+                                    close
+                                </span>
+                            </button>
+
+                        </div>
+
+
+                        {/* Body */}
+                        <div className="space-y-4 p-5">
+
+
+                            <AddrField
+                                label="Street Address"
+                                required
+                                error={addressErrors.street}
+                            >
+                                <input
+                                    type="text"
+                                    value={tempAddress.street}
+                                    placeholder="House no., street name, area"
+                                    onChange={(e) =>
+                                        setTempAddress({
+                                            ...tempAddress,
+                                            street: e.target.value
+                                        })
+                                    }
+                                    className={addrFieldCls(!!addressErrors.street)}
+                                />
+                            </AddrField>
+
+
+
+                            <div className="grid grid-cols-2 gap-3">
+
+                                <AddrField
+                                    label="City / Area"
+                                    required
+                                    error={addressErrors.city}
+                                >
+                                    <input
+                                        type="text"
+                                        value={tempAddress.city}
+                                        placeholder="City"
+                                        onChange={(e) =>
+                                            setTempAddress({
+                                                ...tempAddress,
+                                                city: e.target.value
+                                            })
+                                        }
+                                        className={addrFieldCls(!!addressErrors.city)}
+                                    />
+                                </AddrField>
+
+
+
+                                <AddrField
+                                    label="State"
+                                    required
+                                    error={addressErrors.state}
+                                >
+                                    <select
+                                        value={tempAddress.state}
+                                        onChange={(e) =>
+                                            setTempAddress({
+                                                ...tempAddress,
+                                                state: e.target.value
+                                            })
+                                        }
+                                        className={`${addrFieldCls(
+                                            !!addressErrors.state
+                                        )} appearance-none`}
+                                    >
+                                        <option value="">Select</option>
+
+                                        {INDIAN_STATES.map((state) => (
+                                            <option key={state} value={state}>
+                                                {state}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </AddrField>
+
+
+                            </div>
+
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <AddrField
+                                    label="Pincode"
+                                    required
+                                    error={addressErrors.pincode}
+                                >
+                                    <input
+                                        type="text"
+                                        value={tempAddress.pincode}
+                                        placeholder="6-digit"
+                                        maxLength={6}
+                                        onChange={(e) =>
+                                            setTempAddress({
+                                                ...tempAddress,
+                                                pincode: e.target.value.replace(/\D/g, '')
+                                            })
+                                        }
+                                        className={addrFieldCls(!!addressErrors.pincode)}
+                                    />
+                                </AddrField>
+
+                                <AddrField label="Country">
+                                    <input
+                                        type="text"
+                                        value="India"
+                                        readOnly
+                                        className="
+        w-full cursor-not-allowed rounded
+        border border-gray-100
+        bg-gray-50
+        px-3 py-2
+        text-sm text-gray-400
+      "
+                                    />
+                                </AddrField>
+                            </div>
+
+
+                            {addressError && (
+                                <p className="rounded bg-red-50 px-3 py-2 text-xs text-red-600">
+                                    {addressError}
+                                </p>
+                            )}
+
+                            {addressSaved && (
+                                <p className="flex items-center gap-1.5 rounded bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                                    <span className="material-symbols-outlined text-[0.9rem]">
+                                        check_circle
+                                    </span>
+                                    Address saved!
+                                </p>
+                            )}
+                        </div>
+
+
+                        {/* Footer */}
+                        <div className="
+          flex justify-end gap-2
+          border-t border-gray-100
+          px-5 py-3
+        ">
+
+
+                            <button
+                                onClick={closeAddressModal}
+                                className="
+rounded border border-gray-200
+px-4 py-2 text-xs font-medium
+text-gray-600
+hover:bg-gray-50
+"
+                            >
+                                Cancel
+                            </button>
+
+
+
+                            <button
+                                onClick={handleSaveAddress}
+                                className="
+    inline-flex items-center gap-1.5
+    rounded
+    bg-gradient-to-r
+    from-[#0b5d68]
+    to-[#2eb5c2]
+    px-4 py-2
+    text-xs
+    font-semibold
+    text-white
+  "
+                            >
+                                <span className="material-symbols-outlined text-[0.9rem]">
+                                    save
+                                </span>
+                                Save Address
+                            </button>
+
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+            )}
+        </div>
+    )
+}
+
+
+
+const addrFieldCls = (err?: boolean) =>
+    `w-full rounded border px-3 py-2 text-sm text-gray-700 transition-all focus:outline-none focus:ring-2 ${err
+        ? 'border-red-400 hover:border-red-400 focus:border-red-400 focus:ring-red-400/20'
+        : 'border-gray-200 hover:border-gray-300 focus:border-[#2eb5c2] focus:ring-[#2eb5c2]/30'
+    }`
+
+const INDIAN_STATES = [
+    'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar',
+    'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Goa',
+    'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka',
+    'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya',
+    'Mizoram', 'Nagaland', 'Odisha', 'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
+    'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+]
+
+function AddrField({ label, required, error, children }: {
+    label: string
+    required?: boolean
+    error?: string
+    children: React.ReactNode
+}) {
+    return (
+        <div>
+            <label className="mb-1 block text-[11px] font-semibold text-gray-500">
+                {label}{required && <span className="ml-0.5 text-red-500">*</span>}
+            </label>
+            {children}
+            {error && <p className="mt-1 text-[11px] text-red-500">{error}</p>}
         </div>
     )
 }
