@@ -28,3 +28,6 @@ prisma/generated/
 # coverage
 coverage/
 /src/generated/prisma
+
+# uploads
+uploads/
