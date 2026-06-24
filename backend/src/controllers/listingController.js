@@ -76,7 +76,8 @@ export const getAllListings = async (req, res) => {
             search = '',
             status = 'all',
             sortField = 'created_at',
-            sortDirection = 'desc'
+            sortDirection = 'desc',
+            marketplace = 'false'
         } = req.query;
 
 
@@ -88,6 +89,13 @@ export const getAllListings = async (req, res) => {
             is_deleted: false,
         };
 
+        if (marketplace === 'true') {
+            where.status = 'ACTIVE';
+            where.is_blocked = false;
+        } else if (cleanStatus !== 'all') {
+            where.status = cleanStatus;
+        }
+
         if (cleanSearch) {
             where.title = {
                 contains: cleanSearch,
@@ -96,9 +104,7 @@ export const getAllListings = async (req, res) => {
         }
 
 
-        if (cleanStatus !== 'all') {
-            where.status = cleanStatus;
-        }
+
         const sortMap = {
             product: 'title',
             price: 'price',
