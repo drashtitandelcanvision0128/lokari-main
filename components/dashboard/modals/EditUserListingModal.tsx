@@ -1,9 +1,6 @@
 import { Icon } from '@/components/ui/Icon'
-import { Button } from '@/components/ui/Button'
-import Input from '@/components/common/Input'
 import { useEffect, useState } from 'react'
 import { apiUrl, authHeaders } from '@/lib/api';
-
 
 interface EditUserListingModalProps {
     isOpen: boolean
@@ -12,38 +9,99 @@ interface EditUserListingModalProps {
     onSuccess: () => Promise<void>
 }
 
+// ── Field wrapper ──────────────────────────────────────────────────────────────
+const Field = ({
+    label,
+    icon,
+    children,
+    readOnly = false,
+}: {
+    label: string
+    icon?: string
+    children: React.ReactNode
+    readOnly?: boolean
+}) => (
+    <div className="flex flex-col gap-1.5">
+        <label className="flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/70">
+            {icon && (
+                <span className="material-symbols-outlined text-[14px] text-[#2eb5c2]">{icon}</span>
+            )}
+            {label}
+            {readOnly && (
+                <span className="ml-auto text-[0.65rem] font-medium text-[#999] normal-case tracking-normal">
+                    read-only
+                </span>
+            )}
+        </label>
+        {children}
+    </div>
+)
+
+// ── Editable input ─────────────────────────────────────────────────────────────
+const PremiumInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+    <input
+        {...props}
+        className={`
+            w-full px-3.5 py-2.5 rounded-xl text-sm text-[#1a1a1a]
+            bg-white border border-[#e2e8ea]
+            placeholder:text-[#bbb]
+            transition-all duration-200
+            focus:outline-none focus:ring-2 focus:ring-[#2eb5c2]/30 focus:border-[#2eb5c2]
+            hover:border-[#2eb5c2]/50
+            shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]
+            ${props.className ?? ''}
+        `}
+    />
+)
+
+// ── Read-only display ──────────────────────────────────────────────────────────
+const ReadOnlyField = ({ value }: { value: string }) => (
+    <div className="
+        w-full px-3.5 py-2.5 rounded-xl text-sm text-[#666]
+        bg-[#f5f7f8] border border-[#e8ecee]
+        select-none cursor-default
+    ">
+        {value || <span className="text-[#bbb]">—</span>}
+    </div>
+)
+
+// ── Section card ───────────────────────────────────────────────────────────────
 const SectionCard = ({
     title,
+    icon,
     children,
     showHeader = true,
     noPadding = false,
 }: {
     title: string
+    icon?: string
     children: React.ReactNode
     showHeader?: boolean
     noPadding?: boolean
 }) => (
-    <div className="bg-white rounded-3xl border border-[#eef2f4] overflow-hidden">
+    <div className="
+        bg-white rounded-2xl
+        border border-[#e8ecee]
+        shadow-[0_1px_4px_rgba(11,93,104,0.06)]
+        overflow-hidden
+    ">
         {showHeader && (
-            <div className="
-                bg-gradient-to-r
-                from-[#e6f7f8]
-                to-[#d4f0f2]
-                px-6
-                py-4
-            ">
-                <h3 className="text-lg font-bold text-[#0b5d68]">
+            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-[#f0f4f5]">
+                {icon && (
+                    <span className="material-symbols-outlined text-[16px] text-[#2eb5c2]">{icon}</span>
+                )}
+                <h3 className="text-[0.8rem] font-bold uppercase tracking-[0.08em] text-[#0b5d68]">
                     {title}
                 </h3>
             </div>
         )}
-
-        <div className={noPadding ? "" : "p-6"}>
+        <div className={noPadding ? '' : 'p-5'}>
             {children}
         </div>
     </div>
 )
 
+// ── Main modal ─────────────────────────────────────────────────────────────────
 export default function EditUserListingModal({
     isOpen,
     listing,
@@ -60,6 +118,7 @@ export default function EditUserListingModal({
         quantity: '',
         description: '',
     })
+    const [saving, setSaving] = useState(false)
 
     useEffect(() => {
         if (listing) {
@@ -77,9 +136,9 @@ export default function EditUserListingModal({
 
     const handleSave = async () => {
         try {
+            setSaving(true)
             console.log("EDIT LISTING:", listing)
             const response = await fetch(
-                // apiUrl(`/listings/${listing.listing_id}`),
                 apiUrl(`/listings/${listing.id}`),
                 {
                     method: 'PUT',
@@ -103,243 +162,233 @@ export default function EditUserListingModal({
                 await onSuccess()
                 onClose()
             }
-
         } catch (error) {
             console.error(error)
+        } finally {
+            setSaving(false)
         }
     }
 
     if (!isOpen) return null
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6">
-            <div className="w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-[#f9f9f7] rounded-3xl shadow-2xl">
+    const isLive = listing?.status === 'live'
 
-                {/* Header */}
-                <div className="bg-gradient-to-r from-[#f9f9f7] to-[#f0f9ff] p-6 border-b">
-                    <div className="flex items-start justify-between">
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+            style={{ background: 'rgba(10, 30, 35, 0.55)', backdropFilter: 'blur(6px)' }}
+        >
+            {/* Modal shell */}
+            <div
+                className="
+                    w-full max-w-5xl max-h-[92vh] flex flex-col
+                    bg-[#f7f9fa] rounded-3xl
+                    shadow-[0_32px_80px_rgba(11,93,104,0.18),0_0_0_1px_rgba(11,93,104,0.08)]
+                    overflow-hidden
+                "
+            >
+                {/* ── Header ── */}
+                <div className="relative flex items-start justify-between px-7 pt-7 pb-5 bg-white border-b border-[#edf1f3] shrink-0">
+                    {/* Teal accent bar */}
+                    <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#0b5d68] via-[#2eb5c2] to-[#2eb5c2]/30 rounded-t-3xl" />
+
+                    <div className="flex items-center gap-4">
+                        {/* Icon badge */}
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] flex items-center justify-center shadow-md shrink-0">
+                            <span className="material-symbols-outlined text-white text-[20px]">edit</span>
+                        </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-[#0b5d68]">
+                            <h2 className="text-xl font-bold text-[#0b5d68] leading-tight">
                                 Edit Listing
                             </h2>
-
-                            <p className="text-sm text-[#666666] mt-1">
-                                Manage your marketplace item
+                            <p className="text-xs text-[#888] mt-0.5 font-medium">
+                                {listing?.product || 'Marketplace item'}
                             </p>
                         </div>
+                    </div>
 
-                        <button onClick={onClose}>
-                            <Icon name="close" />
+                    <div className="flex items-center gap-3">
+                        {/* Live / Paused pill */}
+                        <span className={`
+                            inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border
+                            ${isLive
+                                ? 'bg-[#e6f8f9] text-[#0b8a96] border-[#2eb5c2]/30'
+                                : 'bg-[#fdf0ec] text-[#c04a27] border-[#d55b39]/30'
+                            }
+                        `}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-[#2eb5c2]' : 'bg-[#d55b39]'}`} />
+                            {isLive ? 'Live' : 'Paused'}
+                        </span>
+
+                        {/* Close button */}
+                        <button
+                            onClick={onClose}
+                            className="
+                                w-8 h-8 rounded-lg flex items-center justify-center
+                                text-[#999] hover:text-[#0b5d68] hover:bg-[#f0f4f5]
+                                transition-all duration-150
+                            "
+                        >
+                            <span className="material-symbols-outlined text-[20px]">close</span>
                         </button>
                     </div>
                 </div>
-                {/* Product Preview */}
-                <div className="p-4">
-                    <div className="grid lg:grid-cols-3 gap-5 items-stretch">
-                        {/* Left */}
-                        {/* <div className="space-y-6"> */}
-                        <SectionCard
-                            title="Product Image"
-                            showHeader={false}
-                            noPadding={true}
-                        >
-                            <div className="h-[440px] relative h-48 bg-gradient-to-br from-[#f9f9f7] to-[#f5f5f3]">
-                                {/* Status Label */}
-                                <div className="absolute top-3 right-3">
-                                    <span
-                                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm border ${listing.status === 'live'
-                                                ? 'bg-[#2eb5c2]/90 text-white border-[#2eb5c2]'
-                                                : 'bg-[#d55b39]/90 text-white border-[#d55b39]'
-                                            }`}
-                                    >
-                                        <span
-                                            className={`w-1.5 h-1.5 rounded-full mr-1.5 ${listing.status === 'live'
-                                                    ? 'bg-white'
-                                                    : 'bg-white'
-                                                }`}
-                                        />
-                                        {listing.status === 'live' ? 'Live' : 'Paused'}
-                                    </span>
-                                </div>
+
+                {/* ── Scrollable body ── */}
+                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+
+                    {/* Top grid: image + info */}
+                    <div className="grid lg:grid-cols-3 gap-4 items-stretch">
+
+                        {/* Image card */}
+                        <SectionCard title="Product Image" showHeader={false} noPadding>
+                            <div className="relative h-[420px] bg-gradient-to-br from-[#e8f4f5] to-[#d0ecee] overflow-hidden rounded-2xl">
+                                <div className="absolute inset-0 opacity-10"
+                                    style={{
+                                        backgroundImage: 'repeating-linear-gradient(45deg, #2eb5c2 0, #2eb5c2 1px, transparent 0, transparent 50%)',
+                                        backgroundSize: '12px 12px'
+                                    }}
+                                />
                                 <img
                                     src="https://images.pexels.com/photos/1414651/pexels-photo-1414651.jpeg"
                                     alt={listing?.product}
-                                    className="
-                w-full
-                h-full
-                object-cover
-            "
+                                    className="w-full h-full object-cover"
                                 />
+                                {/* Gradient overlay at bottom */}
+                                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent" />
                             </div>
                         </SectionCard>
 
-                        {/* </div> */}
+                        {/* Right side: 2 section cards */}
+                        <div className="lg:col-span-2 flex flex-col gap-4">
 
-                        {/* Right */}
-                        <div className="lg:col-span-2 space-y-4">
-                            <SectionCard title="Listing Information">
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {/* Listing Information */}
+                            <SectionCard title="Listing Information" icon="store">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <Field label="Title" icon="title">
+                                        <PremiumInput
+                                            value={formData.product}
+                                            placeholder="e.g. Premium Organic Wheat"
+                                            onChange={(e) => setFormData({ ...formData, product: e.target.value })}
+                                        />
+                                    </Field>
 
-                                    <div className="space-y-4">
+                                    <Field label="Location" icon="location_on">
+                                        <PremiumInput
+                                            value={formData.listingLocation}
+                                            placeholder="e.g. Pune, Maharashtra"
+                                            onChange={(e) => setFormData({ ...formData, listingLocation: e.target.value })}
+                                        />
+                                    </Field>
 
-                                        <div>
-                                            <label className="text-sm font-semibold text-[#0b5d68]">
-                                                Title
-                                            </label>
+                                    <Field label="Price" icon="payments">
+                                        <PremiumInput
+                                            value={formData.price}
+                                            placeholder="e.g. ₹1200"
+                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                        />
+                                    </Field>
 
-                                            <Input
-                                                value={formData.product}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        product: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-
-
-
-                                        <div>
-                                            <label className="text-sm font-semibold text-[#0b5d68]">
-                                                Location
-                                            </label>
-
-                                            <Input
-                                                value={formData.listingLocation}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        listingLocation: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-
-                                    </div>
-
-                                    <div className="space-y-4">
-
-                                        <div>
-                                            <label className="text-sm font-semibold text-[#0b5d68]">
-                                                Price
-                                            </label>
-
-                                            <Input
-                                                value={formData.price}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        price: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="text-sm font-semibold text-[#0b5d68]">
-                                                Price Type
-                                            </label>
-
-                                            <Input
-                                                value={listing?.priceType || ''}
-                                                readOnly
-                                            />
-                                        </div>
-
-                                        {/* <div>
-                                            <label className="text-sm font-semibold text-[#0b5d68]">
-                                                Status
-                                            </label>
-
-                                            <Input
-                                                value={listing?.status || ''}
-                                                readOnly
-                                            />
-                                        </div> */}
-
-                                    </div>
+                                    <Field label="Price Type" icon="sell" readOnly>
+                                        <ReadOnlyField value={(listing?.priceType || '').replace(/_/g, ' ')} />
+                                    </Field>
                                 </div>
                             </SectionCard>
 
-                            <SectionCard title="Listing Details">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+                            {/* Listing Details */}
+                            <SectionCard title="Listing Details" icon="inventory_2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <Field label="Listing Type" icon="category" readOnly>
+                                        <ReadOnlyField value={(listing?.listingType || '').toUpperCase()} />
+                                    </Field>
 
-                                    <div>
-                                        <label className="text-sm font-semibold text-[#0b5d68]">
-                                            Listing Type
-                                        </label>
-
-                                        <Input
-                                            value={listing?.listingType || ''}
-                                            readOnly
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-semibold text-[#0b5d68]">
-                                            Quantity
-                                        </label>
-
-                                        <Input
+                                    <Field label="Quantity" icon="scale">
+                                        <PremiumInput
                                             value={formData.quantity}
-                                            onChange={(e) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    quantity: e.target.value,
-                                                })
-                                            }
+                                            placeholder="e.g. 500 kg"
+                                            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                                         />
-                                    </div>
-
+                                    </Field>
                                 </div>
                             </SectionCard>
                         </div>
-
-
                     </div>
-                    <div className="mt-4 mb-6">
-                        <SectionCard title="Description">
-                            <div>
-                                {/* <label className="text-sm font-semibold text-[#0b5d68]">
-                                Description
-                            </label> */}
 
-                                <textarea
-                                    rows={4}
-                                    value={formData.description}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            description: e.target.value,
-                                        })
-                                    }
-                                    className="
-        w-full
-        bg-transparent
-        border-0
-        p-0
-        resize-none
-        text-sm
-        text-gray-700
-        focus:outline-none
-        focus:ring-0
-    "
-                                />
-                            </div>
-                        </SectionCard>
-                    </div>
-                    <div className="sticky bottom-0 bg-white border-t p-5 flex justify-end gap-3">
-                        <Button
-                            variant="outline"
+                    {/* Description — full width */}
+                    <SectionCard title="Description" icon="notes">
+                        <textarea
+                            rows={4}
+                            value={formData.description}
+                            placeholder="Describe your listing in detail — quality, variety, storage conditions, etc."
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            className="
+                                w-full px-3.5 py-2.5 rounded-xl text-sm text-[#1a1a1a]
+                                bg-white border border-[#e2e8ea]
+                                placeholder:text-[#bbb]
+                                transition-all duration-200
+                                focus:outline-none focus:ring-2 focus:ring-[#2eb5c2]/30 focus:border-[#2eb5c2]
+                                hover:border-[#2eb5c2]/50
+                                shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]
+                                resize-none
+                            "
+                        />
+                    </SectionCard>
+
+                </div>
+
+                {/* ── Sticky footer ── */}
+                <div className="
+                    shrink-0 px-6 py-4
+                    bg-white border-t border-[#edf1f3]
+                    flex items-center justify-between gap-3
+                ">
+                    <p className="text-xs text-[#aaa] hidden sm:block">
+                        Changes will be visible in the marketplace immediately.
+                    </p>
+
+                    <div className="flex items-center gap-3 ml-auto">
+                        <button
                             onClick={onClose}
+                            className="
+                                px-5 py-2.5 rounded-xl text-sm font-semibold
+                                text-[#555] border border-[#e0e4e6]
+                                bg-white hover:bg-[#f5f7f8] hover:border-[#cdd3d6]
+                                transition-all duration-150
+                            "
                         >
                             Cancel
-                        </Button>
+                        </button>
 
-                        <Button onClick={handleSave}>
-                            Save Changes
-                        </Button>
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="
+                                inline-flex items-center gap-2
+                                px-6 py-2.5 rounded-xl text-sm font-semibold text-white
+                                bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2]
+                                hover:from-[#0a5260] hover:to-[#28a8b4]
+                                active:scale-[0.98]
+                                shadow-[0_2px_12px_rgba(46,181,194,0.35)]
+                                hover:shadow-[0_4px_20px_rgba(46,181,194,0.45)]
+                                transition-all duration-200
+                                disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
+                            "
+                        >
+                            {saving ? (
+                                <>
+                                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                    </svg>
+                                    Saving…
+                                </>
+                            ) : (
+                                <>
+                                    <span className="material-symbols-outlined text-[17px]">check_circle</span>
+                                    Save Changes
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
             </div>
