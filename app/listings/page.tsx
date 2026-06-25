@@ -77,6 +77,7 @@ function ListingsPageContent() {
         console.log("First Listing:", result.data[0])
         console.log("Produce Listing:", result.data[0]?.produceListing)
         console.log("User:", result.data[0]?.user)
+        console.log("Produce Images:", result.data[0]?.produceImages)
 
         // IMPORTANT FIX 👇
         const dbArray = result.data || []
@@ -105,7 +106,7 @@ function ListingsPageContent() {
               "Unknown",
             status: item.status.toLowerCase(),
             is_blocked: item.is_blocked || false,
-            images: [],
+            images: item.product_images || [],
             isDb: true
           }))
 
