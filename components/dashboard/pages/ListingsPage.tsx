@@ -59,10 +59,10 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const [totalPages, setTotalPages] = useState(1);
 
   // For sorting
-  const [sortField, setSortField] = useState<'product' | 'price' | 'listingLocation' | null>(null);
+  const [sortField, setSortField] = useState<'product' | 'price' | 'quantity' | 'listingLocation' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const handleSort = (field: 'product' | 'price') => {
+  const handleSort = (field: 'product' | 'price' | 'quantity' | 'listingLocation') => {
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
@@ -467,16 +467,44 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                     </button>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Price Type</th>
-                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    <button onClick={() => handleSort('listingLocation')} className="flex items-center gap-1 hover:text-primary">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('listingLocation')}
+                      className="flex items-center gap-1 hover:text-primary"
+                    >
                       Location
+
                       <span className="material-symbols-outlined text-sm">
-                        {sortField === 'listingLocation' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+                        {
+                          sortField === 'listingLocation'
+                            ? sortDirection === 'asc'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
+                            : 'unfold_more'
+                        }
                       </span>
+
                     </button>
-                  </th> */}
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Location</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Quantity</th>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('quantity')}
+                      className="flex items-center gap-1 hover:text-primary"
+                    >
+                      Quantity
+
+                      <span className="material-symbols-outlined text-sm">
+                        {
+                          sortField === 'quantity'
+                            ? sortDirection === 'asc'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
+                            : 'unfold_more'
+                        }
+                      </span>
+
+                    </button>
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Stats</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Actions</th>
@@ -549,24 +577,160 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                             <Icon name="edit" />
                           </Button> */}
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
+                            className="
+    h-7
+    px-2.5
+    rounded-md
+    border
+    border-gray-200
+    bg-white
+    text-gray-500
+    shadow-sm
+    hover:border-[#2eb5c2]/40
+    hover:text-[#0b5d68]
+    hover:shadow-md
+    transition-all
+    duration-200
+    flex
+    items-center
+    justify-center
+    group/edit
+  "
                             onClick={() => {
                               setSelectedListing(listing)
                               setEditOpen(true)
                             }}
                           >
-                            <Icon name="edit" />
+
+                            <div className="relative w-5 h-5">
+
+                              {/* paper */}
+                              <span
+                                className="
+        absolute
+        left-[1px]
+        top-[3px]
+        w-[13px]
+        h-[15px]
+        rounded-[2px]
+        border-[1.5px]
+        border-current
+        transition-all
+        duration-200
+        group-hover/edit:-translate-x-[1px]
+      "
+                              >
+
+                                {/* paper line 1 */}
+                                <span
+                                  className="
+          absolute
+          left-[3px]
+          top-[4px]
+          w-[6px]
+          h-[1px]
+          bg-current
+          rounded-full
+        "
+                                />
+
+                                {/* paper line 2 */}
+                                <span
+                                  className="
+          absolute
+          left-[3px]
+          top-[8px]
+          w-[8px]
+          h-[1px]
+          bg-current
+          rounded-full
+        "
+                                />
+
+                              </span>
+
+
+                              {/* pen */}
+                              <span
+                                className="
+        absolute
+        right-[-1px]
+        top-[0px]
+        w-[10px]
+        h-[3px]
+        rounded-full
+        bg-current
+        rotate-[-45deg]
+        transition-all
+        duration-200
+        origin-left
+
+        group-hover/edit:translate-x-[4px]
+        group-hover/edit:-translate-y-[2px]
+      "
+                              />
+
+                            </div>
+
                           </Button>
                           <div className="relative" ref={openStatusDropdown === listing.id ? statusDropdownRef : undefined}>
                             <Button
                               variant="outline"
                               size="sm"
-                              className={`hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''}`}
+                              // className={`hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''}`}
+                              className="
+  h-7
+  px-2.5
+  rounded-md
+  border
+  border-gray-200
+  bg-white
+  shadow-sm
+  hover:border-[#2eb5c2]/40
+  hover:shadow-md
+  transition-all
+  duration-200
+  flex
+  items-center
+  justify-center
+"
                               onClick={() => setOpenStatusDropdown((prev) => (prev === listing.id ? null : listing.id))}
                               title="Change status"
                             >
-                              <Icon name="visibility" />
+                              <div
+                                className={`
+    relative
+    w-6 h-3
+    rounded-full
+    transition-all
+    duration-300
+    ease-in-out
+    ${listing.status === 'live'
+                                    ? 'bg-[#2eb5c2]'
+                                    : 'bg-[#d55b39]'
+                                  }
+  `}
+                              >
+                                <span
+                                  className={`
+      absolute
+      top-[1.5px]
+      w-2 h-2
+      rounded-full
+      bg-white
+      shadow-sm
+      transition-all
+      duration-300
+      ease-in-out
+      ${listing.status === 'live'
+                                      ? 'left-[14px]'
+                                      : 'left-[2px]'
+                                    }
+    `}
+                                />
+                              </div>
                             </Button>
                             {openStatusDropdown === listing.id && (
                               <div className="absolute right-0 top-full mt-2 z-50 min-w-[130px] bg-white rounded-xl shadow-xl border border-[#e0e0e0] overflow-hidden">
@@ -601,13 +765,103 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                               setNewImages([])
                               setImageModalOpen(true)
                             }}
-                            className="hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors"
+                            className="
+  h-7
+  px-2.5
+  rounded-md
+  border
+  border-[#2eb5c2]/20
+  bg-white
+  text-[#2eb5c2]
+  shadow-sm
+  hover:bg-[#2eb5c2]/5
+  hover:border-[#2eb5c2]/50
+  hover:shadow-md
+  transition-all
+  duration-200
+  flex
+  items-center
+  justify-center
+  group
+"
                             title="Update Images"
                           >
-                            <Icon name="image" />
+                            <Icon
+                              name="upload"
+                              className="
+    text-[14px]
+    transition-transform
+    duration-200
+    group-hover:-translate-y-[1px]
+  "
+                            />
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => handleDelete(listing.id)} className="hover:border-[#d55b39] hover:text-[#d55b39] transition-colors" title="Delete">
-                            <Icon name="delete" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(listing.id)}
+                            className="
+    h-7
+    px-2.5
+    rounded-md
+    border
+    border-gray-200
+    bg-white
+    text-red-400
+    shadow-sm
+    hover:border-red-200
+    hover:bg-red-50
+    hover:text-red-500
+    hover:shadow-md
+    transition-all
+    duration-200
+    flex
+    items-center
+    justify-center
+    group/delete
+  
+
+" title="Delete">
+                            <div className="relative w-[16px] h-[16px]">
+
+                              {/* lid */}
+                              <span
+                                className="
+    absolute
+    left-[3px]
+    top-[1px]
+    w-[10px]
+    h-[3px]
+    rounded-sm
+    bg-current
+    transition-all
+    duration-200
+    origin-left
+
+    group-hover/delete:-rotate-12
+    group-hover/delete:-translate-y-[2px]
+    group-hover/delete:-translate-x-[1px]
+  "
+                              />
+
+                              {/* body */}
+                              <span
+                                className="
+    absolute
+    left-[4px]
+    top-[5px]
+    w-[8px]
+    h-[10px]
+    rounded-b-sm
+    bg-current
+    transition-all
+    duration-200
+
+    group-hover/delete:translate-y-[1px]
+  "
+                              />
+
+                            </div>
                           </Button>
                         </div>
                       </td>
