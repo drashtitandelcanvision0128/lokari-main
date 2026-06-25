@@ -88,14 +88,16 @@ function FarmerDashboardContent() {
         <ActiveComponent key={activeTab === 'listings' ? listingsKey : undefined} searchQuery={searchQuery} />
       </DashboardLayout>
 
-      <CreateListingModal
-        open={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={() => {
-          setListingsKey(k => k + 1)   // force ListingsPage refresh
-          if (activeTab !== 'listings') setActiveTab('listings')
-        }}
-      />
+      {isCreateModalOpen && (
+        <CreateListingModal
+          open={true}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={() => {
+            setListingsKey(k => k + 1)
+            if (activeTab !== 'listings') setActiveTab('listings')
+          }}
+        />
+      )}
     </SettingsProvider>
   )
 }
