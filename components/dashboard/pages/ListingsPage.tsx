@@ -10,6 +10,7 @@ import { Listing } from '@/types/dashboard';
 // import { mockListings } from '@/data/dashboardMock'
 import { apiUrl, authHeaders } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
+import { getAuthToken } from "@/lib/api";
 
 import EditUserListingModal from '@/components/dashboard/modals/EditUserListingModal';
 
@@ -365,12 +366,12 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       apiUrl(`/listings/${selectedListing.id}/images`),
       {
         method: "PUT",
-        // headers: {
-        //   Authorization: `Bearer ${getAuthToken()}`
-        // },
         headers: {
-          ...authHeaders()
+          Authorization: `Bearer ${getAuthToken()}`
         },
+        // headers: {
+        //   ...authHeaders()
+        // },
         body: formData
       }
     );
