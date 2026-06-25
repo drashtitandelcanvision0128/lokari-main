@@ -57,6 +57,25 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
   const [isSaved, setIsSaved] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState('')
 
+  // For Image Swapping
+  const [selectedImage, setSelectedImage] = useState(0);
+
+  const handlePreviousImage = () => {
+    if (!listing.images?.length) return;
+
+    setSelectedImage((prev) =>
+      prev === 0 ? listing.images.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextImage = () => {
+    if (!listing.images?.length) return;
+
+    setSelectedImage((prev) =>
+      prev === listing.images.length - 1 ? 0 : prev + 1
+    );
+  };
+
   useEffect(() => {
     const user = getCurrentUser()
     const role = getUserRole()
@@ -188,14 +207,68 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
             <div className="relative w-full h-[500px] bg-gradient-to-br from-gray-50 to-gray-100">
+              <button
+                onClick={handlePreviousImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20
+             bg-white/80 rounded-full p-2
+             shadow-md hover:shadow-lg
+             opacity-0 group-hover:opacity-100
+             transition-all duration-300"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={handleNextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20
+             bg-white/80 rounded-full p-2
+             shadow-md hover:shadow-lg
+             opacity-0 group-hover:opacity-100
+             transition-all duration-300"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
               <img
-                src={getProductImage(listing)}
+                key={selectedImage}
+                src={
+                  listing.images?.[selectedImage]
+                    ? `http://localhost:5000${listing.images[selectedImage]}`
+                    : getProductImage(listing)
+                }
                 alt={listing.title}
-                className="w-full h-[500px] object-cover group-hover:scale-105 transition-transform duration-700"
+                className="w-full h-[500px] object-cover animate-fadeIn"
                 onError={(e) => {
                   e.currentTarget.src = 'https://images.pexels.com/photos/264537/pexels-photo-264537.jpeg?auto=compress&cs=tinysrgb&w=800&h=450&fit=crop'
                 }}
               />
+              <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-full">
+                {selectedImage + 1} / {listing.images?.length || 1}
+              </div>
               {listing.priceType === 'auction' && (
                 <div className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-full font-semibold text-sm shadow-lg animate-pulse">
                   <span className="flex items-center">
@@ -222,14 +295,29 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
           {listing.images && listing.images.length > 1 && (
             <div className="bg-gray-50 p-6 border-t border-gray-100">
               <div className="grid grid-cols-4 gap-3">
-                {listing.images.slice(1, 5).map((img: string, index: number) => (
-                  <div key={index} className="relative group overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                {listing.images.map((img: string, index: number) => (
+                  <div
+                    key={index}
+                    className={`relative overflow-hidden rounded-xl cursor-pointer
+    transition-all duration-300 ease-out
+    ${selectedImage === index
+                        ? 'shadow-xl -translate-y-1 ring-2 ring-[#0b5d68]'
+                        : 'shadow-md hover:shadow-xl hover:-translate-y-1'
+                      }`}
+                  >
                     <img
-                      src={getProductImage(listing)}
+                      // src={getProductImage(listing)}
+                      src={`http://localhost:5000${img}`}
                       alt={`${listing.title} ${index + 2}`}
-                      className="w-full h-24 object-cover group-hover:scale-110 transition-transform duration-300"
+                      className={`w-full h-24 object-cover transition-all duration-300
+  ${selectedImage === index
+                          ? 'scale-105'
+                          : 'hover:scale-105'
+                        }`}
+                      // onClick={() => setSelectedImage(index + 1)}
+                      onClick={() => setSelectedImage(index)}
                     />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                    {/* <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div> */}
                   </div>
                 ))}
               </div>
@@ -414,8 +502,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">{bid.message}</p>
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                          'bg-red-100 text-red-800'
+                      bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                        'bg-red-100 text-red-800'
                       }`}>
                       {bid.status}
                     </span>
@@ -710,23 +798,90 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
         {/* Image Gallery */}
         <div className="bg-white rounded-xl border border-[#e0e0e0] overflow-hidden">
           <div className="relative w-full h-96 bg-gray-100">
+            <button
+              onClick={handlePreviousImage}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20
+             bg-white/80 rounded-full p-2
+             shadow-md hover:shadow-lg
+             opacity-0 group-hover:opacity-100
+             transition-all duration-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={handleNextImage}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20
+             bg-white/80 rounded-full p-2
+             shadow-md hover:shadow-lg
+             opacity-0 group-hover:opacity-100
+             transition-all duration-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
             <img
-              src={getProductImage(listing)}
+              // src={getProductImage(listing)}
+              // alt={listing.title}
+              key={selectedImage}
+              src={
+                listing.images?.[selectedImage]
+                  ? `http://localhost:5000${listing.images[selectedImage]}`
+                  : getProductImage(listing)
+              }
               alt={listing.title}
-              className="w-full h-96 object-cover"
+              className="w-full h-[500px] object-cover animate-fadeIn"
               onError={(e) => {
                 e.currentTarget.src = 'https://images.pexels.com/photos/264537/pexels-photo-264537.jpeg?auto=compress&cs=tinysrgb&w=800&h=450&fit=crop'
               }}
             />
+            <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-full">
+              {selectedImage + 1} / {listing.images?.length || 1}
+            </div>
           </div>
           {listing.images && listing.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2 p-4">
-              {listing.images.slice(1, 5).map((img: string, index: number) => (
-                <div key={index} className="relative w-full h-20 bg-gray-100">
+              {/* {listing.images.slice(1, 5).map((img: string, index: number) => ( */}
+              {listing.images.map((img: string, index: number) => (
+                <div
+                  key={index}
+                  className={`relative overflow-hidden rounded-xl cursor-pointer
+    transition-all duration-300 ease-out
+    ${selectedImage === index
+                      ? 'shadow-xl -translate-y-1 ring-2 ring-[#0b5d68]'
+                      : 'shadow-md hover:shadow-xl hover:-translate-y-1'
+                    }`}
+                >
                   <img
-                    src={getProductImage(listing)}
+                    // src={getProductImage(listing)}
+                    src={`http://localhost:5000${img}`}
                     alt={`${listing.title} ${index + 2}`}
                     className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-75"
+                    onClick={() => setSelectedImage(index)}
                   />
                 </div>
               ))}
@@ -740,10 +895,10 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
 
           <div className="mb-6">
             <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${listing.storageTypes?.includes('Cold') ? 'bg-blue-100 text-blue-800' :
-                listing.storageTypes?.includes('Wet') ? 'bg-green-100 text-green-800' :
-                  listing.storageTypes?.includes('Dry') ? 'bg-yellow-100 text-yellow-800' :
-                    listing.storageTypes?.includes('Frozen') ? 'bg-purple-100 text-purple-800' :
-                      'bg-gray-100 text-gray-800'
+              listing.storageTypes?.includes('Wet') ? 'bg-green-100 text-green-800' :
+                listing.storageTypes?.includes('Dry') ? 'bg-yellow-100 text-yellow-800' :
+                  listing.storageTypes?.includes('Frozen') ? 'bg-purple-100 text-purple-800' :
+                    'bg-gray-100 text-gray-800'
               }`}>
               {listing.storageTypes?.join(', ') || 'Standard Storage'}
             </span>
@@ -833,8 +988,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">{bid.message}</p>
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                          'bg-red-100 text-red-800'
+                      bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                        'bg-red-100 text-red-800'
                       }`}>
                       {bid.status}
                     </span>
@@ -977,23 +1132,90 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
         {/* Image Gallery */}
         <div className="bg-white rounded-xl border border-[#e0e0e0] overflow-hidden">
           <div className="relative w-full h-96 bg-gray-100">
+            <button
+              onClick={handlePreviousImage}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20
+             bg-white/80 rounded-full p-2
+             shadow-md hover:shadow-lg
+             opacity-0 group-hover:opacity-100
+             transition-all duration-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={handleNextImage}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20
+             bg-white/80 rounded-full p-2
+             shadow-md hover:shadow-lg
+             opacity-0 group-hover:opacity-100
+             transition-all duration-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
             <img
-              src={getProductImage(listing)}
+              // src={getProductImage(listing)}
+              // alt={listing.title}
+              key={selectedImage}
+              src={
+                listing.images?.[selectedImage]
+                  ? `http://localhost:5000${listing.images[selectedImage]}`
+                  : getProductImage(listing)
+              }
               alt={listing.title}
-              className="w-full h-96 object-cover"
+              className="w-full h-[500px] object-cover animate-fadeIn"
               onError={(e) => {
                 e.currentTarget.src = 'https://images.pexels.com/photos/264537/pexels-photo-264537.jpeg?auto=compress&cs=tinysrgb&w=800&h=450&fit=crop'
               }}
             />
+            <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white text-sm px-3 py-1 rounded-full">
+              {selectedImage + 1} / {listing.images?.length || 1}
+            </div>
           </div>
           {listing.images && listing.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2 p-4">
-              {listing.images.slice(1, 5).map((img: string, index: number) => (
-                <div key={index} className="relative w-full h-20 bg-gray-100">
+              {/* {listing.images.slice(1, 5).map((img: string, index: number) => ( */}
+              {listing.images.map((img: string, index: number) => (
+                <div
+                  key={index}
+                  className={`relative overflow-hidden rounded-xl cursor-pointer
+    transition-all duration-300 ease-out
+    ${selectedImage === index
+                      ? 'shadow-xl -translate-y-1 ring-2 ring-[#0b5d68]'
+                      : 'shadow-md hover:shadow-xl hover:-translate-y-1'
+                    }`}
+                >
                   <img
-                    src={getProductImage(listing)}
+                    // src={getProductImage(listing)}
+                    src={`http://localhost:5000${img}`}
                     alt={`${listing.title} ${index + 2}`}
                     className="w-full h-20 object-cover rounded cursor-pointer hover:opacity-75"
+                    onClick={() => setSelectedImage(index)}
                   />
                 </div>
               ))}
@@ -1086,8 +1308,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-gray-600">{bid.message}</p>
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                          'bg-red-100 text-red-800'
+                      bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                        'bg-red-100 text-red-800'
                       }`}>
                       {bid.status}
                     </span>
@@ -1259,8 +1481,8 @@ const ListingDetails = ({ listing, onBidSubmit }: ListingDetailsProps) => {
                 </div>
                 <div>
                   <span className={`px-2 py-1 rounded text-xs ${bid.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
+                    bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                      'bg-gray-100 text-gray-800'
                     }`}>
                     {bid.status || 'pending'}
                   </span>
