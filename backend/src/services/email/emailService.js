@@ -18,10 +18,14 @@ function getTransporter() {
   transporter = nodemailer.createTransport({
     host,
     port,
-    secure: port === 465,
+    secure: port === 465 || process.env.SMTP_SECURE === 'true',
     auth: { user, pass },
+    // Fail fast — Render / cloud hosts often block port 587; without timeouts
+    // the request would hang for ~2 minutes before throwing.
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 15_000,
     tls: {
-      // Prevents TLS errors on self-signed certs (optional, safe for Gmail/Brevo)
       rejectUnauthorized: process.env.NODE_ENV === 'production',
     },
   });
@@ -72,16 +76,31 @@ export async function sendEmail({ to, subject, html, text, replyTo }) {
     return { messageId: 'dev-console', dev: true };
   }
 
-  const info = await transport.sendMail(mail);
+  try {
+    const info = await transport.sendMail(mail);
 
-  const previewUrl = nodemailer.getTestMessageUrl(info);
-  if (previewUrl) {
-    console.log(`Ethereal email preview: ${previewUrl}`);
-  } else if (process.env.NODE_ENV !== 'production') {
-    console.log(`Email sent via ${process.env.SMTP_HOST} → ${mail.to}`);
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      console.log(`Ethereal email preview: ${previewUrl}`);
+    } else if (process.env.NODE_ENV !== 'production') {
+      console.log(`Email sent via ${process.env.SMTP_HOST} → ${mail.to}`);
+    }
+
+    return info;
+  } catch (smtpErr) {
+    // Log the OTP / email to server console as a fallback so the platform
+    // (Render logs, etc.) can be used manually while SMTP is being fixed.
+    console.error(`[EMAIL FAILED] ${smtpErr.message}`);
+    console.warn('--- Fallback email (SMTP failed) ---');
+    console.warn(`To:      ${mail.to}`);
+    console.warn(`Subject: ${mail.subject}`);
+    console.warn(text || mail.html);
+    console.warn('------------------------------------');
+
+    // In production re-throw so the caller knows email was not delivered.
+    // Remove this throw if you want silent fallback (not recommended).
+    throw new Error(`Email delivery failed: ${smtpErr.message}`);
   }
-
-  return info;
 }
 
 /**
