@@ -177,11 +177,19 @@ export default function EditUserListingModal({
     const [listingImages, setListingImages] = useState<string[]>([])
     const [newImages, setNewImages] = useState<File[]>([])
 
+    // const closeImageModal = () => {
+    //     setNewImages([])
+    //     setImageModalOpen(false)
+    // }
+
     const closeImageModal = () => {
+        setListingImages(
+            listing?.images || listing?.product_images || []
+        )
+
         setNewImages([])
         setImageModalOpen(false)
     }
-
     console.log("EDIT LISTING:", listing)
     console.log("PRODUCT IMAGES:", listing?.product_images)
     console.log("STATE IMAGES:", listingImages)
@@ -265,7 +273,9 @@ export default function EditUserListingModal({
             console.log("UPDATE RESPONSE:", result)
 
             if (result.success) {
+                console.log("SAVE SUCCESS")
                 await onSuccess()
+                console.log("AFTER ONSUCCESS")
                 onClose()
             }
         } catch (error) {
@@ -923,21 +933,37 @@ export default function EditUserListingModal({
                                                 </span>
                                             </label>
                                         </div>
-
                                         <button
                                             onClick={() => {
                                                 setListingImages(
-                                                    listingImages.filter(
-                                                        (_, i) => i !== index
-                                                    )
+                                                    listingImages.filter((_, i) => i !== index)
                                                 )
                                             }}
                                             className="
-                                    absolute top-1 right-1
-                                    bg-white rounded-full
-                                "
+    absolute top-1.5 right-1.5
+    w-5 h-5
+    rounded-full
+    bg-[#faf7f2]
+    border border-[#f0ebe3]
+    flex items-center justify-center
+    text-[#666]
+    shadow-sm
+    transition-all duration-300
+    hover:bg-white
+    hover:text-red-500
+    group/delete
+"
                                         >
-                                            ×
+                                            <span
+                                                className="
+        block text-sm
+        leading-none
+        transition-transform duration-300
+        group-hover/delete:rotate-90
+    "
+                                            >
+                                                ×
+                                            </span>
                                         </button>
 
                                     </div>

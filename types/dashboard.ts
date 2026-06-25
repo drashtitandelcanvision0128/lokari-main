@@ -39,6 +39,8 @@ export type Listing = {
   listingType: 'produce' | 'warehouse' | 'transport'
   price?: string
   image?: string
+
+  product_images?: string[]
   createdAt: string
   priceType?: string
   listingLocation?: string
@@ -132,3 +134,4 @@ export type Transaction = {
   invoice?: string
   escrowReleaseDate?: string
 }
+
