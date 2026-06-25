@@ -126,7 +126,12 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
             address: item.address || null,
 
             listingLocation: item.address?.city ?? '-',
-            image: '',
+            // image: '',
+            product_images: item.product_images || [],
+            image:
+              item.product_images?.length > 0
+                ? `${process.env.NEXT_PUBLIC_API_URL}${item.product_images[0]}`
+                : '',
             createdAt: item.created_at,
           }));
 

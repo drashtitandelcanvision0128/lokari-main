@@ -331,6 +331,77 @@ export const updateListing = async (req, res) => {
     }
 };
 
+export const updateListingImages = async (req, res) => {
+    const { id } = req.params;
+
+    console.log("======== IMAGE UPDATE =========")
+    console.log("BODY:", req.body)
+    console.log("FILES:", req.files)
+    try {
+
+        const listing = await prisma.marketplace.findUnique({
+            where: {
+                listing_id: id
+            }
+        });
+
+
+        if (!listing) {
+            return res.status(404).json({
+                success: false,
+                message: "Listing not found"
+            });
+        }
+
+
+        const existingImages = JSON.parse(
+            req.body.existingImages || "[]"
+        );
+
+
+        const newImages = req.files
+            ? req.files.map(
+                file => `/uploads/productsImgs/${file.filename}`
+            )
+            : [];
+
+
+        const finalImages = [
+            ...existingImages,
+            ...newImages
+        ];
+
+
+        const updated = await prisma.marketplace.update({
+            where: {
+                listing_id: id
+            },
+            data: {
+                product_images: finalImages
+            }
+        });
+
+
+        res.json({
+            success: true,
+            data: updated
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "UPDATE IMAGES ERROR:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
 export const placeBid = async (req, res) => {
     try {
         const { id } = req.params;

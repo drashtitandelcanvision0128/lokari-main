@@ -11,7 +11,7 @@ import {
   updateListing,
 } from '../controllers/listingController.js';
 import { protect } from '../middleware/authMiddleware.js';
-
+import { updateListingImages } from '../controllers/listingController.js';
 const router = express.Router();
 
 router.get('/', getAllListings);
@@ -26,6 +26,24 @@ router.post(
   createListing
 );
 router.put('/:id', protect, updateListing);
+
+router.put(
+  '/:id/images',
+  protect,
+  (req, res, next) => {
+    console.log("🔥 MULTER HIT");
+    uploadProductImages(req, res, (err) => {
+      if (err) {
+        console.log("MULTER ERROR:", err);
+        return next(err);
+      }
+      console.log("FILES AFTER MULTER:", req.files);
+      console.log("BODY AFTER MULTER:", req.body);
+      next();
+    });
+  },
+  updateListingImages
+);
 router.delete('/:id', protect, deleteListing);
 router.post('/:id/bid', protect, placeBid);
 
