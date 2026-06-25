@@ -440,10 +440,6 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       {/* Product Cards Grid */}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-[#0b5d68]">Active Listings</h2>
-          <div className="text-sm text-[#666666]">
-            {listings.length} {listings.length === 1 ? 'listing' : 'listings'} found
-          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
