@@ -261,13 +261,21 @@ export default function Home() {
         </div>
         <div className="container relative z-10 mx-auto w-full px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl">
+            {/* Live badge */}
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
+              </span>
+              India's #1 Agri Exchange
+            </div>
             <h1 className="mb-4 font-headline text-[1.75rem] font-bold leading-[1.15] tracking-tighter text-white sm:mb-6 sm:text-4xl md:text-5xl lg:text-6xl">
               The Future of{' '}
-              <span className={isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}>
+              <span className="text-[#e89151]">
                 Agricultural Trade
               </span>
             </h1>
-            <p className="mb-6 max-w-lg font-body text-sm leading-relaxed text-white/90 sm:mb-10 sm:text-base lg:text-lg">
+            <p className="mb-6 max-w-lg font-body text-sm leading-relaxed text-white/85 sm:mb-8 sm:text-base lg:text-lg">
               Connect farmers, traders, and logistics in one digital marketplace. List produce,
               find storage, and move crops with confidence.
             </p>
@@ -287,20 +295,41 @@ export default function Home() {
                 </Link>
               )}
             </div>
+            {/* Quick stat pills */}
+            <div className="mt-6 flex flex-wrap gap-2 sm:gap-3">
+              {[
+                { val: '50K+', label: 'Farmers', icon: 'agriculture' },
+                { val: '₹2,500 Cr', label: 'Traded', icon: 'payments' },
+                { val: '1,200+', label: 'Warehouses', icon: 'warehouse' },
+              ].map(({ val, label, icon }) => (
+                <div key={label} className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm">
+                  <span className="material-symbols-outlined text-[0.9rem] text-[#2eb5c2]">{icon}</span>
+                  <span className="text-xs font-bold text-white">{val}</span>
+                  <span className="text-[10px] text-white/60">{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Role Entry Points (Bento Style) */}
-      <section className={`${sectionPad} ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
-        <div className="max-w-7xl mx-auto">
+      <section className={`${sectionPad} relative overflow-hidden ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
+        {/* Subtle dot grid */}
+        <div className="pointer-events-none absolute inset-0 opacity-[0.035]"
+          style={{ backgroundImage: 'radial-gradient(circle, #0b5d68 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="relative z-10 max-w-7xl mx-auto">
           <div className="mb-6 sm:mb-12">
+            <div className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest ${isDark ? 'border-[#2eb5c2]/30 bg-[#2eb5c2]/10 text-[#2eb5c2]' : 'border-[#0b5d68]/20 bg-[#0b5d68]/5 text-[#0b5d68]'}`}>
+              <span className="material-symbols-outlined text-[0.8rem]">hub</span>
+              Your Portal
+            </div>
             <h2
-              className={`font-headline text-xl sm:text-2xl lg:text-3xl font-bold mb-2 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
+              className={`font-headline text-xl sm:text-2xl lg:text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
             >
               Tailored for the Ecosystem
             </h2>
-            <p className={`text-sm sm:text-base ${isDark ? 'text-gray-300' : 'text-[#666666]'}`}>
+            <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-[#666666]'}`}>
               Join through portals built for your role in the supply chain.
             </p>
           </div>
@@ -446,101 +475,96 @@ export default function Home() {
       {/* Explore Categories Section */}
       <section className={`${sectionPad} ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8 sm:mb-16">
-            <h2
-              className={`font-headline text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
-            >
+          <div className="text-center mb-8 sm:mb-14">
+            <div className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest ${isDark ? 'border-[#2eb5c2]/30 bg-[#2eb5c2]/10 text-[#2eb5c2]' : 'border-[#0b5d68]/20 bg-[#0b5d68]/5 text-[#0b5d68]'}`}>
+              <span className="material-symbols-outlined text-[0.8rem]">category</span>
+              Browse
+            </div>
+            <h2 className={`font-headline text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}>
               Explore Categories
             </h2>
-            <p
-              className={`text-sm sm:text-base lg:text-lg px-2 ${isDark ? 'text-gray-300' : 'text-[#666666]'} max-w-2xl mx-auto`}
-            >
+            <p className={`text-sm sm:text-base lg:text-lg px-2 ${isDark ? 'text-gray-400' : 'text-[#666666]'} max-w-2xl mx-auto`}>
               Browse produce, storage, and transport across the marketplace
             </p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3 md:gap-8">
             {/* Produce Category */}
             <Link href="/listings?category=produce" className="group">
-              <div
-                className={`${isDark ? 'bg-gray-700' : 'bg-[#f9f9f7]'} rounded-xl sm:rounded-2xl p-5 sm:p-8 h-full transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl cursor-pointer border ${isDark ? 'border-gray-600' : 'border-gray-100 sm:border-transparent'}`}
-              >
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#2eb5c2] to-[#0b5d68] rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">agriculture</span>
+              <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden cursor-pointer shadow-lg">
+                <img
+                  src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=800&q=80"
+                  alt="Agricultural produce"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
+                <div className="absolute top-4 left-4">
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#2eb5c2] to-[#0b5d68] rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="material-symbols-outlined text-white text-xl">agriculture</span>
+                  </div>
                 </div>
-                <h3
-                  className={`font-headline text-lg sm:text-2xl font-bold mb-2 sm:mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
-                >
-                  Produce
-                </h3>
-                <p
-                  className={`text-sm mb-6 leading-relaxed ${isDark ? 'text-gray-300' : 'text-[#666666]'}`}
-                >
-                  Fresh, high-quality agricultural produce directly from verified farmers. Grains,
-                  vegetables, fruits, and more.
-                </p>
-                <div
-                  className={`flex items-center gap-2 font-semibold text-sm ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'} group-hover:gap-3 transition-all duration-300`}
-                >
-                  <span>Browse Produce</span>
-                  <span className="material-symbols-outlined">arrow_forward</span>
+                <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
+                  <h3 className="font-headline text-2xl font-bold text-white mb-1.5">Produce</h3>
+                  <p className="text-sm text-white/70 mb-4 leading-relaxed">
+                    Fresh grains, vegetables &amp; fruits directly from verified farmers nationwide.
+                  </p>
+                  <div className="flex items-center gap-2 text-[#2eb5c2] font-semibold text-sm group-hover:gap-3 transition-all duration-300">
+                    <span>Browse Produce</span>
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </div>
                 </div>
               </div>
             </Link>
 
             {/* Storage Category */}
             <Link href="/listings?category=storage" className="group">
-              <div
-                className={`${isDark ? 'bg-gray-700' : 'bg-[#f9f9f7]'} rounded-xl sm:rounded-2xl p-5 sm:p-8 h-full transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl cursor-pointer border ${isDark ? 'border-gray-600' : 'border-gray-100 sm:border-transparent'}`}
-              >
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#e89151] to-[#d55b39] rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">warehouse</span>
+              <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden cursor-pointer shadow-lg">
+                <img
+                  src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80"
+                  alt="Warehouse storage"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
+                <div className="absolute top-4 left-4">
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#e89151] to-[#d55b39] rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="material-symbols-outlined text-white text-xl">warehouse</span>
+                  </div>
                 </div>
-                <h3
-                  className={`font-headline text-lg sm:text-2xl font-bold mb-2 sm:mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
-                >
-                  Storage
-                </h3>
-                <p
-                  className={`text-sm mb-6 leading-relaxed ${isDark ? 'text-gray-300' : 'text-[#666666]'}`}
-                >
-                  Secure, climate-controlled storage facilities with digital receipts and real-time
-                  monitoring capabilities.
-                </p>
-                <div
-                  className={`flex items-center gap-2 font-semibold text-sm ${isDark ? 'text-[#e89151]' : 'text-[#e89151]'} group-hover:gap-3 transition-all duration-300`}
-                >
-                  <span>Find Storage</span>
-                  <span className="material-symbols-outlined">arrow_forward</span>
+                <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
+                  <h3 className="font-headline text-2xl font-bold text-white mb-1.5">Storage</h3>
+                  <p className="text-sm text-white/70 mb-4 leading-relaxed">
+                    Climate-controlled facilities with digital receipts &amp; real-time monitoring.
+                  </p>
+                  <div className="flex items-center gap-2 text-[#e89151] font-semibold text-sm group-hover:gap-3 transition-all duration-300">
+                    <span>Find Storage</span>
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </div>
                 </div>
               </div>
             </Link>
 
             {/* Transport Category */}
             <Link href="/listings?category=transport" className="group">
-              <div
-                className={`${isDark ? 'bg-gray-700' : 'bg-[#f9f9f7]'} rounded-xl sm:rounded-2xl p-5 sm:p-8 h-full transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:shadow-2xl cursor-pointer border ${isDark ? 'border-gray-600' : 'border-gray-100 sm:border-transparent'}`}
-              >
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">
-                    local_shipping
-                  </span>
+              <div className="relative h-72 sm:h-80 rounded-2xl overflow-hidden cursor-pointer shadow-lg">
+                <img
+                  src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=800&q=80"
+                  alt="Agricultural transport logistics"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
+                <div className="absolute top-4 left-4">
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="material-symbols-outlined text-white text-xl">local_shipping</span>
+                  </div>
                 </div>
-                <h3
-                  className={`font-headline text-lg sm:text-2xl font-bold mb-2 sm:mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}
-                >
-                  Transport
-                </h3>
-                <p
-                  className={`text-sm mb-6 leading-relaxed ${isDark ? 'text-gray-300' : 'text-[#666666]'}`}
-                >
-                  Reliable logistics network connecting producers to markets with optimized routes
-                  and real-time tracking.
-                </p>
-                <div
-                  className={`flex items-center gap-2 font-semibold text-sm ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'} group-hover:gap-3 transition-all duration-300`}
-                >
-                  <span>Book Transport</span>
-                  <span className="material-symbols-outlined">arrow_forward</span>
+                <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
+                  <h3 className="font-headline text-2xl font-bold text-white mb-1.5">Transport</h3>
+                  <p className="text-sm text-white/70 mb-4 leading-relaxed">
+                    Optimised routes &amp; real-time tracking connecting farms to markets.
+                  </p>
+                  <div className="flex items-center gap-2 text-[#2eb5c2] font-semibold text-sm group-hover:gap-3 transition-all duration-300">
+                    <span>Book Transport</span>
+                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </div>
                 </div>
               </div>
             </Link>
@@ -553,12 +577,17 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:justify-between sm:items-end sm:mb-12">
             <div>
-              <h2
-                className={`font-headline text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
-              >
+              <div className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest ${isDark ? 'border-[#2eb5c2]/30 bg-[#2eb5c2]/10 text-[#2eb5c2]' : 'border-[#0b5d68]/20 bg-[#0b5d68]/5 text-[#0b5d68]'}`}>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400"></span>
+                </span>
+                Live
+              </div>
+              <h2 className={`font-headline text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}>
                 Active Listings
               </h2>
-              <p className={`text-sm sm:text-base ${isDark ? 'text-gray-300' : 'text-[#666666]'}`}>
+              <p className={`text-sm sm:text-base ${isDark ? 'text-gray-400' : 'text-[#666666]'}`}>
                 Verified inventory ready for procurement.
               </p>
             </div>
@@ -671,18 +700,23 @@ export default function Home() {
       <section className={`${sectionPad} ${isDark ? 'bg-gray-900' : 'bg-[#f9f9f7]'}`}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8 sm:mb-16">
-            <h2
-              className={`font-headline text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-[#0b5d68]'}`}
-            >
+            <div className={`mb-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest ${isDark ? 'border-[#2eb5c2]/30 bg-[#2eb5c2]/10 text-[#2eb5c2]' : 'border-[#0b5d68]/20 bg-[#0b5d68]/5 text-[#0b5d68]'}`}>
+              <span className="material-symbols-outlined text-[0.8rem]">route</span>
               How It Works
+            </div>
+            <h2 className={`font-headline text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-white' : 'text-[#0b5d68]'}`}>
+              Three Simple Steps
             </h2>
-            <p
-              className={`text-sm sm:text-base lg:text-lg px-2 ${isDark ? 'text-gray-300' : 'text-[#666666]'} max-w-2xl mx-auto`}
-            >
+            <p className={`text-sm sm:text-base lg:text-lg px-2 ${isDark ? 'text-gray-400' : 'text-[#666666]'} max-w-2xl mx-auto`}>
               {currentUser
                 ? 'Navigate your agricultural trading journey with our streamlined platform'
                 : 'Get started in minutes and join the digital agricultural revolution'}
             </p>
+          </div>
+          {/* connector line (desktop only) */}
+          <div className="relative">
+          <div className={`pointer-events-none absolute top-10 left-[calc(16.67%+2rem)] right-[calc(16.67%+2rem)] hidden h-px md:block ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#2eb5c2]/0 via-[#2eb5c2]/60 to-[#2eb5c2]/0" />
           </div>
           <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
             {currentUser ? (
@@ -860,6 +894,7 @@ export default function Home() {
             )}
           </div>
 
+          </div>{/* /relative connector wrapper */}
           {/* CTA Section */}
           <div className="mt-10 px-2 text-center sm:mt-16 sm:px-0">
             {currentUser ? (
@@ -896,52 +931,44 @@ export default function Home() {
       </section>
 
       {/* Market Trends Snapshot */}
-      <section className={`${sectionPad} ${isDark ? 'bg-gray-800' : 'bg-[#2eb5c2]'}`}>
-        <div className="max-w-7xl mx-auto">
+      <section className={`${sectionPad} relative overflow-hidden ${isDark ? 'bg-gray-800' : 'bg-gradient-to-br from-[#0b5d68] via-[#1a8a96] to-[#2eb5c2]'}`}>
+        {/* Subtle wave overlay */}
+        <div className="pointer-events-none absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+        <div className="relative z-10 max-w-7xl mx-auto">
           <div className="grid grid-cols-1 gap-8 items-center lg:grid-cols-3 lg:gap-12">
             <div className="lg:col-span-1">
-              <h2
-                className={`font-headline text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}
-              >
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
+                <span className="material-symbols-outlined text-[0.8rem]">monitoring</span>
+                Live Data
+              </div>
+              <h2 className={`font-headline text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}>
                 Market Intelligence
               </h2>
-              <p className={`text-sm sm:text-base mb-6 sm:mb-8 ${isDark ? 'text-gray-300' : 'text-white/90'}`}>
-                Access real-time price volatility maps and harvest forecasting powered by satellite
-                telemetry.
+              <p className={`text-sm sm:text-base mb-6 sm:mb-8 ${isDark ? 'text-gray-300' : 'text-white/85'}`}>
+                Real-time price volatility maps and harvest forecasting powered by satellite telemetry.
               </p>
-              <div className="space-y-4">
-                <div
-                  className={`${isDark ? 'bg-gray-700' : 'bg-white/20'} p-4 rounded-xl flex items-center justify-between border ${isDark ? 'border-gray-600' : 'border-white/10'}`}
-                >
-                  <span className={`font-medium ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}>
-                    Wheat Futures
-                  </span>
-                  <div className="text-right">
-                    <div className={`font-bold ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}>
-                      +2.4%
+              <div className="space-y-3">
+                {[
+                  { name: 'Wheat Futures',  change: '+2.4%', trend: 'Active Upswing',   up: true  },
+                  { name: 'Mustard Index',  change: '-0.8%', trend: 'Correction Phase', up: false },
+                  { name: 'Soybean Spot',   change: '+1.1%', trend: 'Steady Rise',      up: true  },
+                  { name: 'Rice (IR-64)',   change: '+0.3%', trend: 'Stable',           up: true  },
+                ].map(({ name, change, trend, up }) => (
+                  <div key={name}
+                    className={`flex items-center justify-between rounded-xl border p-3.5 backdrop-blur-sm transition-colors ${isDark ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-white/15 bg-white/15 hover:bg-white/25'}`}>
+                    <div className="flex items-center gap-2.5">
+                      <span className={`material-symbols-outlined text-base ${up ? 'text-emerald-400' : 'text-red-400'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+                        {up ? 'trending_up' : 'trending_down'}
+                      </span>
+                      <span className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-white'}`}>{name}</span>
                     </div>
-                    <div
-                      className={`text-[10px] uppercase tracking-widest ${isDark ? 'text-gray-300' : 'text-white/80'}`}
-                    >
-                      Active Upswing
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className={`${isDark ? 'bg-gray-700' : 'bg-white/20'} p-4 rounded-xl flex items-center justify-between border ${isDark ? 'border-gray-600' : 'border-white/10'}`}
-                >
-                  <span className={`font-medium ${isDark ? 'text-[#2eb5c2]' : 'text-white'}`}>
-                    Mustard Index
-                  </span>
-                  <div className="text-right">
-                    <div className="text-error font-bold">-0.8%</div>
-                    <div
-                      className={`text-[10px] uppercase tracking-widest ${isDark ? 'text-gray-300' : 'text-white/80'}`}
-                    >
-                      Correction Phase
+                    <div className="text-right">
+                      <div className={`text-sm font-bold ${up ? 'text-emerald-400' : 'text-red-400'}`}>{change}</div>
+                      <div className={`text-[9px] uppercase tracking-widest ${isDark ? 'text-gray-400' : 'text-white/60'}`}>{trend}</div>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
             <div
@@ -1058,57 +1085,49 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-8 sm:mb-16">
-            <h2 className="font-headline text-2xl sm:text-3xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 animate-fade-in-up">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
+              <span className="material-symbols-outlined text-[0.8rem]">verified</span>
+              Trusted Platform
+            </div>
+            <h2 className="font-headline text-2xl sm:text-3xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
               Trusted by Thousands
             </h2>
-            <p className="text-sm sm:text-base lg:text-xl text-white/90 max-w-3xl mx-auto px-2 animate-fade-in-up animation-delay-200">
-              Join India's digital agricultural marketplace with verified partners and secure
-              transactions
+            <p className="text-sm sm:text-base lg:text-xl text-white/85 max-w-3xl mx-auto px-2">
+              Join India's digital agricultural marketplace with verified partners and secure transactions
             </p>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-4 md:gap-8 mb-8 sm:mb-16">
-            <div className="text-center group">
-              <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:bg-white/20">
-                <div className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 counter" data-target="50000">
-                  0
+          <div className="stagger-grid grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-4 md:gap-8 mb-8 sm:mb-16">
+            {[
+              { target: 50000, suffix: '+', label: 'Farmers', icon: 'agriculture'     },
+              { target: 1200,  suffix: '+', label: 'Warehouses', icon: 'warehouse'    },
+              { target: 3500,  suffix: '+', label: 'Transporters', icon: 'local_shipping' },
+              { target: null,  suffix: '',  label: 'GMV Traded', icon: 'payments',    special: true },
+            ].map(({ target, suffix, label, icon, special }, i) => (
+              <div key={label} className={`text-center group ${i === 3 ? 'col-span-2 md:col-span-1' : ''}`}>
+                <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:bg-white/20">
+                  <div className={`mb-2 flex justify-center`}>
+                    <span className="material-symbols-outlined text-white/40 text-lg sm:text-2xl">{icon}</span>
+                  </div>
+                  {special ? (
+                    <div className="text-xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
+                      ₹<span className="counter" data-target="2500">0</span>
+                      <span className="text-base sm:text-2xl"> Cr</span>
+                    </div>
+                  ) : (
+                    <div className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
+                      <span className="counter" data-target={target}>{0}</span>{suffix}
+                    </div>
+                  )}
+                  <div className="text-[10px] sm:text-xs text-white/70 uppercase tracking-wider">{label}</div>
                 </div>
-                <div className="text-[10px] sm:text-sm text-white/80 uppercase tracking-wider">Farmers</div>
               </div>
-            </div>
-            <div className="text-center group">
-              <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:bg-white/20">
-                <div className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 counter" data-target="1200">
-                  0
-                </div>
-                <div className="text-[10px] sm:text-sm text-white/80 uppercase tracking-wider">Warehouses</div>
-              </div>
-            </div>
-            <div className="text-center group">
-              <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:bg-white/20">
-                <div className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 counter" data-target="3500">
-                  0
-                </div>
-                <div className="text-[10px] sm:text-sm text-white/80 uppercase tracking-wider">Transporters</div>
-              </div>
-            </div>
-            <div className="text-center group col-span-2 md:col-span-1">
-              <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-8 border border-white/20 transition-all duration-300 active:scale-[0.98] sm:hover:scale-105 sm:hover:bg-white/20">
-                <div className="text-xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
-                  ₹
-                  <span className="counter" data-target="2500">
-                    0
-                  </span>
-                  <span className="text-base sm:text-4xl"> Crore</span>
-                </div>
-                <div className="text-[10px] sm:text-sm text-white/80 uppercase tracking-wider">Transactions</div>
-              </div>
-            </div>
+            ))}
           </div>
 
           {/* Trust Features */}
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3 md:gap-8 mb-8 sm:mb-16">
+          <div className="stagger-grid grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3 md:gap-8 mb-8 sm:mb-16">
             <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-5 sm:p-8 border border-white/20 group active:scale-[0.98] sm:hover:bg-white/20 transition-all duration-300">
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300">
                 <span className="material-symbols-outlined text-white text-2xl sm:text-3xl">verified_user</span>

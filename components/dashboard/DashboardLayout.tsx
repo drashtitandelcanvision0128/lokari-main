@@ -16,6 +16,7 @@ interface DashboardLayoutProps {
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   role?: string;
+  onNewPost?: () => void;
 }
 
 export function DashboardLayout({
@@ -23,6 +24,7 @@ export function DashboardLayout({
   onTabChange,
   dashboardTabs,
   children,
+  onNewPost,
 }: DashboardLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -39,6 +41,7 @@ export function DashboardLayout({
           onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
           isMobileOpen={isMobileNavOpen}
           onMobileClose={() => setIsMobileNavOpen(false)}
+          onNewPost={onNewPost}
         />
 
         <main className="flex min-w-0 flex-1 flex-col">

@@ -171,14 +171,6 @@ const Navbar = () => {
             Contact
           </Link>
 
-          {isLoggedIn && (
-            <Link
-              href={`/${currentUser?.role || 'farmer'}-dashboard`}
-              className={`${linkBase} ${isDashboardRoute ? linkActive : linkInactive}`}
-            >
-              Dashboard
-            </Link>
-          )}
         </div>
 
         {/* Spacer on mobile so actions stay right-aligned */}
