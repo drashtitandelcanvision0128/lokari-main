@@ -525,14 +525,44 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
 
                         <button
                           onClick={() => handleViewListing(listing)}
-                          className="text-primary hover:text-primary-container"
+                          className="
+    h-7
+    px-2.5
+    rounded-md
+    border
+    border-sky-200
+    bg-white
+    text-sky-600
+    shadow-sm
+    hover:border-sky-300
+    hover:bg-sky-50
+    hover:text-sky-700
+    hover:shadow-md
+    transition-all
+    duration-200
+    flex
+    items-center
+    justify-center
+    group/view
+  "
                           title="View"
                         >
-
-                          <span className="material-symbols-outlined text-lg">
-                            visibility
+                          <span
+                            className="
+      material-symbols-outlined
+      text-[18px]
+      transition-all
+      duration-200
+      group-hover/view:scale-110
+      group-hover/view:-translate-y-[1px]
+    "
+                            style={{
+                              fontVariationSettings:
+                                "'FILL' 0, 'wght' 250, 'GRAD' 0, 'opsz' 24",
+                            }}
+                          >
+                            pageview
                           </span>
-
                         </button>
 
 
@@ -542,14 +572,88 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                             setEditListingData(listing)
                             setIsEditModalOpen(true)
                           }}
-                          className="text-gray-600 hover:text-gray-900"
                           title="Edit"
+                          className="
+    h-7
+    px-2.5
+    rounded-md
+    border
+    border-gray-200
+    bg-white
+    text-gray-500
+    shadow-sm
+    hover:border-[#2eb5c2]/40
+    hover:text-[#0b5d68]
+    hover:shadow-md
+    transition-all
+    duration-200
+    flex
+    items-center
+    justify-center
+    group/edit
+  "
                         >
+                          <div className="relative w-5 h-5">
+                            {/* Paper */}
+                            <span
+                              className="
+        absolute
+        left-[1px]
+        top-[3px]
+        w-[13px]
+        h-[15px]
+        rounded-[2px]
+        border-[1.5px]
+        border-current
+        transition-all
+        duration-200
+        group-hover/edit:-translate-x-[1px]
+      "
+                            >
+                              <span
+                                className="
+          absolute
+          left-[3px]
+          top-[4px]
+          w-[6px]
+          h-[1px]
+          bg-current
+          rounded-full
+        "
+                              />
 
-                          <span className="material-symbols-outlined text-lg">
-                            edit
-                          </span>
+                              <span
+                                className="
+          absolute
+          left-[3px]
+          top-[8px]
+          w-[8px]
+          h-[1px]
+          bg-current
+          rounded-full
+        "
+                              />
+                            </span>
 
+                            {/* Pen */}
+                            <span
+                              className="
+        absolute
+        right-[-1px]
+        top-[0px]
+        w-[10px]
+        h-[3px]
+        rounded-full
+        bg-current
+        rotate-[-45deg]
+        transition-all
+        duration-200
+        origin-left
+        group-hover/edit:translate-x-[4px]
+        group-hover/edit:-translate-y-[2px]
+      "
+                            />
+                          </div>
                         </button>
 
                         <button
@@ -568,15 +672,56 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                               alert('Failed to update listing block status')
                             }
                           }}
-                          className={`${listing.isBlocked
-                            ? 'text-red-600'
-                            : 'text-gray-600'
-                            } hover:text-red-700`}
-                          title={listing.isBlocked ? "Unblock" : "Block"}
+                          title={listing.isBlocked ? 'Unblock' : 'Block'}
+                          className="
+    h-7
+    px-2.5
+    rounded-md
+    border
+    border-gray-200
+    bg-white
+    shadow-sm
+    hover:border-[#2eb5c2]/40
+    hover:shadow-md
+    transition-all
+    duration-200
+    flex
+    items-center
+    justify-center
+  "
                         >
-                          <span className="material-symbols-outlined text-lg">
-                            block
-                          </span>
+                          <div
+                            className={`
+      relative
+      w-6 h-3
+      rounded-full
+      transition-all
+      duration-300
+      ease-in-out
+      ${listing.isBlocked
+                                ? 'bg-[#d55b39]'
+                                : 'bg-[#2eb5c2]'
+                              }
+    `}
+                          >
+                            <span
+                              className={`
+        absolute
+        top-[1.5px]
+        w-2 h-2
+        rounded-full
+        bg-white
+        shadow-sm
+        transition-all
+        duration-300
+        ease-in-out
+        ${listing.isBlocked
+                                  ? 'left-[2px]'
+                                  : 'left-[14px]'
+                                }
+      `}
+                            />
+                          </div>
                         </button>
 
 
