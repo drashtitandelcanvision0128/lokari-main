@@ -498,7 +498,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     group-hover:-translate-y-[1px]
     group-hover:text-[#0b5d68]
   ">
-                        {sortField === 'product' ? (sortDirection === 'asc' ? 'north' : 'south') : 'unfold_more'}
+                        {sortField === 'product' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
                       </span>
                     </button>
                   </th>
@@ -524,7 +524,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     group-hover:-translate-y-[1px]
     group-hover:text-[#0b5d68]
   ">
-                        {sortField === 'price' ? (sortDirection === 'asc' ? 'north' : 'south') : 'unfold_more'}
+                        {sortField === 'price' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
                       </span>
                     </button>
                   </th>
@@ -558,8 +558,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                         {
                           sortField === 'listingLocation'
                             ? sortDirection === 'asc'
-                              ? 'north'
-                              : 'south'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
                             : 'unfold_more'
                         }
                       </span>
@@ -595,8 +595,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                         {
                           sortField === 'quantity'
                             ? sortDirection === 'asc'
-                              ? 'north'
-                              : 'south'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
                             : 'unfold_more'
                         }
                       </span>

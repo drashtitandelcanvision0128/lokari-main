@@ -30,10 +30,10 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
   // For sorting
-  const [sortField, setSortField] = useState<'title' | 'seller' | 'location' | null>(null)
+  const [sortField, setSortField] = useState<'title' | 'seller' | 'location' | 'price' | 'quantity' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
-  const handleSort = (field: 'title' | 'seller' | 'location') => {
+  const handleSort = (field: 'title' | 'seller' | 'location' | 'price' | 'quantity') => {
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
     } else {
@@ -288,6 +288,18 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
       valueB = b.location
     }
 
+    if (sortField === 'quantity') {
+      return sortDirection === 'asc'
+        ? a.quantity - b.quantity
+        : b.quantity - a.quantity
+    }
+
+    if (sortField === 'price') {
+      return sortDirection === 'asc'
+        ? a.price - b.price
+        : b.price - a.price
+    }
+
     return sortDirection === 'asc'
       ? valueA.localeCompare(valueB)
       : valueB.localeCompare(valueA)
@@ -307,7 +319,9 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-on-surface-variant">Category:</label>
+            <label className="text-sm
+font-medium
+text-[#0b5d68] text-on-surface-variant">Category:</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -321,7 +335,9 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-on-surface-variant">Status:</label>
+            <label className="text-sm
+font-medium
+text-[#0b5d68] text-on-surface-variant">Status:</label>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
@@ -351,14 +367,37 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
               <thead className="bg-gray-50">
                 <tr>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                  <th className="px-6 py-3">
                     <button
                       onClick={() => handleSort('title')}
-                      className="flex items-center gap-1 hover:text-primary"
+                      className="
+      group
+      w-full
+      inline-flex
+      items-center
+      justify-center
+      gap-2
+      text-[13px]
+      font-semibold
+      tracking-[0.02em]
+      text-[#667085]
+      transition-colors
+      hover:text-[#0b5d68]
+    "
                     >
                       Title
 
-                      <span className="material-symbols-outlined text-sm">
+                      <span
+                        className="
+        material-symbols-outlined
+        text-[13px]
+        text-gray-400
+        transition-all
+        duration-200
+        group-hover:-translate-y-[1px]
+        group-hover:text-[#0b5d68]
+      "
+                      >
                         {sortField === 'title'
                           ? sortDirection === 'asc'
                             ? 'arrow_upward'
@@ -369,14 +408,37 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                     </button>
                   </th>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                  <th className="px-6 py-3">
                     <button
                       onClick={() => handleSort('seller')}
-                      className="flex items-center gap-1 hover:text-primary"
+                      className="
+      group
+      w-full
+      inline-flex
+      items-center
+      justify-center
+      gap-2
+      text-[13px]
+      font-semibold
+      tracking-[0.02em]
+      text-[#667085]
+      transition-colors
+      hover:text-[#0b5d68]
+    "
                     >
                       Seller
 
-                      <span className="material-symbols-outlined text-sm">
+                      <span
+                        className="
+        material-symbols-outlined
+        text-[13px]
+        text-gray-400
+        transition-all
+        duration-200
+        group-hover:-translate-y-[1px]
+        group-hover:text-[#0b5d68]
+      "
+                      >
                         {sortField === 'seller'
                           ? sortDirection === 'asc'
                             ? 'arrow_upward'
@@ -386,18 +448,41 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
 
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     Category
                   </th>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                  <th className="px-6 py-3">
                     <button
                       onClick={() => handleSort('location')}
-                      className="flex items-center gap-1 hover:text-primary"
+                      className="
+      group
+      w-full
+      inline-flex
+      items-center
+      justify-center
+      gap-2
+      text-[13px]
+      font-semibold
+      tracking-[0.02em]
+      text-[#667085]
+      transition-colors
+      hover:text-[#0b5d68]
+    "
                     >
                       Location
 
-                      <span className="material-symbols-outlined text-sm">
+                      <span
+                        className="
+        material-symbols-outlined
+        text-[13px]
+        text-gray-400
+        transition-all
+        duration-200
+        group-hover:-translate-y-[1px]
+        group-hover:text-[#0b5d68]
+      "
+                      >
                         {sortField === 'location'
                           ? sortDirection === 'asc'
                             ? 'arrow_upward'
@@ -408,19 +493,91 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                     </button>
                   </th>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                    Price
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    <button
+                      onClick={() => handleSort('quantity')}
+                      className="
+      group
+      inline-flex
+      items-center
+      gap-2
+      text-[13px]
+      font-semibold
+      text-[#667085]
+      transition-colors
+      hover:text-[#0b5d68]
+    "
+                    >
+                      Quantity
+
+                      <span
+                        className="
+        material-symbols-outlined
+        text-[13px]
+        text-gray-400
+        transition-all
+        duration-200
+        group-hover:-translate-y-[1px]
+        group-hover:text-[#0b5d68]
+      "
+                      >
+                        {sortField === 'quantity'
+                          ? sortDirection === 'asc'
+                            ? 'arrow_upward'
+                            : 'arrow_downward'
+                          : 'unfold_more'}
+                      </span>
+                    </button>
                   </th>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    <button
+                      onClick={() => handleSort('price')}
+                      className="
+      group
+      inline-flex
+      items-center
+      gap-2
+      text-[13px]
+      font-semibold
+      text-[#667085]
+      transition-colors
+      hover:text-[#0b5d68]
+    "
+                    >
+                      Price
+
+                      <span
+                        className="
+        material-symbols-outlined
+        text-[13px]
+        text-gray-400
+        transition-all
+        duration-200
+        group-hover:-translate-y-[1px]
+        group-hover:text-[#0b5d68]
+      "
+                      >
+                        {sortField === 'price'
+                          ? sortDirection === 'asc'
+                            ? 'arrow_upward'
+                            : 'arrow_downward'
+                          : 'unfold_more'}
+                      </span>
+                    </button>
+                  </th>
+
+
+
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     Status
                   </th>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     Created
                   </th>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     Actions
                   </th>
 
@@ -440,7 +597,7 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
 
                     <td className="px-6 py-4">
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 max-w-[200px]">
 
                         {listing.image ? (
                           <img
@@ -449,7 +606,7 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                             className="h-10 w-10 rounded-lg object-cover bg-gray-100"
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                          <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-gray-100 flex items-center justify-center">
                             <span className="material-symbols-outlined text-gray-500">
                               {getCategoryIcon(listing.category)}
                             </span>
@@ -457,13 +614,15 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                         )}
 
 
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
+                        <div className='min-w-0'>
+                          <p className="text-sm
+font-medium
+text-[#0b5d68] text-gray-900 truncate">
                             {listing.title}
                           </p>
 
-                          <p className="text-xs text-gray-500">
-                            {listing.quantity} {listing.unit}
+                          <p className="mt-0.5 text-xs text-gray-500 truncate">
+                            {listing.description || 'No description available'}
                           </p>
 
                         </div>
@@ -482,7 +641,16 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
 
                     <td className="px-6 py-4">
 
-                      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs bg-gray-100">
+                      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs produce
+→ bg-[#2eb5c2]/10
+text-[#2eb5c2]
+border border-[#2eb5c2]/20
+
+warehouse
+→ amber
+
+transport
+→ purple">
                         {listing.category}
                       </span>
 
@@ -495,11 +663,22 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                     </td>
 
 
-
-                    <td className="px-6 py-4 text-sm font-medium">
-                      ₹{listing.price}/{listing.unit}
+                    <td className="px-6 py-4 text-center">
+                      <div className="inline-flex items-center gap-1 rounded bg-gray-100 px-3 py-1">
+                        <span className="text-sm font-medium text-[#0b5d68]">
+                          {listing.quantity}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {listing.unit}
+                        </span>
+                      </div>
                     </td>
 
+                    <td className="px-6 py-4 text-sm
+font-medium
+text-[#0b5d68]">
+                      ₹{listing.price}/{listing.unit}
+                    </td>
 
 
                     <td className="px-6 py-4">
