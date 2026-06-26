@@ -8,6 +8,7 @@ import { ListingsPage } from '@/components/dashboard/pages/ListingsPage'
 import { OrdersPage } from '@/components/dashboard/pages/OrdersPage'
 import { TransactionsPage } from '@/components/dashboard/pages/TransactionsPage'
 import { SettingsPage } from '@/components/dashboard/pages/SettingsPage'
+import { CreateListingModal } from '@/components/dashboard/CreateListingModal'
 import { farmerDashboardConfig } from '@/data/dashboardMock'
 import { TabType } from '@/types/dashboard'
 import { getCurrentUser, getUserDisplayName } from '@/lib/auth'
@@ -33,6 +34,8 @@ function FarmerDashboardContent() {
   const [dashboardTabs, setDashboardTabs] = useState(farmerDashboardConfig.tabs)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [listingsKey, setListingsKey] = useState(0)
 
   // Load user data on client side only
   useEffect(() => {
@@ -80,9 +83,21 @@ function FarmerDashboardContent() {
         userAvatar={currentUser?.avatar || farmerDashboardConfig.user.avatar}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onNewPost={() => setIsCreateModalOpen(true)}
       >
-        <ActiveComponent searchQuery={searchQuery} />
+        <ActiveComponent key={activeTab === 'listings' ? listingsKey : undefined} searchQuery={searchQuery} />
       </DashboardLayout>
+
+      {isCreateModalOpen && (
+        <CreateListingModal
+          open={true}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={() => {
+            setListingsKey(k => k + 1)
+            if (activeTab !== 'listings') setActiveTab('listings')
+          }}
+        />
+      )}
     </SettingsProvider>
   )
 }

@@ -18,6 +18,7 @@ interface SidebarProps {
   onToggleCollapse: () => void;
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
+  onNewPost?: () => void;
 }
 
 const tabConfig: Record<TabType, { icon: string; label: string; group: 'main' | 'account' }> = {
@@ -50,6 +51,7 @@ function SidebarNav({
   isCollapsed,
   onToggleCollapse,
   onNavigate,
+  onNewPost,
 }: {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
@@ -57,6 +59,7 @@ function SidebarNav({
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   onNavigate?: () => void;
+  onNewPost?: () => void;
 }) {
   const [userRole, setUserRole] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(activeTab === 'settings');
@@ -132,8 +135,13 @@ function SidebarNav({
           <button
             type="button"
             onClick={() => {
-              navigateToCreateListing();
-              onNavigate?.();
+              if (onNewPost) {
+                onNewPost();
+                onNavigate?.();
+              } else {
+                navigateToCreateListing();
+                onNavigate?.();
+              }
             }}
             title="New Post"
             className={cn(
@@ -311,8 +319,9 @@ export function Sidebar({
   onToggleCollapse,
   isMobileOpen = false,
   onMobileClose,
+  onNewPost,
 }: SidebarProps) {
-  const sharedNavProps = { activeTab, onTabChange, dashboardTabs, isCollapsed, onToggleCollapse };
+  const sharedNavProps = { activeTab, onTabChange, dashboardTabs, isCollapsed, onToggleCollapse, onNewPost };
 
   return (
     <>

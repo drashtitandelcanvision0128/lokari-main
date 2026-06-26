@@ -74,7 +74,8 @@ export default function ProfileCard({ user }: ProfileCardProps) {
         syncAvatar(profile.avatarUrl)
       }
       if (profile?.address) {
-        setAddress({ street: '', city: '', state: '', pincode: '', country: 'India', ...profile.address })
+        const addrDefaults = { street: '', city: '', state: '', pincode: '', country: 'India' }
+        setAddress({ ...addrDefaults, ...profile.address })
       }
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps

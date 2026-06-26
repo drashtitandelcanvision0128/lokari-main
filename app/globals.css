@@ -417,6 +417,10 @@ body {
   animation: fadeInUp 0.6s ease-out forwards;
 }
 
+.stagger-grid > div:nth-child(1) { animation-delay: 0.1s; }
+.stagger-grid > div:nth-child(2) { animation-delay: 0.2s; }
+.stagger-grid > div:nth-child(3) { animation-delay: 0.3s; }
+.stagger-grid > div:nth-child(4) { animation-delay: 0.4s; }
 .grid>div:nth-child(1) {
   animation-delay: 0.1s;
 }

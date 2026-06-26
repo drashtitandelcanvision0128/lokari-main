@@ -38,6 +38,7 @@ enum ListingStatus {
 
 enum PriceType {
   FIXED_PRICE
+  NEGOTIABLE
   AUCTION
 }
 
@@ -207,6 +208,9 @@ model FarmerProduce {
   harvest_date  DateTime?
   expiry_date   DateTime?
   quality_grade String?
+
+  min_order_quantity Decimal?
+  min_order_unit     String?
 
   storage_temperature String?
   storage_humidity    String?

@@ -33,6 +33,12 @@ function hashOtp(otp) {
 }
 
 function generateOtpCode() {
+  // ─── DEMO MODE ───────────────────────────────────────────────────────────────
+  // Set STATIC_OTP=123456 in your environment to use a fixed OTP (no email needed).
+  // Remove or unset STATIC_OTP to revert to real random OTPs.
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (process.env.STATIC_OTP) return process.env.STATIC_OTP;
+
   return String(crypto.randomInt(100000, 999999));
 }
 
