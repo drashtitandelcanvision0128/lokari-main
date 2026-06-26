@@ -87,11 +87,24 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       }
 
       // const response = await fetch(apiUrl('/listings'));
-      const response = await fetch(
-        apiUrl(
-          `/listings?search=${localSearch.trim()}&status=${filter.trim()}&sortField=${sortField?.trim()}&sortDirection=${sortDirection.trim()}&page=${currentPage}&limit=${rowsPerPage}`
-        )
-      )
+      // const response = await fetch(
+      //   apiUrl(
+      //     `/listings?search=${localSearch.trim()}&status=${filter.trim()}&sortField=${sortField?.trim()}&sortDirection=${sortDirection.trim()}&page=${currentPage}&limit=${rowsPerPage}`
+      //   )
+      // )
+
+      const params = new URLSearchParams({
+        search: localSearch.trim(),
+        status: filter,
+        sortField: sortField ?? '',
+        sortDirection,
+        page: String(currentPage),
+        limit: String(rowsPerPage),
+      });
+
+      const url = apiUrl(`/listings?${params.toString()}`);
+
+      const response = await fetch(url);
       const result = await response.json();
 
       console.log("FULL API DATA:", result.data);
@@ -110,58 +123,56 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       );
 
       if (result.success) {
-        const userListings = result.data
-          .filter((item: any) => item.user_id === currentUser.id)
-          .map((item: any) => ({
-            id: item.listing_id,
-            product: item.title,
-            description: item.description || '',
-            quantity: item.farmerProduce
-              ? `${item.farmerProduce.quantity} ${item.farmerProduce.unit || ''}`
-              : item.warehouse
-                ? `${item.warehouse.capacity}`
-                : item.transport
-                  ? `${item.transport.capacity}`
-                  : 'N/A',
-            bids: 0,
-            views: 0,
-            inquiries: 0,
-            status:
-              item.status === 'ACTIVE'
-                ? 'live'
-                : item.status === 'DRAFT'
-                  ? 'paused'
-                  : 'reviewing',
-            listingType:
-              item.type === 'PRODUCE'
-                ? 'produce'
-                : item.type === 'WAREHOUSE'
-                  ? 'warehouse'
-                  : 'transport',
-            price: `₹${item.price}`,
-            priceType: item.price_type || '-',
-            // listingLocation:
-            //   item.address?.city
-            //     ? `${item.address.city}`
-            //     : item.listing_location || '-',
+        const userListings = result.data.map((item: any) => ({
+          id: item.listing_id,
+          product: item.title,
+          description: item.description || '',
+          quantity: item.farmerProduce
+            ? `${item.farmerProduce.quantity} ${item.farmerProduce.unit || ''}`
+            : item.warehouse
+              ? `${item.warehouse.capacity}`
+              : item.transport
+                ? `${item.transport.capacity}`
+                : 'N/A',
+          bids: 0,
+          views: 0,
+          inquiries: 0,
+          status:
+            item.status === 'ACTIVE'
+              ? 'live'
+              : item.status === 'DRAFT'
+                ? 'paused'
+                : 'reviewing',
+          listingType:
+            item.type === 'PRODUCE'
+              ? 'produce'
+              : item.type === 'WAREHOUSE'
+                ? 'warehouse'
+                : 'transport',
+          price: `₹${item.price}`,
+          priceType: item.price_type || '-',
+          // listingLocation:
+          //   item.address?.city
+          //     ? `${item.address.city}`
+          //     : item.listing_location || '-',
 
-            // listingLocation: item.address?.city ?? '-',
+          // listingLocation: item.address?.city ?? '-',
 
-            address: item.address || null,
+          address: item.address || null,
 
-            listingLocation: item.address?.city ?? '-',
-            // image: '',
-            product_images: item.product_images || [],
-            image:
-              item.product_images?.length > 0
-                ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.product_images[0]}`
-                : '',
-            createdAt: item.created_at,
+          listingLocation: item.address?.city ?? '-',
+          // image: '',
+          product_images: item.product_images || [],
+          image:
+            item.product_images?.length > 0
+              ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.product_images[0]}`
+              : '',
+          createdAt: item.created_at,
 
-            farmerProduce: item.farmerProduce ?? null,
-            warehouse: item.warehouse ?? null,
-            transport: item.transport ?? null,
-          }));
+          farmerProduce: item.farmerProduce ?? null,
+          warehouse: item.warehouse ?? null,
+          transport: item.transport ?? null,
+        }));
         setListings(userListings);
 
         if (selectedListing) {
