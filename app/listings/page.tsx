@@ -49,6 +49,10 @@ function ListingsPageContent() {
   const [listings, setListings] = useState(dummyListings)
   const [filteredListings, setFilteredListings] = useState(dummyListings)
 
+  const ITEMS_PER_PAGE = 6
+
+  const [currentPage, setCurrentPage] = useState(1)
+
   const [dbListings, setDbListings] = useState<any[]>([])
   const [loadingListings, setLoadingListings] = useState(true)
   const [loading, setLoading] = useState(false)
@@ -223,6 +227,35 @@ function ListingsPageContent() {
     return () => clearTimeout(timer)
   }, [searchTerm, selectedType, selectedStatus, listings, sortBy, sidebarFilters, categoryFromUrl])
 
+  // Pagination
+  const totalPages = Math.ceil(filteredListings.length / ITEMS_PER_PAGE)
+
+  const paginatedListings = filteredListings.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  const start =
+    filteredListings.length === 0
+      ? 0
+      : (currentPage - 1) * ITEMS_PER_PAGE + 1
+
+  const end = Math.min(
+    currentPage * ITEMS_PER_PAGE,
+    filteredListings.length
+  )
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [
+    searchTerm,
+    selectedType,
+    selectedStatus,
+    sortBy,
+    sidebarFilters,
+    categoryFromUrl
+  ])
+
   const types = ['all', 'produce', 'warehouse', 'transport']
   const statuses = ['all', 'active', 'pending', 'sold']
 
@@ -318,7 +351,9 @@ function ListingsPageContent() {
           {/* Results Count */}
           <div className="flex items-center justify-between mb-6">
             <p className="text-[#414844]">
-              Showing {filteredListings.length} of {listings.length} listings
+              Showing <span className="font-semibold">{start}</span>–
+              <span className="font-semibold">{end}</span> of{" "}
+              <span className="font-semibold">{filteredListings.length}</span> listings
             </p>
           </div>
 
@@ -373,11 +408,111 @@ function ListingsPageContent() {
                 </button>
               </div>
             ) : (
-              filteredListings.map((listing) => (
+              // filteredListings.map((listing) => (
+              paginatedListings.map((listing) => (
                 <ListingCard key={listing.id} listing={listing} />
               ))
             )}
           </div>
+
+
+          {!loading && filteredListings.length > 0 && totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-12">
+              <div className="flex items-center gap-2 rounded-xl border border-gray-100 bg-white p-2 shadow-sm">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="
+                  flex items-center gap-1
+px-4 py-2
+rounded-lg
+border border-gray-200
+bg-white
+text-[#0b5d68]
+font-medium
+transition-all duration-200 ease-out
+hover:bg-[#f6f8f9]
+hover:border-[#2eb5c2]
+hover:-translate-y-[2px]
+hover:shadow-lg
+hover:scale-105
+active:translate-y-0
+disabled:opacity-40
+disabled:cursor-not-allowed
+disabled:hover:translate-y-0
+disabled:hover:shadow-none
+"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    chevron_left
+                  </span>
+                  Previous
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    return (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    )
+                  })
+                  .map((page, index, pages) => (
+                    <div key={page} className="flex items-center">
+                      {index > 0 && page - pages[index - 1] > 1 && (
+                        <span className="px-1 text-sm font-semibold text-gray-400 select-none">...</span>
+                      )}
+
+                      <button
+                        onClick={() => setCurrentPage(page)}
+                        className={`
+          w-10 h-10
+          rounded-lg
+          font-medium
+          transition-all duration-200 ease-out
+          ${currentPage === page
+                            ? 'bg-[#0b5d68] text-white shadow-md scale-105 ring-2 ring-[#2eb5c2]/20'
+                            : 'bg-white border border-gray-200 text-[#0b5d68] hover:bg-[#f6f8f9] hover:border-[#2eb5c2] hover:-translate-y-[2px] hover:shadow-lg hover:scale-105'
+                          }
+        `}
+                      >
+                        {page}
+                      </button>
+                    </div>
+                  ))}
+
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="
+                  flex items-center gap-1
+px-4 py-2
+rounded-lg
+border border-gray-200
+bg-white
+text-[#0b5d68]
+font-medium
+transition-all duration-200 ease-out
+hover:bg-[#f6f8f9]
+hover:border-[#2eb5c2]
+hover:-translate-y-[2px]
+hover:shadow-lg
+hover:scale-105
+active:translate-y-0
+disabled:opacity-40
+disabled:cursor-not-allowed
+disabled:hover:translate-y-0
+disabled:hover:shadow-none
+"
+                >
+                  Next
+                  <span className="material-symbols-outlined text-[18px]">
+                    chevron_right
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
