@@ -10,7 +10,7 @@ import { Listing } from '@/types/dashboard';
 // import { mockListings } from '@/data/dashboardMock'
 import { apiUrl, authHeaders } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
-import { getAuthToken } from "@/lib/api";
+import { getAuthToken } from '@/lib/api';
 
 import EditUserListingModal from '@/components/dashboard/modals/EditUserListingModal';
 
@@ -22,21 +22,18 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   // const [listings, setListings] = useState<Listing[]>(mockListings)
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] =
-    useState<'all' | 'ACTIVE' | 'DRAFT' | 'SOLD' | 'EXPIRED'>('all')
+  const [filter, setFilter] = useState<'all' | 'ACTIVE' | 'DRAFT' | 'SOLD' | 'EXPIRED'>('all');
   const [openStatusDropdown, setOpenStatusDropdown] = useState<string | null>(null);
   const statusDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const [localSearch, setLocalSearch] = useState(''); // local state for search
 
-
   // Modal State
-  const [editOpen, setEditOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false);
   // const [selectedListing, setSelectedListing] = useState<any>(null)
-  const [selectedListing, setSelectedListing] =
-    useState<Listing | null>(null)
+  const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
 
-  const [imageModalOpen, setImageModalOpen] = useState(false)
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   const [listingImages, setListingImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
@@ -65,12 +62,14 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const [totalPages, setTotalPages] = useState(1);
 
   // For sorting
-  const [sortField, setSortField] = useState<'product' | 'price' | 'quantity' | 'listingLocation' | null>(null);
+  const [sortField, setSortField] = useState<
+    'product' | 'price' | 'quantity' | 'listingLocation' | null
+  >(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const handleSort = (field: 'product' | 'price' | 'quantity' | 'listingLocation') => {
     if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortField(field);
       setSortDirection('asc');
@@ -89,25 +88,19 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       // const response = await fetch(apiUrl('/listings'));
       const response = await fetch(
         apiUrl(
-          `/listings?search=${localSearch.trim()}&status=${filter.trim()}&sortField=${sortField?.trim()}&sortDirection=${sortDirection.trim()}&page=${currentPage}&limit=${rowsPerPage}`
-        )
-      )
+          `/listings?search=${localSearch.trim()}&status=${filter.trim()}&sortField=${sortField?.trim()}&sortDirection=${sortDirection.trim()}&page=${currentPage}&limit=${rowsPerPage}`,
+        ),
+      );
       const result = await response.json();
 
-      console.log("FULL API DATA:", result.data);
+      console.log('FULL API DATA:', result.data);
 
       result.data.forEach((item: any) => {
-        console.log(
-          item.product,
-          item.product_images
-        );
+        console.log(item.product, item.product_images);
       });
       // console.log(result.data[0])
       console.log('Full result:', result);
-      console.log(
-        "FIRST LISTING IMAGES:",
-        result.data?.[0]?.product_images
-      );
+      console.log('FIRST LISTING IMAGES:', result.data?.[0]?.product_images);
 
       if (result.success) {
         const userListings = result.data
@@ -127,11 +120,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
             views: 0,
             inquiries: 0,
             status:
-              item.status === 'ACTIVE'
-                ? 'live'
-                : item.status === 'DRAFT'
-                  ? 'paused'
-                  : 'reviewing',
+              item.status === 'ACTIVE' ? 'live' : item.status === 'DRAFT' ? 'paused' : 'reviewing',
             listingType:
               item.type === 'PRODUCE'
                 ? 'produce'
@@ -165,15 +154,13 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
         setListings(userListings);
 
         if (selectedListing) {
-          const freshListing = userListings.find(
-            (item: Listing) => item.id === selectedListing.id
-          );
+          const freshListing = userListings.find((item: Listing) => item.id === selectedListing.id);
 
           if (freshListing) {
             setSelectedListing(freshListing);
           }
         }
-        console.log("USER LISTINGS:", userListings);
+        console.log('USER LISTINGS:', userListings);
       }
     } catch (error) {
       console.error('Failed to fetch listings:', error);
@@ -182,64 +169,36 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     }
   };
   useEffect(() => {
-
     fetchListings();
   }, []);
 
   useEffect(() => {
     fetchListings();
-  }, [
-    localSearch,
-    filter,
-    sortField,
-    sortDirection,
-    currentPage,
-    rowsPerPage
-  ]);
+  }, [localSearch, filter, sortField, sortDirection, currentPage, rowsPerPage]);
 
-
-  const handleStatusChange = async (
-    listingId: string,
-    newStatus: 'live' | 'paused'
-  ) => {
+  const handleStatusChange = async (listingId: string, newStatus: 'live' | 'paused') => {
     setOpenStatusDropdown(null);
 
-    const dbStatus =
-      newStatus === 'live'
-        ? 'ACTIVE'
-        : 'DRAFT';
+    const dbStatus = newStatus === 'live' ? 'ACTIVE' : 'DRAFT';
 
-
-    const response = await fetch(
-      apiUrl(`/listings/${listingId}`),
-      {
-        method: 'PUT',
-        headers: {
-          ...authHeaders(),
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          status: dbStatus
-        })
-      }
-    );
-
+    const response = await fetch(apiUrl(`/listings/${listingId}`), {
+      method: 'PUT',
+      headers: {
+        ...authHeaders(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: dbStatus,
+      }),
+    });
 
     const result = await response.json();
 
-
     if (result.success) {
-
-      setListings(prev =>
-        prev.map(item =>
-          item.id === listingId
-            ? { ...item, status: newStatus }
-            : item
-        )
+      setListings((prev) =>
+        prev.map((item) => (item.id === listingId ? { ...item, status: newStatus } : item)),
       );
-
     }
-
   };
   const [listingTypeFilter, setListingTypeFilter] = useState<
     'all' | 'produce' | 'warehouse' | 'transport'
@@ -336,15 +295,12 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   };
 
   const closeImageModal = () => {
-    setListingImages(
-      selectedListing?.product_images || []
-    );
+    setListingImages(selectedListing?.product_images || []);
     setReplacedImages({});
 
     setNewImages([]);
     setImageModalOpen(false);
   };
-
 
   const saveImages = async () => {
     if (!selectedListing?.id) {
@@ -356,12 +312,9 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     const formData = new FormData();
 
     const existingWithPlaceholders = listingImages.map((img, i) =>
-      replacedImages[i] ? '__replaced__' : img
+      replacedImages[i] ? '__replaced__' : img,
     );
-    formData.append(
-      "existingImages",
-      JSON.stringify(existingWithPlaceholders)
-    );
+    formData.append('existingImages', JSON.stringify(existingWithPlaceholders));
 
     // Send replacement files in order under ONE known field
     // Also send their index so backend knows which slot to put them in
@@ -373,15 +326,12 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     // Send the indices separately so backend can map file → slot
     formData.append(
       'replacedIndices',
-      JSON.stringify(replacedEntries.map(([index]) => Number(index)))
+      JSON.stringify(replacedEntries.map(([index]) => Number(index))),
     );
 
     // New images (bulk added)
-    newImages.forEach(file => {
-      formData.append(
-        "product_images",
-        file
-      );
+    newImages.forEach((file) => {
+      formData.append('product_images', file);
     });
 
     // // Replaced images — send with index so backend knows which slot
@@ -389,21 +339,16 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     //   formData.append(`replace_image_${index}`, file);
     // });
 
-
-    const res = await fetch(
-      apiUrl(`/listings/${selectedListing.id}/images`),
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${getAuthToken()}`
-        },
-        // headers: {
-        //   ...authHeaders()
-        // },
-        body: formData
-      }
-    );
-
+    const res = await fetch(apiUrl(`/listings/${selectedListing.id}/images`), {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${getAuthToken()}`,
+      },
+      // headers: {
+      //   ...authHeaders()
+      // },
+      body: formData,
+    });
 
     const result = await res.json();
 
@@ -413,7 +358,6 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     }
   };
 
-
   const getImageSrc = (img?: string) => {
     if (!img) return '';
 
@@ -421,8 +365,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     if (img.startsWith('http')) return img;
 
     return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${img}`;
-  }
-
+  };
 
   return (
     <div className="p-6 space-y-6 max-w-[1800px] mx-auto w-full">
@@ -468,8 +411,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       </div>
       {/* Product Cards Grid */}
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-        </div>
+        <div className="flex justify-between items-center"></div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="overflow-x-auto pb-24">
@@ -477,7 +419,9 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
-                    <button onClick={() => handleSort('product')} className="
+                    <button
+                      onClick={() => handleSort('product')}
+                      className="
     group
     inline-flex
     items-center
@@ -487,9 +431,11 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     text-[#667085]
     transition-colors
     hover:text-[#0b5d68]
-  ">
+  "
+                    >
                       Product
-                      <span className="
+                      <span
+                        className="
     material-symbols-outlined
     text-[13px]
     text-gray-400
@@ -497,13 +443,20 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     duration-200
     group-hover:-translate-y-[1px]
     group-hover:text-[#0b5d68]
-  ">
-                        {sortField === 'product' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+  "
+                      >
+                        {sortField === 'product'
+                          ? sortDirection === 'asc'
+                            ? 'arrow_upward'
+                            : 'arrow_downward'
+                          : 'unfold_more'}
                       </span>
                     </button>
                   </th>
                   <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
-                    <button onClick={() => handleSort('price')} className="
+                    <button
+                      onClick={() => handleSort('price')}
+                      className="
     group
     inline-flex
     items-center
@@ -513,9 +466,11 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     text-[#667085]
     transition-colors
     hover:text-[#0b5d68]
-  ">
+  "
+                    >
                       Price
-                      <span className="
+                      <span
+                        className="
     material-symbols-outlined
     text-[13px]
     text-gray-400
@@ -523,12 +478,19 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     duration-200
     group-hover:-translate-y-[1px]
     group-hover:text-[#0b5d68]
-  ">
-                        {sortField === 'price' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+  "
+                      >
+                        {sortField === 'price'
+                          ? sortDirection === 'asc'
+                            ? 'arrow_upward'
+                            : 'arrow_downward'
+                          : 'unfold_more'}
                       </span>
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Price Type</th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    Price Type
+                  </th>
                   <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     <button
                       onClick={() => handleSort('listingLocation')}
@@ -545,8 +507,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   "
                     >
                       Location
-
-                      <span className="
+                      <span
+                        className="
     material-symbols-outlined
     text-[13px]
     text-gray-400
@@ -554,16 +516,14 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     duration-200
     group-hover:-translate-y-[1px]
     group-hover:text-[#0b5d68]
-  ">
-                        {
-                          sortField === 'listingLocation'
-                            ? sortDirection === 'asc'
-                              ? 'arrow_upward'
-                              : 'arrow_downward'
-                            : 'unfold_more'
-                        }
+  "
+                      >
+                        {sortField === 'listingLocation'
+                          ? sortDirection === 'asc'
+                            ? 'arrow_upward'
+                            : 'arrow_downward'
+                          : 'unfold_more'}
                       </span>
-
                     </button>
                   </th>
                   <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
@@ -582,8 +542,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   "
                     >
                       Quantity
-
-                      <span className="
+                      <span
+                        className="
     material-symbols-outlined
     text-[13px]
     text-gray-400
@@ -591,21 +551,25 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     duration-200
     group-hover:-translate-y-[1px]
     group-hover:text-[#0b5d68]
-  ">
-                        {
-                          sortField === 'quantity'
-                            ? sortDirection === 'asc'
-                              ? 'arrow_upward'
-                              : 'arrow_downward'
-                            : 'unfold_more'
-                        }
+  "
+                      >
+                        {sortField === 'quantity'
+                          ? sortDirection === 'asc'
+                            ? 'arrow_upward'
+                            : 'arrow_downward'
+                          : 'unfold_more'}
                       </span>
-
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Status</th>
-                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Stats</th>
-                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Actions</th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    Stats
+                  </th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -620,11 +584,18 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                   </tr>
                 ) : (
                   paginatedListings.map((listing) => (
-                    <tr key={listing.id} className={`hover:bg-gray-50 transition-colors ${listing.status === 'paused' ? 'opacity-70 bg-[#fcfcfc]' : ''}`}>
+                    <tr
+                      key={listing.id}
+                      className={`hover:bg-gray-50 transition-colors ${listing.status === 'paused' ? 'opacity-70 bg-[#fcfcfc]' : ''}`}
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {listing.image ? (
-                            <img src={listing.image} alt={listing.product} className="h-10 w-10 rounded-lg object-cover bg-gray-100" />
+                            <img
+                              src={listing.image}
+                              alt={listing.product}
+                              className="h-10 w-10 rounded-lg object-cover bg-gray-100"
+                            />
                           ) : (
                             <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
                               <Icon name="inventory_2" className="text-gray-400" />
@@ -632,7 +603,9 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                           )}
                           <div>
                             <p className="text-sm font-medium text-gray-900">{listing.product}</p>
-                            <p className="text-xs text-gray-500 truncate max-w-[200px]">{listing.description}</p>
+                            <p className="text-xs text-gray-500 truncate max-w-[200px]">
+                              {listing.description}
+                            </p>
                           </div>
                         </div>
                       </td>
@@ -641,53 +614,74 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         <span
-                          className={`inline-block whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium border ${listing.priceType === 'AUCTION'
-                            ? 'bg-amber-100 text-amber-800 border-amber-300'
-                            : listing.priceType === 'FIXED_PRICE'
-                              ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                              : 'text-gray-400 border-transparent'
-                            }`}
+                          className={`inline-block whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                            listing.priceType === 'AUCTION'
+                              ? 'bg-amber-100 text-amber-800 border-amber-300'
+                              : listing.priceType === 'FIXED_PRICE'
+                                ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                                : 'text-gray-400 border-transparent'
+                          }`}
                         >
                           {listing.priceType?.replace('_', ' ') || '-'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {listing.listingLocation !== '-' ? listing.listingLocation : <span className="text-gray-400">-</span>}
+                        {listing.listingLocation !== '-' ? (
+                          listing.listingLocation
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#2eb5c2]/10 text-[#2eb5c2] border border-[#2eb5c2]/20">
                           {listing.quantity}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        {getStatusBadge(listing.status)}
-                      </td>
+                      <td className="px-6 py-4">{getStatusBadge(listing.status)}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3 text-xs text-gray-500">
-                          <span className="
+                          <span
+                            className="
 group
 inline-flex
 items-center
 gap-2
 transition-colors
 hover:text-[#0b5d68]
-" title="Views"><Icon name="visibility" className="text-[#2eb5c2] text-sm" />{listing.views}</span>
-                          <span className="
+"
+                            title="Views"
+                          >
+                            <Icon name="visibility" className="text-[#2eb5c2] text-sm" />
+                            {listing.views}
+                          </span>
+                          <span
+                            className="
 group
 inline-flex
 items-center
 gap-2
 transition-colors
 hover:text-[#0b5d68]
-" title="Inquiries"><Icon name="question_answer" className="text-[#e89151] text-sm" />{listing.inquiries}</span>
-                          <span className="
+"
+                            title="Inquiries"
+                          >
+                            <Icon name="question_answer" className="text-[#e89151] text-sm" />
+                            {listing.inquiries}
+                          </span>
+                          <span
+                            className="
 group
 inline-flex
 items-center
 gap-2
 transition-colors
 hover:text-[#0b5d68]
-" title="Bids"><Icon name="gavel" className="text-[#d55b39] text-sm" />{listing.bids}</span>
+"
+                            title="Bids"
+                          >
+                            <Icon name="gavel" className="text-[#d55b39] text-sm" />
+                            {listing.bids}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -718,13 +712,11 @@ hover:text-[#0b5d68]
     group/edit
   "
                             onClick={() => {
-                              setSelectedListing(listing)
-                              setEditOpen(true)
+                              setSelectedListing(listing);
+                              setEditOpen(true);
                             }}
                           >
-
                             <div className="relative w-5 h-5">
-
                               {/* paper */}
                               <span
                                 className="
@@ -741,7 +733,6 @@ hover:text-[#0b5d68]
         group-hover/edit:-translate-x-[1px]
       "
                               >
-
                                 {/* paper line 1 */}
                                 <span
                                   className="
@@ -767,9 +758,7 @@ hover:text-[#0b5d68]
           rounded-full
         "
                                 />
-
                               </span>
-
 
                               {/* pen */}
                               <span
@@ -790,11 +779,12 @@ hover:text-[#0b5d68]
         group-hover/edit:-translate-y-[2px]
       "
                               />
-
                             </div>
-
                           </Button>
-                          <div className="relative" ref={openStatusDropdown === listing.id ? statusDropdownRef : undefined}>
+                          <div
+                            className="relative"
+                            ref={openStatusDropdown === listing.id ? statusDropdownRef : undefined}
+                          >
                             <Button
                               variant="outline"
                               size="sm"
@@ -815,7 +805,11 @@ hover:text-[#0b5d68]
   items-center
   justify-center
 "
-                              onClick={() => setOpenStatusDropdown((prev) => (prev === listing.id ? null : listing.id))}
+                              onClick={() =>
+                                setOpenStatusDropdown((prev) =>
+                                  prev === listing.id ? null : listing.id,
+                                )
+                              }
                               title="Change status"
                             >
                               <div
@@ -826,10 +820,7 @@ hover:text-[#0b5d68]
     transition-all
     duration-300
     ease-in-out
-    ${listing.status === 'live'
-                                    ? 'bg-[#2eb5c2]'
-                                    : 'bg-[#d55b39]'
-                                  }
+    ${listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#d55b39]'}
   `}
                               >
                                 <span
@@ -843,10 +834,7 @@ hover:text-[#0b5d68]
       transition-all
       duration-300
       ease-in-out
-      ${listing.status === 'live'
-                                      ? 'left-[14px]'
-                                      : 'left-[2px]'
-                                    }
+      ${listing.status === 'live' ? 'left-[14px]' : 'left-[2px]'}
     `}
                                 />
                               </div>
@@ -856,20 +844,40 @@ hover:text-[#0b5d68]
                                 <div className="absolute -top-1.5 right-4 w-3 h-3 bg-white border-l border-t border-[#e0e0e0] rotate-45" />
                                 <div className="p-1.5 space-y-0.5 relative bg-white z-10">
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); handleStatusChange(listing.id, 'live'); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleStatusChange(listing.id, 'live');
+                                    }}
                                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${listing.status === 'live' ? 'bg-[#2eb5c2]/10 text-[#2eb5c2]' : 'text-[#0b5d68] hover:bg-[#f5fafa] hover:text-[#2eb5c2]'}`}
                                   >
-                                    <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#cccccc]'}`} />
+                                    <span
+                                      className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'live' ? 'bg-[#2eb5c2]' : 'bg-[#cccccc]'}`}
+                                    />
                                     Active
-                                    {listing.status === 'live' && <Icon name="check" className="ml-auto text-[#2eb5c2] text-base" />}
+                                    {listing.status === 'live' && (
+                                      <Icon
+                                        name="check"
+                                        className="ml-auto text-[#2eb5c2] text-base"
+                                      />
+                                    )}
                                   </button>
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); handleStatusChange(listing.id, 'paused'); }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleStatusChange(listing.id, 'paused');
+                                    }}
                                     className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${listing.status === 'paused' ? 'bg-[#d55b39]/10 text-[#d55b39]' : 'text-[#0b5d68] hover:bg-[#fef5f3] hover:text-[#d55b39]'}`}
                                   >
-                                    <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'paused' ? 'bg-[#d55b39]' : 'bg-[#cccccc]'}`} />
+                                    <span
+                                      className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${listing.status === 'paused' ? 'bg-[#d55b39]' : 'bg-[#cccccc]'}`}
+                                    />
                                     Inactive
-                                    {listing.status === 'paused' && <Icon name="check" className="ml-auto text-[#d55b39] text-base" />}
+                                    {listing.status === 'paused' && (
+                                      <Icon
+                                        name="check"
+                                        className="ml-auto text-[#d55b39] text-base"
+                                      />
+                                    )}
                                   </button>
                                 </div>
                               </div>
@@ -879,10 +887,10 @@ hover:text-[#0b5d68]
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              setSelectedListing(listing)
-                              setListingImages(listing.product_images || [])
-                              setNewImages([])
-                              setImageModalOpen(true)
+                              setSelectedListing(listing);
+                              setListingImages(listing.product_images || []);
+                              setNewImages([]);
+                              setImageModalOpen(true);
                             }}
                             className="
   h-7
@@ -940,9 +948,10 @@ hover:text-[#0b5d68]
     group/delete
   
 
-" title="Delete">
+"
+                            title="Delete"
+                          >
                             <div className="relative w-[16px] h-[16px]">
-
                               {/* lid */}
                               <span
                                 className="
@@ -979,7 +988,6 @@ hover:text-[#0b5d68]
     group-hover/delete:translate-y-[1px]
   "
                               />
-
                             </div>
                           </Button>
                         </div>
@@ -999,23 +1007,20 @@ hover:text-[#0b5d68]
 
           {imageModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-
               <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={() => closeImageModal()}
               />
 
-
-              <div className="
+              <div
+                className="
             relative w-full max-w-lg
             rounded-2xl bg-white shadow-2xl
             overflow-hidden
-        ">
-
-
+        "
+              >
                 {/* Header */}
                 <div className="relative bg-white border-b border-[#edf1f3]">
-
                   {/* Accent bar */}
                   <div
                     className="
@@ -1028,9 +1033,7 @@ hover:text-[#0b5d68]
                   />
 
                   <div className="flex items-center justify-between px-5 pt-5 pb-4">
-
                     <div className="flex items-center gap-3">
-
                       <div
                         className="
                     w-10 h-10
@@ -1048,15 +1051,12 @@ hover:text-[#0b5d68]
                       </div>
 
                       <div>
-                        <h3 className="font-bold text-[#0b5d68]">
-                          Update Images
-                        </h3>
+                        <h3 className="font-bold text-[#0b5d68]">Update Images</h3>
 
                         <p className="text-[11px] text-[#888]">
                           Manage listing gallery and cover image
                         </p>
                       </div>
-
                     </div>
 
                     <button
@@ -1071,24 +1071,18 @@ hover:text-[#0b5d68]
                 transition
             "
                     >
-                      <span className="material-symbols-outlined text-[20px]">
-                        close
-                      </span>
+                      <span className="material-symbols-outlined text-[20px]">close</span>
                     </button>
-
                   </div>
                 </div>
 
-
-
                 {/* Body */}
                 <div className="p-5">
-
-
-                  <div className="
+                  <div
+                    className="
                     grid grid-cols-3 gap-3
-                ">
-
+                "
+                  >
                     {listingImages.map((img, index) => (
                       <div
                         key={img}
@@ -1101,7 +1095,6 @@ hover:text-[#0b5d68]
         bg-gray-100
     "
                       >
-
                         {index === 0 && (
                           <div
                             className="
@@ -1149,7 +1142,6 @@ hover:text-[#0b5d68]
                           //                                         Cover
                           //                                     </div>
                         )}
-
 
                         <img
                           src={getImageSrc(img)}
@@ -1200,9 +1192,7 @@ hover:text-[#0b5d68]
                         </div>
                         <button
                           onClick={() => {
-                            setListingImages(
-                              listingImages.filter((_, i) => i !== index)
-                            )
+                            setListingImages(listingImages.filter((_, i) => i !== index));
                           }}
                           className="
     absolute top-1.5 right-1.5
@@ -1230,13 +1220,9 @@ hover:text-[#0b5d68]
                             ×
                           </span>
                         </button>
-
                       </div>
                     ))}
-
-
                   </div>
-
 
                   {/* Hidden input for per-image replacement */}
                   <input
@@ -1251,12 +1237,12 @@ hover:text-[#0b5d68]
                       const objectUrl = URL.createObjectURL(file);
 
                       // Swap the image at replacingIndex with a preview URL
-                      setListingImages(prev =>
-                        prev.map((img, i) => (i === replacingIndex ? objectUrl : img))
+                      setListingImages((prev) =>
+                        prev.map((img, i) => (i === replacingIndex ? objectUrl : img)),
                       );
 
                       // Track the replacement so saveImages can send it
-                      setReplacedImages(prev => ({
+                      setReplacedImages((prev) => ({
                         ...prev,
                         [replacingIndex]: file,
                       }));
@@ -1292,16 +1278,15 @@ hover:text-[#0b5d68]
                       cloud_upload
                     </span>
 
-                    <div className="text-sm font-semibold text-[#0b5d68]">
-                      Choose Images
-                    </div>
+                    <div className="text-sm font-semibold text-[#0b5d68]">Choose Images</div>
 
                     <div className="text-xs text-gray-500">
                       PNG, JPG, WEBP • Multiple files allowed
                     </div>
 
                     {newImages.length > 0 && (
-                      <div className="
+                      <div
+                        className="
             mt-2
             px-3 py-1
             rounded-full
@@ -1309,7 +1294,8 @@ hover:text-[#0b5d68]
             text-[#0b5d68]
             text-xs
             font-medium
-        ">
+        "
+                      >
                         {newImages.length} file{newImages.length > 1 ? 's' : ''} selected
                       </div>
                     )}
@@ -1322,15 +1308,12 @@ hover:text-[#0b5d68]
                     accept="image/*"
                     className="hidden"
                     onChange={(e) => {
-                      if (!e.target.files) return
+                      if (!e.target.files) return;
 
-                      setNewImages(Array.from(e.target.files))
+                      setNewImages(Array.from(e.target.files));
                     }}
                   />
-
                 </div>
-
-
 
                 {/* Footer */}
                 <div
@@ -1342,13 +1325,11 @@ hover:text-[#0b5d68]
         border-t border-[#edf1f3]
     "
                 >
-
                   {/* <p className="text-xs text-[#999]">
                                 The first image will be used as the cover image.
                             </p> */}
 
                   <div className="ml-auto flex items-center gap-2">
-
                     <button
                       onClick={closeImageModal}
                       className="
@@ -1383,20 +1364,12 @@ hover:text-[#0b5d68]
                 transition-all
             "
                     >
-                      <span className="material-symbols-outlined text-[16px]">
-                        save
-                      </span>
-
+                      <span className="material-symbols-outlined text-[16px]">save</span>
                       Save Images
                     </button>
-
                   </div>
-
                 </div>
-
-
               </div>
-
             </div>
           )}
 
@@ -1406,7 +1379,9 @@ hover:text-[#0b5d68]
             <div className="p-4 border-t border-gray-200 bg-white">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <p className="text-sm text-gray-500">
-                  Showing {(currentPage - 1) * rowsPerPage + 1} - {Math.min(currentPage * rowsPerPage, listings.length)} of {listings.length} listings
+                  Showing {(currentPage - 1) * rowsPerPage + 1} -{' '}
+                  {Math.min(currentPage * rowsPerPage, listings.length)} of {listings.length}{' '}
+                  listings
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -1450,6 +1425,6 @@ hover:text-[#0b5d68]
           )}
         </div>
       </div>
-    </div >
+    </div>
   );
 }
