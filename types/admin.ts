@@ -69,6 +69,7 @@ export type AdminListing = {
   inquiries: number
   reports: number
   featured: boolean
+  image?: string;
   images?: string[]
 }
 

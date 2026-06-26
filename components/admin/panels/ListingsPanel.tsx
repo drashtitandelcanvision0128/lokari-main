@@ -105,7 +105,12 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
             inquiries: 0,
             reports: 0,
             featured: false,
-            images: [],
+            image:
+              item.product_images?.length > 0
+                ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.product_images[0]}`
+                : '',
+
+            images: item.product_images || [],
           }
         })
         setListings(formattedListings)
@@ -437,13 +442,19 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
 
                       <div className="flex items-center gap-3">
 
-                        <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
-
-                          <span className="material-symbols-outlined text-gray-500">
-                            {getCategoryIcon(listing.category)}
-                          </span>
-
-                        </div>
+                        {listing.image ? (
+                          <img
+                            src={listing.image}
+                            alt={listing.title}
+                            className="h-10 w-10 rounded-lg object-cover bg-gray-100"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-gray-500">
+                              {getCategoryIcon(listing.category)}
+                            </span>
+                          </div>
+                        )}
 
 
                         <div>
