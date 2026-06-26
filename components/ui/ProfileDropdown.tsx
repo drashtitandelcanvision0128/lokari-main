@@ -12,11 +12,11 @@ interface ProfileDropdownProps {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  farmer:      'bg-emerald-100 text-emerald-700',
-  trader:      'bg-blue-100 text-blue-700',
+  farmer: 'bg-emerald-100 text-emerald-700',
+  trader: 'bg-blue-100 text-blue-700',
   transporter: 'bg-amber-100 text-amber-700',
-  warehouse:   'bg-purple-100 text-purple-700',
-  admin:       'bg-rose-100 text-rose-700',
+  warehouse: 'bg-purple-100 text-purple-700',
+  admin: 'bg-rose-100 text-rose-700',
 }
 
 const ProfileDropdown = ({ userName, userRole, avatarUrl }: ProfileDropdownProps) => {
@@ -44,11 +44,46 @@ const ProfileDropdown = ({ userName, userRole, avatarUrl }: ProfileDropdownProps
   const initial = (userName || 'U').charAt(0).toUpperCase()
   const roleColor = ROLE_COLORS[userRole?.toLowerCase() ?? ''] ?? 'bg-gray-100 text-gray-600'
 
+  // const navItems = [
+  //   { icon: 'person',       label: 'Profile',   href: `/${userRole || 'farmer'}-dashboard?tab=settings&section=profile` },
+  //   { icon: 'dashboard',    label: 'Dashboard', href: `/${userRole || 'farmer'}-dashboard` },
+  //   { icon: 'shopping_bag', label: 'Orders',    href: `/${userRole || 'farmer'}-dashboard?tab=orders` },
+  //   { icon: 'tune',         label: 'Settings',  href: `/${userRole || 'farmer'}-dashboard?tab=settings` },
+  // ]
+
+  const isAdmin = userRole?.toLowerCase() === 'admin'
+
+  const dashboardPath = isAdmin
+    ? '/admin'
+    : `/${userRole || 'farmer'}-dashboard`
+
   const navItems = [
-    { icon: 'person',       label: 'Profile',   href: `/${userRole || 'farmer'}-dashboard?tab=settings&section=profile` },
-    { icon: 'dashboard',    label: 'Dashboard', href: `/${userRole || 'farmer'}-dashboard` },
-    { icon: 'shopping_bag', label: 'Orders',    href: `/${userRole || 'farmer'}-dashboard?tab=orders` },
-    { icon: 'tune',         label: 'Settings',  href: `/${userRole || 'farmer'}-dashboard?tab=settings` },
+    {
+      icon: 'person',
+      label: 'Profile',
+      href: isAdmin
+        ? '/admin?tab=settings'
+        : `${dashboardPath}?tab=settings&section=profile`,
+    },
+    {
+      icon: 'dashboard',
+      label: 'Dashboard',
+      href: dashboardPath,
+    },
+    {
+      icon: 'shopping_bag',
+      label: 'Orders',
+      href: isAdmin
+        ? '/admin?tab=orders'
+        : `${dashboardPath}?tab=orders`,
+    },
+    {
+      icon: 'tune',
+      label: 'Settings',
+      href: isAdmin
+        ? '/admin?tab=settings'
+        : `${dashboardPath}?tab=settings`,
+    },
   ]
 
   return (

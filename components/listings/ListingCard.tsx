@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import { Listing } from '@/lib/dummyData'
 import WishlistIcon from '@/components/ui/WishlistIcon'
 import CartIcon from '@/components/ui/CartIcon'
@@ -37,6 +38,30 @@ const getProductImage = (listing: Listing) => {
 }
 
 const ListingCard = ({ listing }: ListingCardProps) => {
+
+  const [selectedImage, setSelectedImage] = useState(0)
+
+  const handlePreviousImage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!listing.images?.length) return
+
+    setSelectedImage((prev) =>
+      prev === 0 ? listing.images.length - 1 : prev - 1
+    )
+  }
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!listing.images?.length) return
+
+    setSelectedImage((prev) =>
+      prev === listing.images.length - 1 ? 0 : prev + 1
+    )
+  }
   const getCategoryBadge = (type: string) => {
     switch (type) {
       case 'produce':
@@ -87,12 +112,18 @@ const ListingCard = ({ listing }: ListingCardProps) => {
         return null
     }
   }
+  // console.log(listing.title, listing.images)
+  const currentImage = listing.images?.[selectedImage]
+
+  const imageSrc = currentImage?.startsWith('/uploads/')
+    ? `http://localhost:5000${currentImage}`
+    : getProductImage(listing)
 
   return (
     <div className="bg-[#ffffff] rounded-xl overflow-hidden flex flex-col group transition-all hover:translate-y-[-4px] h-full">
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden group/image">
         <img
-          src={getProductImage(listing)}
+          src={imageSrc}
           alt={listing.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           onError={(e) => {
@@ -104,6 +135,47 @@ const ListingCard = ({ listing }: ListingCardProps) => {
             }
           }}
         />
+
+        {/* Next & Prev arrows */}
+        {listing.images?.length > 1 && (
+          <>
+            <button
+              onClick={handlePreviousImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover/image:opacity-100 transition-opacity z-10"
+            >
+              ←
+            </button>
+
+            <button
+              onClick={handleNextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover/image:opacity-100 transition-opacity z-10"
+            >
+              →
+            </button>
+          </>
+        )}
+
+        {listing.images?.length > 1 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {listing.images.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setSelectedImage(index)
+                }}
+                className={`
+          h-1.5 rounded-full transition-all duration-300
+          ${selectedImage === index
+                    ? "w-5 bg-white"
+                    : "w-1.5 bg-white/60"
+                  }
+        `}
+              />
+            ))}
+          </div>
+        )}
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#f6f3ef] to-[#e5e2de]" style={{ display: 'none' }}>
           <div className="p-4 bg-white/80 rounded-lg backdrop-blur-sm">
             {getTypeIcon(listing.type)}

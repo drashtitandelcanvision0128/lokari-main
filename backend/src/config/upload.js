@@ -63,7 +63,11 @@ export const uploadProductImages = multer({
   limits: {
     fileSize: 5 * 1024 * 1024,
   },
-}).array('product_images', 5);
+}) // .array('product_images', 5);   //OLD  : only accepts one field name but now we need to send two field names
+  .fields([
+    { name: 'product_images', maxCount: 10 },  //NEW
+    { name: 'replaced_images', maxCount: 10 }, //NEW
+  ]);
 
 /** Single avatar upload — max 2 MB */
 export const uploadAvatar = multer({

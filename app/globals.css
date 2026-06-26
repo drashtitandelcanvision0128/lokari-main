@@ -2,14 +2,21 @@
 
 :root {
   /* Lokhari Brand Color System */
-  --background: #f9f9f7; /* Off-white background */
+  --background: #f9f9f7;
+  /* Off-white background */
   --surface: #ffffff;
-  --on-background: #0b5d68; /* Dark teal for all text */
-  --on-surface: #0b5d68; /* Dark teal for all text */
-  --primary: #0b5d68; /* Dark teal - Primary for all text, headings, navigation */
-  --accent: #2eb5c2; /* Turquoise - For highlights, active states, accents */
-  --orange: #e89151; /* Orange - For CTAs and actions */
-  --red: #d55b39; /* Red - For CTAs and actions */
+  --on-background: #0b5d68;
+  /* Dark teal for all text */
+  --on-surface: #0b5d68;
+  /* Dark teal for all text */
+  --primary: #0b5d68;
+  /* Dark teal - Primary for all text, headings, navigation */
+  --accent: #2eb5c2;
+  /* Turquoise - For highlights, active states, accents */
+  --orange: #e89151;
+  /* Orange - For CTAs and actions */
+  --red: #d55b39;
+  /* Red - For CTAs and actions */
   --error: #d55b39;
   --error-container: #ffdad6;
   --on-error: #ffffff;
@@ -18,7 +25,7 @@
   --surface-container: #fafafa;
   --surface-container-low: #ffffff;
   --surface-container-high: #f0f0f0;
---surface-container-highest: #e8e8e8;
+  --surface-container-highest: #e8e8e8;
   --on-surface-variant: #666666;
   --outline: #e0e0e0;
   --outline-variant: #f0f0f0;
@@ -45,9 +52,27 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
+}
+
+/* Using for the marketplace image switch animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0.5;
+    transform: scale(1.02);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 300ms ease-out;
 }
 
 @keyframes scale-in {
@@ -55,6 +80,7 @@
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -73,6 +99,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -151,11 +178,11 @@
   --color-on-tertiary-fixed-variant: var(--on-tertiary-fixed-variant);
   --color-on-accent-fixed-variant: var(--on-accent-fixed-variant);
   --color-on-danger-fixed-variant: var(--on-danger-fixed-variant);
-  
+
   --font-headline: "Manrope", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-label: "Inter", system-ui, sans-serif;
-  
+
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
@@ -220,53 +247,111 @@ body {
 }
 
 /* Ensure light mode background is applied */
-html, body {
+html,
+body {
   background-color: #f9f9f7 !important;
   color: #0b5d68 !important;
 }
 
 /* Global color system */
-.bg-primary-dark { background-color: #0b5d68 !important; }
-.text-primary-dark { color: #0b5d68 !important; }
-.border-primary-dark { border-color: #0b5d68 !important; }
-.hover-primary-dark:hover { color: #0b5d68 !important; }
+.bg-primary-dark {
+  background-color: #0b5d68 !important;
+}
+
+.text-primary-dark {
+  color: #0b5d68 !important;
+}
+
+.border-primary-dark {
+  border-color: #0b5d68 !important;
+}
+
+.hover-primary-dark:hover {
+  color: #0b5d68 !important;
+}
+
 .bg-primary-dark-hover:hover {
   background-color: #0b5d68 !important;
   color: #ffffff !important;
 }
 
-.bg-accent-turquoise { background-color: #2eb5c2 !important; }
-.text-accent-turquoise { color: #2eb5c2 !important; }
-.border-accent-turquoise { border-color: #2eb5c2 !important; }
-.hover-accent-turquoise:hover { color: #2eb5c2 !important; }
+.bg-accent-turquoise {
+  background-color: #2eb5c2 !important;
+}
+
+.text-accent-turquoise {
+  color: #2eb5c2 !important;
+}
+
+.border-accent-turquoise {
+  border-color: #2eb5c2 !important;
+}
+
+.hover-accent-turquoise:hover {
+  color: #2eb5c2 !important;
+}
 
 .bg-accent-turquoise-hover:hover {
   background-color: #2eb5c2 !important;
   color: #0b5d68 !important;
 }
 
-.bg-cta-orange { background-color: #e89151 !important; }
-.text-cta-orange { color: #e89151 !important; }
-.border-cta-orange { border-color: #e89151 !important; }
-.hover-cta-orange:hover { color: #e89151 !important; }
+.bg-cta-orange {
+  background-color: #e89151 !important;
+}
+
+.text-cta-orange {
+  color: #e89151 !important;
+}
+
+.border-cta-orange {
+  border-color: #e89151 !important;
+}
+
+.hover-cta-orange:hover {
+  color: #e89151 !important;
+}
 
 .bg-cta-orange-hover:hover {
   background-color: #e89151 !important;
   color: #ffffff !important;
 }
 
-.bg-cta-red { background-color: #d55b39 !important; }
-.text-cta-red { color: #d55b39 !important; }
-.border-cta-red { border-color: #d55b39 !important; }
-.hover-cta-red:hover { color: #d55b39 !important; }
-.bg-cta-red-hover:hover { background-color: #d55b39 !important; }
+.bg-cta-red {
+  background-color: #d55b39 !important;
+}
 
-.bg-off-white { background-color: #f9f9f7 !important; }
-.text-off-white { color: #f9f9f7 !important; }
-.border-off-white { border-color: #f9f9f7 !important; }
+.text-cta-red {
+  color: #d55b39 !important;
+}
+
+.border-cta-red {
+  border-color: #d55b39 !important;
+}
+
+.hover-cta-red:hover {
+  color: #d55b39 !important;
+}
+
+.bg-cta-red-hover:hover {
+  background-color: #d55b39 !important;
+}
+
+.bg-off-white {
+  background-color: #f9f9f7 !important;
+}
+
+.text-off-white {
+  color: #f9f9f7 !important;
+}
+
+.border-off-white {
+  border-color: #f9f9f7 !important;
+}
 
 /* Override any dark mode defaults */
-.dark html, .dark body {
+.dark html,
+.dark body {
   background-color: var(--background) !important;
   color: var(--on-surface) !important;
 }
@@ -297,6 +382,7 @@ html, body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -325,8 +411,8 @@ html, body {
   display: inline-block;
 }
 
-/* Staggered animation for grid items — scoped to explicit .stagger-grid wrapper */
-.stagger-grid > div {
+/* Staggered animation for grid items */
+.grid>div {
   opacity: 0;
   animation: fadeInUp 0.6s ease-out forwards;
 }
@@ -335,6 +421,21 @@ html, body {
 .stagger-grid > div:nth-child(2) { animation-delay: 0.2s; }
 .stagger-grid > div:nth-child(3) { animation-delay: 0.3s; }
 .stagger-grid > div:nth-child(4) { animation-delay: 0.4s; }
+.grid>div:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.grid>div:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.grid>div:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.grid>div:nth-child(4) {
+  animation-delay: 0.4s;
+}
 
 /* Smooth scroll behavior */
 html {

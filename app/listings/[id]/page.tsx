@@ -51,6 +51,7 @@ export default function ListingDetailPage() {
 
         const d = result.data
         // console.log(JSON.stringify(d, null, 2))
+        console.log("PRODUCT IMAGES:", d.product_images);
 
         setListing({
           id: d.listing_id,

@@ -5,6 +5,11 @@ import { buildProfileCreateData, userWithProfileInclude } from '../utils/profile
 const mapDbUserToAdminUser = (user) => {
   const profile = user.profile;
 
+  const avatar =
+    profile?.avatar_url
+      ? `${process.env.APP_URL || `${process.env.PROTOCOL || 'http'}://${process.env.HOST || 'localhost:5000'}`}${profile.avatar_url}`
+      : null;
+
   const roleMappingReverse = {
     FARMER: 'farmer',
     TRADER: 'trader',
@@ -22,6 +27,7 @@ const mapDbUserToAdminUser = (user) => {
     id: user.user_id,
     name: user.name || 'Unknown',
     email: user.email,
+    avatar,
     role: roleMappingReverse[user.role] || 'farmer',
     status: user.is_active ? 'active' : 'banned',
     joinedAt: user.created_at.toISOString(),
