@@ -332,6 +332,46 @@ export const updateListing = async (req, res) => {
     }
 };
 
+export const updateListingDetails = async (req, res) => {
+    const { id } = req.params;
+    const { quantity, capacity } = req.body;
+
+    try {
+        const listing = await prisma.marketplace.findUnique({
+            where: { listing_id: id },
+            include: { farmerProduce: true, warehouse: true, transport: true }
+        });
+
+        if (!listing) return res.status(404).json({ success: false, message: 'Listing not found' });
+
+        if (listing.type === 'PRODUCE' && quantity !== undefined) {
+            await prisma.farmerProduce.update({
+                where: { listing_id: id },
+                data: { quantity: Number(quantity) }
+            });
+        }
+
+        if (listing.type === 'WAREHOUSE' && capacity !== undefined) {
+            await prisma.warehouse.update({
+                where: { listing_id: id },
+                data: { capacity: Number(capacity) }
+            });
+        }
+
+        if (listing.type === 'TRANSPORT' && capacity !== undefined) {
+            await prisma.transport.update({
+                where: { listing_id: id },
+                data: { capacity: Number(capacity) }
+            });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('❌ UPDATE DETAILS ERROR:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 export const updateListingImages = async (req, res) => {
     const { id } = req.params;
 

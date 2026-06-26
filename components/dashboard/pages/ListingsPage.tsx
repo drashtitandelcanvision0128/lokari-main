@@ -152,15 +152,15 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
             listingLocation: item.address?.city ?? '-',
             // image: '',
             product_images: item.product_images || [],
-            // image:
-            //   item.product_images?.length > 0
-            //     ? `${process.env.NEXT_PUBLIC_API_URL}${item.product_images[0]}`
-            //     : '',
             image:
               item.product_images?.length > 0
                 ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.product_images[0]}`
                 : '',
             createdAt: item.created_at,
+
+            farmerProduce: item.farmerProduce ?? null,
+            warehouse: item.warehouse ?? null,
+            transport: item.transport ?? null,
           }));
         setListings(userListings);
 

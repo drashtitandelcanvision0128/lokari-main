@@ -88,8 +88,9 @@ const SectionCard = ({
     <div className="
     bg-white rounded-lg
     border border-[#e8ecee]
-        shadow-[0_1px_4px_rgba(11,93,104,0.06)]
-        overflow-hidden
+    shadow-[0_1px_4px_rgba(11,93,104,0.06)]
+    overflow-hidden
+    h-full flex flex-col
     ">
         {showHeader && (
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#f0f4f5]">
@@ -114,6 +115,102 @@ const SectionCard = ({
         <div className={noPadding ? '' : 'p-3'}>
             {children}
         </div>
+    </div>
+)
+
+const DetailRow = ({ label, value }: { label: string; value?: string | number | boolean | null }) => {
+    const display =
+        value === null || value === undefined || value === ''
+            ? '—'
+            : typeof value === 'boolean'
+                ? value ? 'Yes' : 'No'
+                : String(value)
+
+    return (
+        <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">{label}</span>
+            <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default">
+                {display}
+            </div>
+        </div>
+    )
+}
+
+const ProduceDetails = ({ data, editing, detailsData, setDetailsData }: {
+    data: any; editing: boolean; detailsData: any; setDetailsData: any
+}) => (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Quantity</span>
+            {editing ? (
+                <PremiumInput
+                    value={detailsData.quantity}
+                    placeholder="e.g. 500"
+                    onChange={e => setDetailsData({ ...detailsData, quantity: e.target.value })}
+                />
+            ) : (
+                <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">
+                    {data?.quantity != null ? `${data.quantity} ${data?.unit ?? ''}`.trim() : '—'}
+                </div>
+            )}
+        </div>
+        <DetailRow label="Unit" value={data?.unit} />
+        <DetailRow label="Crop Type" value={data?.crop_type} />
+        <DetailRow label="Variety" value={data?.variety} />
+        <DetailRow label="Quality Grade" value={data?.quality_grade} />
+        <DetailRow label="Harvest Date" value={data?.harvest_date ? new Date(data.harvest_date).toLocaleDateString('en-IN') : undefined} />
+        {/* <DetailRow label="Expiry Date" value={data?.expiry_date ? new Date(data.expiry_date).toLocaleDateString('en-IN') : undefined} /> */}
+    </div>
+)
+
+const WarehouseDetails = ({ data, editing, detailsData, setDetailsData }: {
+    data: any; editing: boolean; detailsData: any; setDetailsData: any
+}) => (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Capacity</span>
+            {editing ? (
+                <PremiumInput
+                    value={detailsData.warehouseCapacity}
+                    placeholder="e.g. 1000"
+                    onChange={e => setDetailsData({ ...detailsData, warehouseCapacity: e.target.value })}
+                />
+            ) : (
+                <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">
+                    {data?.capacity != null ? `${data.capacity} ${data?.capacity_unit ?? ''}`.trim() : '—'}
+                </div>
+            )}
+        </div>
+        <DetailRow label="Unit" value={data?.capacity_unit} />
+        <DetailRow label="Climate Controlled" value={data?.climate_controlled} />
+        <DetailRow label="Available From" value={data?.available_from ? new Date(data.available_from).toLocaleDateString('en-IN') : undefined} />
+        <DetailRow label="Available To" value={data?.available_to ? new Date(data.available_to).toLocaleDateString('en-IN') : undefined} />
+    </div>
+)
+
+const TransportDetails = ({ data, editing, detailsData, setDetailsData }: {
+    data: any; editing: boolean; detailsData: any; setDetailsData: any
+}) => (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Capacity</span>
+            {editing ? (
+                <PremiumInput
+                    value={detailsData.transportCapacity}
+                    placeholder="e.g. 10"
+                    onChange={e => setDetailsData({ ...detailsData, transportCapacity: e.target.value })}
+                />
+            ) : (
+                <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">
+                    {data?.capacity != null ? `${data.capacity} ${data?.capacity_unit ?? ''}`.trim() : '—'}
+                </div>
+            )}
+        </div>
+        <DetailRow label="Unit" value={data?.capacity_unit} />
+        <DetailRow label="Vehicle Type" value={data?.vehicle_type} />
+        <DetailRow label="Refrigerated" value={data?.is_refrigerated} />
+        <DetailRow label="Available From" value={data?.available_from ? new Date(data.available_from).toLocaleDateString('en-IN') : undefined} />
+        <DetailRow label="Available To" value={data?.available_to ? new Date(data.available_to).toLocaleDateString('en-IN') : undefined} />
     </div>
 )
 
@@ -159,6 +256,9 @@ export default function EditUserListingModal({
     const [isEditingInfo, setIsEditingInfo] = useState(false)
     const [addressModalOpen, setAddressModalOpen] = useState(false)
 
+    const [isEditingDetails, setIsEditingDetails] = useState(false)
+    const [detailsData, setDetailsData] = useState({ quantity: '', warehouseCapacity: '', transportCapacity: '' })
+
 
     console.log("EDIT LISTING:", listing)
     console.log("PRODUCT IMAGES:", listing?.product_images)
@@ -188,6 +288,13 @@ export default function EditUserListingModal({
 
         setAddress(loadedAddress)
         setTempAddress(loadedAddress)
+
+        setDetailsData({
+            quantity: listing.farmerProduce?.quantity != null ? String(listing.farmerProduce.quantity) : '',
+            warehouseCapacity: listing.warehouse?.capacity != null ? String(listing.warehouse.capacity) : '',
+            transportCapacity: listing.transport?.capacity != null ? String(listing.transport.capacity) : '',
+        })
+        setIsEditingDetails(false)
 
     }, [listing]);
 
@@ -227,9 +334,21 @@ export default function EditUserListingModal({
             console.log("UPDATE RESPONSE:", result)
 
             if (result.success) {
-                console.log("SAVE SUCCESS")
+
+                if (isEditingDetails) {
+                    await fetch(apiUrl(`/listings/${listing.id}/details`), {
+                        method: 'PUT',
+                        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            quantity: detailsData.quantity,
+                            warehouseCapacity: detailsData.warehouseCapacity,
+                            transportCapacity: detailsData.transportCapacity,
+                        }),
+                    })
+                }
+                // console.log("SAVE SUCCESS")
                 await onSuccess()
-                console.log("AFTER ONSUCCESS")
+                // console.log("AFTER ONSUCCESS")
                 onClose()
             }
         } catch (error) {
@@ -294,6 +413,14 @@ export default function EditUserListingModal({
 
     const isLive = listing?.status === 'live'
 
+    const renderDetailPanel = () => {
+        const sharedProps = { editing: isEditingDetails, detailsData, setDetailsData }
+        if (listing?.listingType === 'produce') return <ProduceDetails data={listing.farmerProduce} {...sharedProps} />
+        if (listing?.listingType === 'warehouse') return <WarehouseDetails data={listing.warehouse}     {...sharedProps} />
+        if (listing?.listingType === 'transport') return <TransportDetails data={listing.transport}     {...sharedProps} />
+        return null
+    }
+
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
@@ -356,15 +483,22 @@ export default function EditUserListingModal({
                 </div>
 
                 {/* ── Scrollable body ── */}
+                {/* <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4"> */}
+
+                {/* Top grid: image + info */}
+                {/* <div className="grid lg:grid-cols-4 gap-3 items-start"> */}
+                {/* <div className="lg:col-span-2 flex flex-col gap-3"> */}
+
+
+                {/* ── Scrollable body ── */}
                 <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
 
-                    {/* Top grid: image + info */}
-                    <div className="grid lg:grid-cols-4 gap-3 items-start">
-                        <div className="lg:col-span-2 flex flex-col gap-3">
+                    <div className="grid lg:grid-cols-2 gap-4 items-stretch">
+                        <div className="flex flex-col gap-3 h-full">
 
                             {/* Listing Information */}
                             <SectionCard
-                                title="Listing Information"
+                                title="Listing details"
                                 icon="store"
                                 action={
                                     <button
@@ -378,31 +512,29 @@ export default function EditUserListingModal({
                                     </button>
                                 }
                             >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <Field label="Title" icon="title">
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+
+                                    {/* Title */}
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Title</span>
                                         {isEditingInfo ? (
                                             <PremiumInput
                                                 value={formData.title}
                                                 placeholder="e.g. Premium Organic Wheat"
-                                                onChange={(e) =>
-                                                    setFormData({ ...formData, title: e.target.value })
-                                                }
+                                                onChange={e => setFormData({ ...formData, title: e.target.value })}
                                             />
                                         ) : (
-                                            <ReadOnlyField value={formData.title} />
+                                            <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">{formData.title || '—'}</div>
                                         )}
-                                    </Field>
+                                    </div>
 
-                                    <Field label="Location" icon="location_on">
-                                        <div className="relative">
-                                            <ReadOnlyField
-                                                value={
-                                                    address.city && address.state
-                                                        ? `${address.city}, ${address.state}`
-                                                        : 'Not added'
-                                                }
-                                            />
-
+                                    {/* Location */}
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Location</span>
+                                        <div className="relative flex items-center min-h-[38px]">
+                                            <span className="text-sm text-[#333] font-medium">
+                                                {address.city && address.state ? `${address.city}, ${address.state}` : '—'}
+                                            </span>
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -411,65 +543,60 @@ export default function EditUserListingModal({
                                                     setAddressError(null)
                                                     setAddressModalOpen(true)
                                                 }}
-                                                className="
-        absolute right-2 top-2
-        text-[#888]
-        hover:text-[#0b5d68]
-    "
+                                                className="ml-2 text-[#2eb5c2] hover:text-[#0b5d68] transition-colors"
                                             >
-                                                <span className="material-symbols-outlined text-[18px]">
-                                                    edit_location
-                                                </span>
+                                                <span className="material-symbols-outlined text-[14px] align-middle">edit_location</span>
                                             </button>
                                         </div>
+                                    </div>
 
-                                    </Field>
-
-                                    <Field label="Quantity" icon="scale">
-                                        {isEditingInfo ? (
-                                            <PremiumInput
-                                                value={formData.quantity}
-                                                placeholder="e.g. 500 kg"
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        quantity: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        ) : (
-                                            <ReadOnlyField value={formData.quantity} />
-                                        )}
-                                    </Field>
-
-                                    <Field label="Price" icon="payments">
+                                    {/* Price */}
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Price</span>
                                         {isEditingInfo ? (
                                             <PremiumInput
                                                 value={formData.price}
                                                 placeholder="e.g. ₹1200"
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        price: e.target.value,
-                                                    })
-                                                }
+                                                onChange={e => setFormData({ ...formData, price: e.target.value })}
                                             />
                                         ) : (
-                                            <ReadOnlyField value={formData.price} />
+                                            <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">{formData.price || '—'}</div>
                                         )}
-                                    </Field>
+                                    </div>
 
-                                    <Field label="Listing Type" icon="category" readOnly>
-                                        <ReadOnlyField value={(listing?.listingType || '').toUpperCase()} />
-                                    </Field>
-
-                                    <Field label="Price Type" icon="sell" readOnly>
-                                        <ReadOnlyField value={(listing?.priceType || '').replace(/_/g, ' ')} />
-                                    </Field>
-
+                                    {/* Price Type — read only */}
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Price Type</span>
+                                        <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">
+                                            {(listing?.priceType || '').replace(/_/g, ' ') || '—'}
+                                        </div>
+                                    </div>
 
                                 </div>
                             </SectionCard>
+                        </div>
+                        {/* RIGHT — type-specific details */}
+                        <div className="flex flex-col gap-4">
+                            <div className="bg-white rounded-lg border border-[#e8ecee] shadow-[0_1px_4px_rgba(11,93,104,0.06)] overflow-hidden">
+                                <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#f0f4f5]">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-[#2eb5c2]" style={{ fontSize: '20px' }}>
+                                            {listing?.listingType === 'produce' ? 'grass' : listing?.listingType === 'warehouse' ? 'warehouse' : 'local_shipping'}
+                                        </span>
+                                        <h3 className="text-[0.8rem] font-bold uppercase tracking-[0.08em] text-[#0b5d68]">
+                                            {listing?.listingType === 'produce' ? 'Produce Details' : listing?.listingType === 'warehouse' ? 'Warehouse Details' : 'Transport Details'}
+                                        </h3>
+                                    </div>
+                                    <button onClick={() => setIsEditingDetails(p => !p)} className="text-[#888] hover:text-[#0b5d68]">
+                                        <span className="material-symbols-outlined text-[18px]">
+                                            {isEditingDetails ? 'check_small' : 'edit_note'}
+                                        </span>
+                                    </button>
+                                </div>
+                                <div className="p-3">
+                                    {renderDetailPanel()}
+                                </div>
+                            </div>
                         </div>
                     </div>
 

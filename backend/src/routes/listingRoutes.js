@@ -1,5 +1,6 @@
 import express from 'express';
 import { uploadProductImages } from '../config/upload.js';
+import { updateListingDetails } from '../controllers/listingController.js';
 import {
   createListing,
   getListingById,
@@ -26,6 +27,7 @@ router.post(
   createListing
 );
 router.put('/:id', protect, updateListing);
+router.put('/:id/details', protect, updateListingDetails);
 
 router.put(
   '/:id/images',
