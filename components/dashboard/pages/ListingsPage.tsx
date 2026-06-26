@@ -41,6 +41,11 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const [listingImages, setListingImages] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
 
+  // state to track which image is being replaced
+  const [replacingIndex, setReplacingIndex] = useState<number | null>(null);
+  // state to track per-index replacement files
+  const [replacedImages, setReplacedImages] = useState<Record<number, File>>({});
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -334,6 +339,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     setListingImages(
       selectedListing?.product_images || []
     );
+    setReplacedImages({});
 
     setNewImages([]);
     setImageModalOpen(false);
@@ -342,24 +348,46 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
   const saveImages = async () => {
     if (!selectedListing?.id) {
-      console.log("NO SELECTED LISTING");
+      // console.log("NO SELECTED LISTING");
       return;
     }
-    console.log("SAVING IMAGES FOR:", selectedListing);
-    console.log("LISTING:", selectedListing);
+    // console.log("SAVING IMAGES FOR:", selectedListing);
+    // console.log("LISTING:", selectedListing);
     const formData = new FormData();
 
+    const existingWithPlaceholders = listingImages.map((img, i) =>
+      replacedImages[i] ? '__replaced__' : img
+    );
     formData.append(
       "existingImages",
-      JSON.stringify(listingImages)
+      JSON.stringify(existingWithPlaceholders)
     );
 
+    // Send replacement files in order under ONE known field
+    // Also send their index so backend knows which slot to put them in
+    const replacedEntries = Object.entries(replacedImages);
+    replacedEntries.forEach(([index, file]) => {
+      formData.append('replaced_images', file);
+    });
+
+    // Send the indices separately so backend can map file → slot
+    formData.append(
+      'replacedIndices',
+      JSON.stringify(replacedEntries.map(([index]) => Number(index)))
+    );
+
+    // New images (bulk added)
     newImages.forEach(file => {
       formData.append(
         "product_images",
         file
       );
     });
+
+    // // Replaced images — send with index so backend knows which slot
+    // Object.entries(replacedImages).forEach(([index, file]) => {
+    //   formData.append(`replace_image_${index}`, file);
+    // });
 
 
     const res = await fetch(
@@ -389,6 +417,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const getImageSrc = (img?: string) => {
     if (!img) return '';
 
+    if (img.startsWith('blob:')) return img;
     if (img.startsWith('http')) return img;
 
     return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${img}`;
@@ -1055,7 +1084,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     "
                         >
                           <label
-                            htmlFor="listing-image-upload"
+                            htmlFor="listing-image-replace" // ← shared input, index tracked via state
+                            onClick={() => setReplacingIndex(index)}
                             className="
             w-10
             h-10
@@ -1115,21 +1145,33 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                   </div>
 
 
-                  {/* <input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={(e) => {
+                  {/* Hidden input for per-image replacement */}
+                  <input
+                    id="listing-image-replace"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || replacingIndex === null) return;
 
-                                    if (!e.target.files) return
+                      const objectUrl = URL.createObjectURL(file);
 
-                                    setNewImages(
-                                        Array.from(e.target.files)
-                                    )
+                      // Swap the image at replacingIndex with a preview URL
+                      setListingImages(prev =>
+                        prev.map((img, i) => (i === replacingIndex ? objectUrl : img))
+                      );
 
-                                }}
-                                className="mt-4"
-                            /> */}
+                      // Track the replacement so saveImages can send it
+                      setReplacedImages(prev => ({
+                        ...prev,
+                        [replacingIndex]: file,
+                      }));
+
+                      setReplacingIndex(null);
+                      e.target.value = ''; // reset so same file can be re-selected
+                    }}
+                  />
 
                   <label
                     htmlFor="listing-image-upload"

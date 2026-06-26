@@ -15,7 +15,8 @@ export const createListing = async (req, res) => {
         const data = await createListingService({
             ...listingData,
             user_id,
-            images: req.files
+            // images: req.files
+            images: req.files?.['product_images'] || []
         });
         res.status(201).json({ success: true, message: 'Listing created', data });
     } catch (error) {
@@ -334,9 +335,9 @@ export const updateListing = async (req, res) => {
 export const updateListingImages = async (req, res) => {
     const { id } = req.params;
 
-    console.log("======== IMAGE UPDATE =========")
-    console.log("BODY:", req.body)
-    console.log("FILES:", req.files)
+    // console.log("======== IMAGE UPDATE =========")
+    // console.log("BODY:", req.body)
+    // console.log("FILES:", req.files)
     try {
 
         const listing = await prisma.marketplace.findUnique({
@@ -358,18 +359,35 @@ export const updateListingImages = async (req, res) => {
             req.body.existingImages || "[]"
         );
 
-
-        const newImages = req.files
-            ? req.files.map(
-                file => `/uploads/productsImgs/${file.filename}`
-            )
-            : [];
+        const replacedIndices = JSON.parse(req.body.replacedIndices || "[]");
 
 
-        const finalImages = [
-            ...existingImages,
-            ...newImages
-        ];
+        const newFiles = req.files?.['product_images'] || [];
+        const replacedFiles = req.files?.['replaced_images'] || [];
+
+
+        // Slot each replaced file back into its original position
+        replacedIndices.forEach((slotIndex, fileArrayIndex) => {
+            const file = replacedFiles[fileArrayIndex];
+            if (file) {
+                existingImages[slotIndex] = `/uploads/productsImgs/${file.filename}`;
+            }
+        });
+
+        // Append brand-new images at the end
+        newFiles.forEach(file => {
+            existingImages.push(`/uploads/productsImgs/${file.filename}`);
+        });
+
+
+
+        // const finalImages = [
+        //     ...existingImages,
+        //     ...newImages
+        // ];
+
+        // Safety net: drop any slots that never got a file
+        const finalImages = existingImages.filter(img => img !== '__replaced__');
 
 
         const updated = await prisma.marketplace.update({
