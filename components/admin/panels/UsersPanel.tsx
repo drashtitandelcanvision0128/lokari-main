@@ -212,9 +212,10 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
   }
 
   const filteredUsers = useAdminSearch(users, searchQuery, (user) => {
+    const isNotAdmin = user.role !== 'admin'
     const matchesRole = selectedRole === 'all' || user.role === selectedRole
     const matchesStatus = selectedStatus === 'all' || user.status === selectedStatus
-    return matchesRole && matchesStatus
+    return matchesRole && matchesStatus && isNotAdmin
   })
 
   const sortedUsers = [...filteredUsers].sort((a, b) => {
@@ -303,7 +304,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                 <option value="trader">Trader</option>
                 <option value="warehouse">Warehouse</option>
                 <option value="transporter">Transporter</option>
-                <option value="admin">Admin</option>
+                {/* <option value="admin">Admin</option> */}
               </select>
             </div>
 
@@ -329,7 +330,15 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
             onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
           >
-            <span className="material-symbols-outlined text-sm">add</span>
+            <span className="
+material-symbols-outlined
+text-[13px]
+text-gray-400
+transition-all
+duration-200
+group-hover:-translate-y-[1px]
+group-hover:text-[#0b5d68]
+">add</span>
             <span className="text-sm font-medium">Add User</span>
           </button>
         </div>
@@ -347,37 +356,91 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                 {/* <thead className="bg-surface-container"> */}
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <th className="
+px-6
+py-3
+text-center
+text-[13px]
+font-semibold
+tracking-[0.02em]
+text-[#667085]
+">
                       <button
                         onClick={() => handleSort('name')}
-                        className="flex items-center gap-1 hover:text-primary"
+                        className="
+    group
+    w-full
+    inline-flex
+    items-center
+    justify-center
+    gap-2
+    text-[13px]
+    font-semibold
+    tracking-[0.02em]
+    text-[#667085]
+    transition-colors
+    hover:text-[#0b5d68]
+  "
                       >
                         Name
-                        <span className="material-symbols-outlined text-sm">
+
+                        <span
+                          className="
+      material-symbols-outlined
+      text-[13px]
+      text-gray-400
+      transition-all
+      duration-200
+      group-hover:-translate-y-[1px]
+      group-hover:text-[#0b5d68]
+    "
+                        >
                           {sortField === 'name'
                             ? sortDirection === 'asc'
                               ? 'arrow_upward'
                               : 'arrow_downward'
                             : 'unfold_more'}
                         </span>
-                        {/* <span className="text-gray-400">
-                          {sortField === 'name'
-                            ? sortDirection === 'asc'
-                              ? '↑'
-                              : '↓'
-                            : '↕'}
-                        </span> */}
 
                       </button>
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <th className="
+px-6
+py-3
+text-center
+text-[13px]
+font-semibold
+tracking-[0.02em]
+text-[#667085]
+">
                       <button
                         onClick={() => handleSort('email')}
-                        className="flex items-center gap-1 hover:text-primary"
+                        className="
+  group
+  w-full
+  inline-flex
+  items-center
+  justify-center
+  gap-2
+  text-[13px]
+  font-semibold
+  tracking-[0.02em]
+  text-[#667085]
+  transition-colors
+  hover:text-[#0b5d68]
+"
                       >
                         Email
-                        <span className="material-symbols-outlined text-sm">
+                        <span className="
+material-symbols-outlined
+text-[13px]
+text-gray-400
+transition-all
+duration-200
+group-hover:-translate-y-[1px]
+group-hover:text-[#0b5d68]
+">
                           {sortField === 'email'
                             ? sortDirection === 'asc'
                               ? 'arrow_upward'
@@ -387,13 +450,42 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                       </button>
                     </th>
 
-                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <th className="
+px-6
+py-3
+text-center
+text-[13px]
+font-semibold
+tracking-[0.02em]
+text-[#667085]
+">
                       <button
                         onClick={() => handleSort('location')}
-                        className="flex items-center gap-1 hover:text-primary"
+                        className="
+  group
+  w-full
+  inline-flex
+  items-center
+  justify-center
+  gap-2
+  text-[13px]
+  font-semibold
+  tracking-[0.02em]
+  text-[#667085]
+  transition-colors
+  hover:text-[#0b5d68]
+"
                       >
                         Location
-                        <span className="material-symbols-outlined text-sm">
+                        <span className="
+material-symbols-outlined
+text-[13px]
+text-gray-400
+transition-all
+duration-200
+group-hover:-translate-y-[1px]
+group-hover:text-[#0b5d68]
+">
                           {sortField === 'location'
                             ? sortDirection === 'asc'
                               ? 'arrow_upward'
@@ -402,19 +494,59 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                         </span>
                       </button>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <th className="
+px-6
+py-3
+text-center
+text-[13px]
+font-semibold
+tracking-[0.02em]
+text-[#667085]
+">
                       Role
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <th className="
+px-6
+py-3
+text-center
+text-[13px]
+font-semibold
+tracking-[0.02em]
+text-[#667085]
+">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <th className="
+px-6
+py-3
+text-center
+text-[13px]
+font-semibold
+tracking-[0.02em]
+text-[#667085]
+">
                       Verification
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <th className="
+px-6
+py-3
+text-center
+text-[13px]
+font-semibold
+tracking-[0.02em]
+text-[#667085]
+">
                       Last Active
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                    <th className="
+px-6
+py-3
+text-center
+text-[13px]
+font-semibold
+tracking-[0.02em]
+text-[#667085]
+">
                       Actions
                     </th>
                   </tr>
@@ -472,34 +604,6 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                           {formatLastActive(user.lastActive)}
                         </span>
                       </td>
-                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleViewUser(user)}
-                            className="text-primary hover:text-primary-container transition-colors cursor-pointer"
-                            title="View Details"
-                          >
-                            <span className="material-symbols-outlined text-lg">visibility</span>
-                          </button>
-                          <button
-                            onClick={() => handleEditUser(user)}
-                            className="text-on-surface hover:text-on-surface-variant transition-colors cursor-pointer"
-                            title="Edit User"
-                          >
-                            <span className="material-symbols-outlined text-lg">edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleToggleSuspend(user.id)}
-                            className={`${user.status === 'banned' ? 'text-green-600 hover:text-green-700' : 'text-error hover:text-error-container'} transition-colors cursor-pointer`}
-                            title={user.status === 'banned' ? 'Unban User' : 'Ban User'}
-                          >
-                            <span className="material-symbols-outlined text-lg">
-                              {user.status === 'banned' ? 'check_circle' : 'block'}
-                            </span>
-                          </button>
-                        </div>
-                      </td> */}
-
                       <td className="px-6 py-4 whitespace-nowrap">
 
                         <div className="flex gap-2">
