@@ -33,6 +33,7 @@ export type AdminUser = {
   id: string
   name: string
   email: string
+  avatar?: string
   role: 'farmer' | 'trader' | 'warehouse' | 'transporter' | 'admin'
   status: 'active' | 'pending' | 'suspended' | 'banned'
   joinedAt: string

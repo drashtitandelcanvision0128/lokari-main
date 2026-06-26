@@ -425,10 +425,20 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                            <span className="text-sm font-medium">
-                              {user.name.split(' ').map(n => n[0]).join('')}
-                            </span>
+                          <div className="h-10 w-10 flex-shrink-0">
+                            {user.avatar ? (
+                              <img
+                                src={user.avatar}
+                                alt={user.name}
+                                className="h-10 w-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <span className="text-sm font-medium">
+                                  {user.name.split(' ').map(n => n[0]).join('')}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
                           <span className="text-sm font-medium text-gray-900">
