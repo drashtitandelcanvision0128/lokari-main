@@ -39,9 +39,43 @@ export type Listing = {
   listingType: 'produce' | 'warehouse' | 'transport'
   price?: string
   image?: string
+
+  product_images?: string[]
   createdAt: string
   priceType?: string
   listingLocation?: string
+
+  address?: {
+    street?: string
+    city?: string
+    state?: string
+    pincode?: string
+    country?: string
+  } | null
+  farmerProduce?: {
+    crop_type?: string
+    variety?: string
+    quantity?: number
+    unit?: string
+    harvest_date?: string
+    expiry_date?: string
+    quality_grade?: string
+  } | null
+  warehouse?: {
+    capacity?: number
+    capacity_unit?: string
+    available_from?: string
+    available_to?: string
+    climate_controlled?: boolean
+  } | null
+  transport?: {
+    vehicle_type?: string
+    capacity?: number
+    capacity_unit?: string
+    available_from?: string
+    available_to?: string
+    is_refrigerated?: boolean
+  } | null
 }
 
 export type Bid = {
@@ -132,3 +166,4 @@ export type Transaction = {
   invoice?: string
   escrowReleaseDate?: string
 }
+

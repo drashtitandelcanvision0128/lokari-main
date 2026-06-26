@@ -24,8 +24,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files (avatars, etc.)
-// backend/src/ → ../ → backend/uploads
+// Serve uploaded files
 app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
 
 app.get('/health', (_req, res) => {

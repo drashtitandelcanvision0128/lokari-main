@@ -10,6 +10,7 @@ import { Listing } from '@/types/dashboard';
 // import { mockListings } from '@/data/dashboardMock'
 import { apiUrl, authHeaders } from '@/lib/api';
 import { getCurrentUser } from '@/lib/auth';
+import { getAuthToken } from "@/lib/api";
 
 import EditUserListingModal from '@/components/dashboard/modals/EditUserListingModal';
 
@@ -35,6 +36,16 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const [selectedListing, setSelectedListing] =
     useState<Listing | null>(null)
 
+  const [imageModalOpen, setImageModalOpen] = useState(false)
+
+  const [listingImages, setListingImages] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+
+  // state to track which image is being replaced
+  const [replacingIndex, setReplacingIndex] = useState<number | null>(null);
+  // state to track per-index replacement files
+  const [replacedImages, setReplacedImages] = useState<Record<number, File>>({});
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -54,10 +65,10 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const [totalPages, setTotalPages] = useState(1);
 
   // For sorting
-  const [sortField, setSortField] = useState<'product' | 'price' | 'listingLocation' | null>(null);
+  const [sortField, setSortField] = useState<'product' | 'price' | 'quantity' | 'listingLocation' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const handleSort = (field: 'product' | 'price') => {
+  const handleSort = (field: 'product' | 'price' | 'quantity' | 'listingLocation') => {
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
@@ -82,8 +93,21 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
         )
       )
       const result = await response.json();
+
+      console.log("FULL API DATA:", result.data);
+
+      result.data.forEach((item: any) => {
+        console.log(
+          item.product,
+          item.product_images
+        );
+      });
       // console.log(result.data[0])
       console.log('Full result:', result);
+      console.log(
+        "FIRST LISTING IMAGES:",
+        result.data?.[0]?.product_images
+      );
 
       if (result.success) {
         const userListings = result.data
@@ -126,11 +150,30 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
             address: item.address || null,
 
             listingLocation: item.address?.city ?? '-',
-            image: '',
+            // image: '',
+            product_images: item.product_images || [],
+            image:
+              item.product_images?.length > 0
+                ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${item.product_images[0]}`
+                : '',
             createdAt: item.created_at,
-          }));
 
+            farmerProduce: item.farmerProduce ?? null,
+            warehouse: item.warehouse ?? null,
+            transport: item.transport ?? null,
+          }));
         setListings(userListings);
+
+        if (selectedListing) {
+          const freshListing = userListings.find(
+            (item: Listing) => item.id === selectedListing.id
+          );
+
+          if (freshListing) {
+            setSelectedListing(freshListing);
+          }
+        }
+        console.log("USER LISTINGS:", userListings);
       }
     } catch (error) {
       console.error('Failed to fetch listings:', error);
@@ -292,6 +335,95 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
     }
   };
 
+  const closeImageModal = () => {
+    setListingImages(
+      selectedListing?.product_images || []
+    );
+    setReplacedImages({});
+
+    setNewImages([]);
+    setImageModalOpen(false);
+  };
+
+
+  const saveImages = async () => {
+    if (!selectedListing?.id) {
+      // console.log("NO SELECTED LISTING");
+      return;
+    }
+    // console.log("SAVING IMAGES FOR:", selectedListing);
+    // console.log("LISTING:", selectedListing);
+    const formData = new FormData();
+
+    const existingWithPlaceholders = listingImages.map((img, i) =>
+      replacedImages[i] ? '__replaced__' : img
+    );
+    formData.append(
+      "existingImages",
+      JSON.stringify(existingWithPlaceholders)
+    );
+
+    // Send replacement files in order under ONE known field
+    // Also send their index so backend knows which slot to put them in
+    const replacedEntries = Object.entries(replacedImages);
+    replacedEntries.forEach(([index, file]) => {
+      formData.append('replaced_images', file);
+    });
+
+    // Send the indices separately so backend can map file → slot
+    formData.append(
+      'replacedIndices',
+      JSON.stringify(replacedEntries.map(([index]) => Number(index)))
+    );
+
+    // New images (bulk added)
+    newImages.forEach(file => {
+      formData.append(
+        "product_images",
+        file
+      );
+    });
+
+    // // Replaced images — send with index so backend knows which slot
+    // Object.entries(replacedImages).forEach(([index, file]) => {
+    //   formData.append(`replace_image_${index}`, file);
+    // });
+
+
+    const res = await fetch(
+      apiUrl(`/listings/${selectedListing.id}/images`),
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${getAuthToken()}`
+        },
+        // headers: {
+        //   ...authHeaders()
+        // },
+        body: formData
+      }
+    );
+
+
+    const result = await res.json();
+
+    if (result.success) {
+      await fetchListings();
+      closeImageModal();
+    }
+  };
+
+
+  const getImageSrc = (img?: string) => {
+    if (!img) return '';
+
+    if (img.startsWith('blob:')) return img;
+    if (img.startsWith('http')) return img;
+
+    return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${img}`;
+  }
+
+
   return (
     <div className="p-6 space-y-6 max-w-[1800px] mx-auto w-full">
       {/* Header Section */}
@@ -337,10 +469,6 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       {/* Product Cards Grid */}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-[#0b5d68]">Active Listings</h2>
-          <div className="text-sm text-[#666666]">
-            {listings.length} {listings.length === 1 ? 'listing' : 'listings'} found
-          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -348,36 +476,136 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
             <table className="min-w-full divide-y divide-outline-variant">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    <button onClick={() => handleSort('product')} className="flex items-center gap-1 hover:text-primary">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    <button onClick={() => handleSort('product')} className="
+    group
+    inline-flex
+    items-center
+    gap-2
+    text-[13px]
+    font-semibold
+    text-[#667085]
+    transition-colors
+    hover:text-[#0b5d68]
+  ">
                       Product
-                      <span className="material-symbols-outlined text-sm">
+                      <span className="
+    material-symbols-outlined
+    text-[13px]
+    text-gray-400
+    transition-all
+    duration-200
+    group-hover:-translate-y-[1px]
+    group-hover:text-[#0b5d68]
+  ">
                         {sortField === 'product' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
                       </span>
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    <button onClick={() => handleSort('price')} className="flex items-center gap-1 hover:text-primary">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    <button onClick={() => handleSort('price')} className="
+    group
+    inline-flex
+    items-center
+    gap-2
+    text-[13px]
+    font-semibold
+    text-[#667085]
+    transition-colors
+    hover:text-[#0b5d68]
+  ">
                       Price
-                      <span className="material-symbols-outlined text-sm">
+                      <span className="
+    material-symbols-outlined
+    text-[13px]
+    text-gray-400
+    transition-all
+    duration-200
+    group-hover:-translate-y-[1px]
+    group-hover:text-[#0b5d68]
+  ">
                         {sortField === 'price' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
                       </span>
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Price Type</th>
-                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    <button onClick={() => handleSort('listingLocation')} className="flex items-center gap-1 hover:text-primary">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Price Type</th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    <button
+                      onClick={() => handleSort('listingLocation')}
+                      className="
+    group
+    inline-flex
+    items-center
+    gap-2
+    text-[13px]
+    font-semibold
+    text-[#667085]
+    transition-colors
+    hover:text-[#0b5d68]
+  "
+                    >
                       Location
-                      <span className="material-symbols-outlined text-sm">
-                        {sortField === 'listingLocation' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+
+                      <span className="
+    material-symbols-outlined
+    text-[13px]
+    text-gray-400
+    transition-all
+    duration-200
+    group-hover:-translate-y-[1px]
+    group-hover:text-[#0b5d68]
+  ">
+                        {
+                          sortField === 'listingLocation'
+                            ? sortDirection === 'asc'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
+                            : 'unfold_more'
+                        }
                       </span>
+
                     </button>
-                  </th> */}
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Location</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Quantity</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Stats</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Actions</th>
+                  </th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    <button
+                      onClick={() => handleSort('quantity')}
+                      className="
+    group
+    inline-flex
+    items-center
+    gap-2
+    text-[13px]
+    font-semibold
+    text-[#667085]
+    transition-colors
+    hover:text-[#0b5d68]
+  "
+                    >
+                      Quantity
+
+                      <span className="
+    material-symbols-outlined
+    text-[13px]
+    text-gray-400
+    transition-all
+    duration-200
+    group-hover:-translate-y-[1px]
+    group-hover:text-[#0b5d68]
+  ">
+                        {
+                          sortField === 'quantity'
+                            ? sortDirection === 'asc'
+                              ? 'arrow_upward'
+                              : 'arrow_downward'
+                            : 'unfold_more'
+                        }
+                      </span>
+
+                    </button>
+                  </th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Status</th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Stats</th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -436,9 +664,30 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3 text-xs text-gray-500">
-                          <span className="flex items-center gap-1" title="Views"><Icon name="visibility" className="text-[#2eb5c2] text-sm" />{listing.views}</span>
-                          <span className="flex items-center gap-1" title="Inquiries"><Icon name="question_answer" className="text-[#e89151] text-sm" />{listing.inquiries}</span>
-                          <span className="flex items-center gap-1" title="Bids"><Icon name="gavel" className="text-[#d55b39] text-sm" />{listing.bids}</span>
+                          <span className="
+group
+inline-flex
+items-center
+gap-2
+transition-colors
+hover:text-[#0b5d68]
+" title="Views"><Icon name="visibility" className="text-[#2eb5c2] text-sm" />{listing.views}</span>
+                          <span className="
+group
+inline-flex
+items-center
+gap-2
+transition-colors
+hover:text-[#0b5d68]
+" title="Inquiries"><Icon name="question_answer" className="text-[#e89151] text-sm" />{listing.inquiries}</span>
+                          <span className="
+group
+inline-flex
+items-center
+gap-2
+transition-colors
+hover:text-[#0b5d68]
+" title="Bids"><Icon name="gavel" className="text-[#d55b39] text-sm" />{listing.bids}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -447,24 +696,160 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                             <Icon name="edit" />
                           </Button> */}
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
+                            className="
+    h-7
+    px-2.5
+    rounded-md
+    border
+    border-gray-200
+    bg-white
+    text-gray-500
+    shadow-sm
+    hover:border-[#2eb5c2]/40
+    hover:text-[#0b5d68]
+    hover:shadow-md
+    transition-all
+    duration-200
+    flex
+    items-center
+    justify-center
+    group/edit
+  "
                             onClick={() => {
                               setSelectedListing(listing)
                               setEditOpen(true)
                             }}
                           >
-                            <Icon name="edit" />
+
+                            <div className="relative w-5 h-5">
+
+                              {/* paper */}
+                              <span
+                                className="
+        absolute
+        left-[1px]
+        top-[3px]
+        w-[13px]
+        h-[15px]
+        rounded-[2px]
+        border-[1.5px]
+        border-current
+        transition-all
+        duration-200
+        group-hover/edit:-translate-x-[1px]
+      "
+                              >
+
+                                {/* paper line 1 */}
+                                <span
+                                  className="
+          absolute
+          left-[3px]
+          top-[4px]
+          w-[6px]
+          h-[1px]
+          bg-current
+          rounded-full
+        "
+                                />
+
+                                {/* paper line 2 */}
+                                <span
+                                  className="
+          absolute
+          left-[3px]
+          top-[8px]
+          w-[8px]
+          h-[1px]
+          bg-current
+          rounded-full
+        "
+                                />
+
+                              </span>
+
+
+                              {/* pen */}
+                              <span
+                                className="
+        absolute
+        right-[-1px]
+        top-[0px]
+        w-[10px]
+        h-[3px]
+        rounded-full
+        bg-current
+        rotate-[-45deg]
+        transition-all
+        duration-200
+        origin-left
+
+        group-hover/edit:translate-x-[4px]
+        group-hover/edit:-translate-y-[2px]
+      "
+                              />
+
+                            </div>
+
                           </Button>
                           <div className="relative" ref={openStatusDropdown === listing.id ? statusDropdownRef : undefined}>
                             <Button
                               variant="outline"
                               size="sm"
-                              className={`hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''}`}
+                              // className={`hover:border-[#2eb5c2] hover:text-[#2eb5c2] transition-colors ${openStatusDropdown === listing.id ? 'border-[#2eb5c2] text-[#2eb5c2]' : ''}`}
+                              className="
+  h-7
+  px-2.5
+  rounded-md
+  border
+  border-gray-200
+  bg-white
+  shadow-sm
+  hover:border-[#2eb5c2]/40
+  hover:shadow-md
+  transition-all
+  duration-200
+  flex
+  items-center
+  justify-center
+"
                               onClick={() => setOpenStatusDropdown((prev) => (prev === listing.id ? null : listing.id))}
                               title="Change status"
                             >
-                              <Icon name="visibility" />
+                              <div
+                                className={`
+    relative
+    w-6 h-3
+    rounded-full
+    transition-all
+    duration-300
+    ease-in-out
+    ${listing.status === 'live'
+                                    ? 'bg-[#2eb5c2]'
+                                    : 'bg-[#d55b39]'
+                                  }
+  `}
+                              >
+                                <span
+                                  className={`
+      absolute
+      top-[1.5px]
+      w-2 h-2
+      rounded-full
+      bg-white
+      shadow-sm
+      transition-all
+      duration-300
+      ease-in-out
+      ${listing.status === 'live'
+                                      ? 'left-[14px]'
+                                      : 'left-[2px]'
+                                    }
+    `}
+                                />
+                              </div>
                             </Button>
                             {openStatusDropdown === listing.id && (
                               <div className="absolute right-0 top-full mt-2 z-50 min-w-[130px] bg-white rounded-xl shadow-xl border border-[#e0e0e0] overflow-hidden">
@@ -490,8 +875,112 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                               </div>
                             )}
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => handleDelete(listing.id)} className="hover:border-[#d55b39] hover:text-[#d55b39] transition-colors" title="Delete">
-                            <Icon name="delete" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedListing(listing)
+                              setListingImages(listing.product_images || [])
+                              setNewImages([])
+                              setImageModalOpen(true)
+                            }}
+                            className="
+  h-7
+  px-2.5
+  rounded-md
+  border
+  border-[#2eb5c2]/20
+  bg-white
+  text-[#2eb5c2]
+  shadow-sm
+  hover:bg-[#2eb5c2]/5
+  hover:border-[#2eb5c2]/50
+  hover:shadow-md
+  transition-all
+  duration-200
+  flex
+  items-center
+  justify-center
+  group
+"
+                            title="Update Images"
+                          >
+                            <Icon
+                              name="upload"
+                              className="
+    text-[14px]
+    transition-transform
+    duration-200
+    group-hover:-translate-y-[1px]
+  "
+                            />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(listing.id)}
+                            className="
+    h-7
+    px-2.5
+    rounded-md
+    border
+    border-gray-200
+    bg-white
+    text-red-400
+    shadow-sm
+    hover:border-red-200
+    hover:bg-red-50
+    hover:text-red-500
+    hover:shadow-md
+    transition-all
+    duration-200
+    flex
+    items-center
+    justify-center
+    group/delete
+  
+
+" title="Delete">
+                            <div className="relative w-[16px] h-[16px]">
+
+                              {/* lid */}
+                              <span
+                                className="
+    absolute
+    left-[3px]
+    top-[1px]
+    w-[10px]
+    h-[3px]
+    rounded-sm
+    bg-current
+    transition-all
+    duration-200
+    origin-left
+
+    group-hover/delete:-rotate-12
+    group-hover/delete:-translate-y-[2px]
+    group-hover/delete:-translate-x-[1px]
+  "
+                              />
+
+                              {/* body */}
+                              <span
+                                className="
+    absolute
+    left-[4px]
+    top-[5px]
+    w-[8px]
+    h-[10px]
+    rounded-b-sm
+    bg-current
+    transition-all
+    duration-200
+
+    group-hover/delete:translate-y-[1px]
+  "
+                              />
+
+                            </div>
                           </Button>
                         </div>
                       </td>
@@ -507,6 +996,409 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
             onClose={() => setEditOpen(false)}
             onSuccess={fetchListings}
           />
+
+          {imageModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+              <div
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                onClick={() => closeImageModal()}
+              />
+
+
+              <div className="
+            relative w-full max-w-lg
+            rounded-2xl bg-white shadow-2xl
+            overflow-hidden
+        ">
+
+
+                {/* Header */}
+                <div className="relative bg-white border-b border-[#edf1f3]">
+
+                  {/* Accent bar */}
+                  <div
+                    className="
+            absolute top-0 left-0 w-full h-[3px]
+            bg-gradient-to-r
+            from-[#0b5d68]
+            via-[#2eb5c2]
+            to-[#2eb5c2]/30
+        "
+                  />
+
+                  <div className="flex items-center justify-between px-5 pt-5 pb-4">
+
+                    <div className="flex items-center gap-3">
+
+                      <div
+                        className="
+                    w-10 h-10
+                    rounded-md
+                    bg-gradient-to-br
+                    from-[#0b5d68]
+                    to-[#2eb5c2]
+                    flex items-center justify-center
+                    shadow-md
+                "
+                      >
+                        <span className="material-symbols-outlined text-white text-[18px]">
+                          photo_library
+                        </span>
+                      </div>
+
+                      <div>
+                        <h3 className="font-bold text-[#0b5d68]">
+                          Update Images
+                        </h3>
+
+                        <p className="text-[11px] text-[#888]">
+                          Manage listing gallery and cover image
+                        </p>
+                      </div>
+
+                    </div>
+
+                    <button
+                      onClick={closeImageModal}
+                      className="
+                w-8 h-8
+                rounded
+                flex items-center justify-center
+                text-[#999]
+                hover:bg-[#f3f6f7]
+                hover:text-[#0b5d68]
+                transition
+            "
+                    >
+                      <span className="material-symbols-outlined text-[20px]">
+                        close
+                      </span>
+                    </button>
+
+                  </div>
+                </div>
+
+
+
+                {/* Body */}
+                <div className="p-5">
+
+
+                  <div className="
+                    grid grid-cols-3 gap-3
+                ">
+
+                    {listingImages.map((img, index) => (
+                      <div
+                        key={img}
+                        className="
+        group
+        relative
+        h-28
+        rounded
+        overflow-hidden
+        bg-gray-100
+    "
+                      >
+
+                        {index === 0 && (
+                          <div
+                            className="
+                                                absolute top-2 left-2 z-10
+                                                px-2 py-1
+                                                rounded-md
+                                                bg-black/45
+                                                backdrop-blur-md
+                                                text-white
+                                                text-[10px]
+                                                font-medium
+                                                tracking-wide
+                                            "
+                          >
+                            Cover Image
+                          </div>
+
+                          //                                     <div
+                          //                                         className="
+                          //     absolute top-2 left-2 z-10
+                          //     px-2.5 py-1
+                          //     rounded
+                          //     bg-white/90
+                          //     backdrop-blur-md
+                          //     border border-white
+                          //     text-[#0b5d68]
+                          //     text-[10px]
+                          //     font-semibold
+                          // "
+                          //                                     >
+                          //                                         COVER
+                          //                                     </div>
+
+                          //                                     <div
+                          //                                         className="
+                          //     absolute top-2 left-2 z-10
+                          //     text-white
+                          //     text-[10px]
+                          //     font-medium
+                          //     tracking-[0.12em]
+                          //     uppercase
+                          //     drop-shadow-md
+                          // "
+                          //                                     >
+                          //                                         Cover
+                          //                                     </div>
+                        )}
+
+
+                        <img
+                          src={getImageSrc(img)}
+                          className="
+        w-full
+        h-full
+        object-cover
+        transition-transform
+        duration-300
+        group-hover:scale-105
+    "
+                        />
+
+                        <div
+                          className="
+        absolute
+        inset-0
+        flex
+        items-center
+        justify-center
+        bg-black/40
+        opacity-0
+        group-hover:opacity-100
+        transition
+    "
+                        >
+                          <label
+                            htmlFor="listing-image-replace" // ← shared input, index tracked via state
+                            onClick={() => setReplacingIndex(index)}
+                            className="
+            w-10
+            h-10
+            rounded-full
+            bg-white/90
+            flex
+            items-center
+            justify-center
+            cursor-pointer
+            shadow-lg
+            hover:bg-white
+            transition
+        "
+                          >
+                            <span className="material-symbols-outlined text-[#0b5d68] text-[22px]">
+                              upload
+                            </span>
+                          </label>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setListingImages(
+                              listingImages.filter((_, i) => i !== index)
+                            )
+                          }}
+                          className="
+    absolute top-1.5 right-1.5
+    w-5 h-5
+    rounded-full
+    bg-[#faf7f2]
+    border border-[#f0ebe3]
+    flex items-center justify-center
+    text-[#666]
+    shadow-sm
+    transition-all duration-300
+    hover:bg-white
+    hover:text-red-500
+    group/delete
+"
+                        >
+                          <span
+                            className="
+        block text-sm
+        leading-none
+        transition-transform duration-300
+        group-hover/delete:rotate-90
+    "
+                          >
+                            ×
+                          </span>
+                        </button>
+
+                      </div>
+                    ))}
+
+
+                  </div>
+
+
+                  {/* Hidden input for per-image replacement */}
+                  <input
+                    id="listing-image-replace"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || replacingIndex === null) return;
+
+                      const objectUrl = URL.createObjectURL(file);
+
+                      // Swap the image at replacingIndex with a preview URL
+                      setListingImages(prev =>
+                        prev.map((img, i) => (i === replacingIndex ? objectUrl : img))
+                      );
+
+                      // Track the replacement so saveImages can send it
+                      setReplacedImages(prev => ({
+                        ...prev,
+                        [replacingIndex]: file,
+                      }));
+
+                      setReplacingIndex(null);
+                      e.target.value = ''; // reset so same file can be re-selected
+                    }}
+                  />
+
+                  <label
+                    htmlFor="listing-image-upload"
+                    className="
+        mt-4
+        flex flex-col items-center justify-center
+        gap-2
+        p-6
+        border-2 border-dashed border-[#2eb5c2]/30
+        rounded-xl
+        bg-[#f8fcfc]
+        cursor-pointer
+        hover:border-[#2eb5c2]
+        hover:bg-[#f2fbfc]
+        transition
+    "
+                  >
+                    <span
+                      className="
+            material-symbols-outlined
+            text-[#2eb5c2]
+            text-[32px]
+        "
+                    >
+                      cloud_upload
+                    </span>
+
+                    <div className="text-sm font-semibold text-[#0b5d68]">
+                      Choose Images
+                    </div>
+
+                    <div className="text-xs text-gray-500">
+                      PNG, JPG, WEBP • Multiple files allowed
+                    </div>
+
+                    {newImages.length > 0 && (
+                      <div className="
+            mt-2
+            px-3 py-1
+            rounded-full
+            bg-[#2eb5c2]/10
+            text-[#0b5d68]
+            text-xs
+            font-medium
+        ">
+                        {newImages.length} file{newImages.length > 1 ? 's' : ''} selected
+                      </div>
+                    )}
+                  </label>
+
+                  <input
+                    id="listing-image-upload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (!e.target.files) return
+
+                      setNewImages(Array.from(e.target.files))
+                    }}
+                  />
+
+                </div>
+
+
+
+                {/* Footer */}
+                <div
+                  className="
+        flex items-center justify-between
+        gap-3
+        px-5 py-4
+        bg-white
+        border-t border-[#edf1f3]
+    "
+                >
+
+                  {/* <p className="text-xs text-[#999]">
+                                The first image will be used as the cover image.
+                            </p> */}
+
+                  <div className="ml-auto flex items-center gap-2">
+
+                    <button
+                      onClick={closeImageModal}
+                      className="
+                px-4 py-2
+                rounded-md
+                text-sm font-medium
+                text-[#555]
+                border border-[#e0e4e6]
+                bg-white
+                hover:bg-[#f5f7f8]
+                hover:border-[#cdd3d6]
+                transition-all
+            "
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      onClick={saveImages}
+                      className="
+                inline-flex items-center gap-2
+                px-5 py-2
+                rounded-md
+                text-sm font-semibold
+                text-white
+                bg-gradient-to-r
+                from-[#0b5d68]
+                to-[#2eb5c2]
+                hover:from-[#0a5260]
+                hover:to-[#28a8b4]
+                shadow-[0_2px_12px_rgba(46,181,194,0.35)]
+                transition-all
+            "
+                    >
+                      <span className="material-symbols-outlined text-[16px]">
+                        save
+                      </span>
+
+                      Save Images
+                    </button>
+
+                  </div>
+
+                </div>
+
+
+              </div>
+
+            </div>
+          )}
 
           {/* Footer pagination */}
           {/* {sortedListings.length > 0 && ( */}
@@ -558,6 +1450,6 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 }
