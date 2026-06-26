@@ -476,64 +476,136 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
             <table className="min-w-full divide-y divide-outline-variant">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    <button onClick={() => handleSort('product')} className="flex items-center gap-1 hover:text-primary">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    <button onClick={() => handleSort('product')} className="
+    group
+    inline-flex
+    items-center
+    gap-2
+    text-[13px]
+    font-semibold
+    text-[#667085]
+    transition-colors
+    hover:text-[#0b5d68]
+  ">
                       Product
-                      <span className="material-symbols-outlined text-sm">
-                        {sortField === 'product' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+                      <span className="
+    material-symbols-outlined
+    text-[13px]
+    text-gray-400
+    transition-all
+    duration-200
+    group-hover:-translate-y-[1px]
+    group-hover:text-[#0b5d68]
+  ">
+                        {sortField === 'product' ? (sortDirection === 'asc' ? 'north' : 'south') : 'unfold_more'}
                       </span>
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
-                    <button onClick={() => handleSort('price')} className="flex items-center gap-1 hover:text-primary">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    <button onClick={() => handleSort('price')} className="
+    group
+    inline-flex
+    items-center
+    gap-2
+    text-[13px]
+    font-semibold
+    text-[#667085]
+    transition-colors
+    hover:text-[#0b5d68]
+  ">
                       Price
-                      <span className="material-symbols-outlined text-sm">
-                        {sortField === 'price' ? (sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
+                      <span className="
+    material-symbols-outlined
+    text-[13px]
+    text-gray-400
+    transition-all
+    duration-200
+    group-hover:-translate-y-[1px]
+    group-hover:text-[#0b5d68]
+  ">
+                        {sortField === 'price' ? (sortDirection === 'asc' ? 'north' : 'south') : 'unfold_more'}
                       </span>
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Price Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Price Type</th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     <button
                       onClick={() => handleSort('listingLocation')}
-                      className="flex items-center gap-1 hover:text-primary"
+                      className="
+    group
+    inline-flex
+    items-center
+    gap-2
+    text-[13px]
+    font-semibold
+    text-[#667085]
+    transition-colors
+    hover:text-[#0b5d68]
+  "
                     >
                       Location
 
-                      <span className="material-symbols-outlined text-sm">
+                      <span className="
+    material-symbols-outlined
+    text-[13px]
+    text-gray-400
+    transition-all
+    duration-200
+    group-hover:-translate-y-[1px]
+    group-hover:text-[#0b5d68]
+  ">
                         {
                           sortField === 'listingLocation'
                             ? sortDirection === 'asc'
-                              ? 'arrow_upward'
-                              : 'arrow_downward'
+                              ? 'north'
+                              : 'south'
                             : 'unfold_more'
                         }
                       </span>
 
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     <button
                       onClick={() => handleSort('quantity')}
-                      className="flex items-center gap-1 hover:text-primary"
+                      className="
+    group
+    inline-flex
+    items-center
+    gap-2
+    text-[13px]
+    font-semibold
+    text-[#667085]
+    transition-colors
+    hover:text-[#0b5d68]
+  "
                     >
                       Quantity
 
-                      <span className="material-symbols-outlined text-sm">
+                      <span className="
+    material-symbols-outlined
+    text-[13px]
+    text-gray-400
+    transition-all
+    duration-200
+    group-hover:-translate-y-[1px]
+    group-hover:text-[#0b5d68]
+  ">
                         {
                           sortField === 'quantity'
                             ? sortDirection === 'asc'
-                              ? 'arrow_upward'
-                              : 'arrow_downward'
+                              ? 'north'
+                              : 'south'
                             : 'unfold_more'
                         }
                       </span>
 
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Stats</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Status</th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Stats</th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -592,9 +664,30 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3 text-xs text-gray-500">
-                          <span className="flex items-center gap-1" title="Views"><Icon name="visibility" className="text-[#2eb5c2] text-sm" />{listing.views}</span>
-                          <span className="flex items-center gap-1" title="Inquiries"><Icon name="question_answer" className="text-[#e89151] text-sm" />{listing.inquiries}</span>
-                          <span className="flex items-center gap-1" title="Bids"><Icon name="gavel" className="text-[#d55b39] text-sm" />{listing.bids}</span>
+                          <span className="
+group
+inline-flex
+items-center
+gap-2
+transition-colors
+hover:text-[#0b5d68]
+" title="Views"><Icon name="visibility" className="text-[#2eb5c2] text-sm" />{listing.views}</span>
+                          <span className="
+group
+inline-flex
+items-center
+gap-2
+transition-colors
+hover:text-[#0b5d68]
+" title="Inquiries"><Icon name="question_answer" className="text-[#e89151] text-sm" />{listing.inquiries}</span>
+                          <span className="
+group
+inline-flex
+items-center
+gap-2
+transition-colors
+hover:text-[#0b5d68]
+" title="Bids"><Icon name="gavel" className="text-[#d55b39] text-sm" />{listing.bids}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -1357,6 +1450,6 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 }
