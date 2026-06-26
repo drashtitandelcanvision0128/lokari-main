@@ -472,7 +472,7 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                           {formatLastActive(user.lastActive)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleViewUser(user)}
@@ -498,6 +498,202 @@ export function UsersPanel({ searchQuery = '' }: UsersPanelProps) {
                             </span>
                           </button>
                         </div>
+                      </td> */}
+
+                      <td className="px-6 py-4 whitespace-nowrap">
+
+                        <div className="flex gap-2">
+
+                          {/* View */}
+                          <button
+                            onClick={() => handleViewUser(user)}
+                            className="
+        h-7
+        px-2.5
+        rounded-md
+        border
+        border-sky-200
+        bg-white
+        text-sky-600
+        shadow-sm
+        hover:border-sky-300
+        hover:bg-sky-50
+        hover:text-sky-700
+        hover:shadow-md
+        transition-all
+        duration-200
+        flex
+        items-center
+        justify-center
+        group/view
+      "
+                            title="View Details"
+                          >
+                            <span
+                              className="
+          material-symbols-outlined
+          text-[18px]
+          transition-all
+          duration-200
+          group-hover/view:scale-110
+          group-hover/view:-translate-y-[1px]
+        "
+                            >
+                              pageview
+                            </span>
+                          </button>
+
+
+                          {/* Edit */}
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            title="Edit User"
+                            className="
+        h-7
+        px-2.5
+        rounded-md
+        border
+        border-gray-200
+        bg-white
+        text-gray-500
+        shadow-sm
+        hover:border-[#2eb5c2]/40
+        hover:text-[#0b5d68]
+        hover:shadow-md
+        transition-all
+        duration-200
+        flex
+        items-center
+        justify-center
+        group/edit
+      "
+                          >
+                            <div className="relative w-5 h-5">
+
+                              {/* Paper */}
+                              <span
+                                className="
+      absolute
+      left-[1px]
+      top-[3px]
+      w-[13px]
+      h-[15px]
+      rounded-[2px]
+      border-[1.5px]
+      border-current
+      transition-all
+      duration-200
+      group-hover/edit:-translate-x-[1px]
+    "
+                              >
+                                <span
+                                  className="
+        absolute
+        left-[3px]
+        top-[4px]
+        w-[6px]
+        h-[1px]
+        bg-current
+        rounded-full
+      "
+                                />
+
+                                <span
+                                  className="
+        absolute
+        left-[3px]
+        top-[8px]
+        w-[8px]
+        h-[1px]
+        bg-current
+        rounded-full
+      "
+                                />
+
+                              </span>
+
+
+                              {/* Pen */}
+                              <span
+                                className="
+      absolute
+      right-[-1px]
+      top-[0px]
+      w-[10px]
+      h-[3px]
+      rounded-full
+      bg-current
+      rotate-[-45deg]
+      transition-all
+      duration-200
+      origin-left
+      group-hover/edit:translate-x-[4px]
+      group-hover/edit:-translate-y-[2px]
+    "
+                              />
+
+                            </div>
+                          </button>
+
+
+                          {/* Ban */}
+                          <button
+                            onClick={() => handleToggleSuspend(user.id)}
+                            title={user.status === 'banned' ? 'Unban User' : 'Ban User'}
+                            className="
+        h-7
+        px-2.5
+        rounded-md
+        border
+        border-gray-200
+        bg-white
+        shadow-sm
+        hover:border-[#2eb5c2]/40
+        hover:shadow-md
+        transition-all
+        duration-200
+        flex
+        items-center
+        justify-center
+      "
+                          >
+                            <div
+                              className={`
+          relative
+          w-6
+          h-3
+          rounded-full
+          transition-all
+          duration-300
+          ${user.status === 'banned'
+                                  ? 'bg-[#d55b39]'
+                                  : 'bg-[#2eb5c2]'
+                                }
+        `}
+                            >
+                              <span
+                                className={`
+            absolute
+            top-[1.5px]
+            w-2
+            h-2
+            rounded-full
+            bg-white
+            shadow-sm
+            transition-all
+            duration-300
+            ${user.status === 'banned'
+                                    ? 'left-[2px]'
+                                    : 'left-[14px]'
+                                  }
+          `}
+                              />
+                            </div>
+                          </button>
+
+
+                        </div>
+
                       </td>
                     </tr>
                   ))}
