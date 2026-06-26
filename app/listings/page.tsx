@@ -101,9 +101,9 @@ function ListingsPageContent() {
               item.farmerProduce?.unit ||
               item.transport?.vehicleType ||
               "unit",
-            location:
-              item.listing_location ||
-              "Unknown",
+            location: item.address
+              ? `${item.address.city}, ${item.address.state}`
+              : "Unknown",
             status: item.status.toLowerCase(),
             is_blocked: item.is_blocked || false,
             images: item.product_images || [],
