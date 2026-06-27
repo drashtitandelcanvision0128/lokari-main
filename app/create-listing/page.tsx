@@ -6,13 +6,58 @@ import { getCurrentUser } from '@/lib/auth'
 import { apiUrl, authHeaders } from '@/lib/api'
 import DynamicForm from '@/components/forms/DynamicForm'
 
+
+const initialListingData = {
+  // Basic Info
+  title: "",
+  description: "",
+
+  // Produce
+  cropName: "",
+  variety: "",
+  quantity: "",
+  // unit: "kg",
+  unit: "quintal",
+
+  harvestDate: "",
+  expiryDate: "",
+
+  // qualityGrade: "",
+  qualityGrade: "A",
+
+  storageTemp: "",
+  storageHumidity: "",
+
+  // Pricing
+  priceType: "fixed",
+  price: "",
+
+  minOrder: "",
+  // minOrderUnit: "kg",
+  minOrderUnit: "quintal",
+
+  startingBid: "",
+  reservePrice: "",
+  auctionStart: "",
+  auctionEnd: "",
+
+  // Address
+  street: "",
+  city: "",
+  state: "",
+  pincode: "",
+
+  // Images
+  product_images: [] as File[],
+}
+
 export default function CreateListingPage() {
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [userRole, setUserRole] = useState<string>('')
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [listingData, setListingData] = useState<any>({})
+  const [listingData, setListingData] = useState(initialListingData);
 
   useEffect(() => {
     const user = getCurrentUser()
@@ -75,7 +120,7 @@ export default function CreateListingPage() {
           // lng: data.lng ? Number(data.lng) : null,
         },
         price: Number(data.price) || 0,
-        price_type: data.priceType?.toUpperCase() === 'AUCTION' ? 'AUCTION' : 'FIXED_PRICE',
+        // price_type: data.priceType?.toUpperCase() === 'AUCTION' ? 'AUCTION' : 'FIXED_PRICE',
         // Produce fields
         crop_type: data.cropName || null,
         variety: data.variety || null,
@@ -100,6 +145,9 @@ export default function CreateListingPage() {
         reserve_price: data.reservePrice ? Number(data.reservePrice) : undefined,
         auction_start: data.auctionStart || undefined,
         auction_end: data.auctionEnd || undefined,
+
+        min_order_quantity: data.minOrder ? Number(data.minOrder) : null,
+        min_order_unit: data.minOrderUnit || null,
       }
 
       console.log('📦 Submitting payload:', payload)
@@ -116,7 +164,9 @@ export default function CreateListingPage() {
 
       formData.append('data', JSON.stringify(payload))
 
-      listingData.product_images?.forEach((file: File) => {
+      // listingData.product_images?.forEach((file: File) => {
+      data.product_images?.forEach((file: File) => {
+        console.log('📸 appending image:', file.name)
         formData.append('product_images', file)
       })
 
@@ -160,19 +210,21 @@ export default function CreateListingPage() {
   const listingType = getListingType()
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-10">
+      {/* <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-10"> */}
+
       {/* Header */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <h1 className="text-3xl font-bold text-[#0b5d68] mb-2">Create New Listing</h1>
         <p className="text-[#666666]">
           {listingType === 'produce' && 'List your agricultural produce for sale'}
           {listingType === 'warehouse' && 'Offer your warehouse space for storage'}
           {listingType === 'transport' && 'Provide transportation services'}
         </p>
-      </div>
+      </div> */}
 
       {/* Progress Steps */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <div className="flex items-center justify-between">
           {['Basic Info', 'Details', 'Pricing', 'Review'].map((step, index) => (
             <div key={step} className="flex items-center">
@@ -195,7 +247,7 @@ export default function CreateListingPage() {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Form */}
       <div className="bg-white rounded-xl shadow-sm border border-[#e0e0e0] p-6">
