@@ -36,6 +36,12 @@ enum ListingStatus {
   EXPIRED
 }
 
+enum ListingVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 enum PriceType {
   FIXED_PRICE
   NEGOTIABLE
@@ -159,6 +165,8 @@ model Marketplace {
   price      Decimal
   price_type PriceType     @default(FIXED_PRICE)
   status     ListingStatus @default(DRAFT)
+
+  verification_status ListingVerificationStatus @default(PENDING)
 
   is_deleted Boolean @default(false)
   is_blocked Boolean @default(false)
