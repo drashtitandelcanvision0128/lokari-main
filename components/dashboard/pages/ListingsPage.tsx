@@ -417,7 +417,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           </div>
 
           {/* Status Dropdown */}
-          <select
+          {/* <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as typeof filter)}
             className="px-4 py-2 rounded-full border border-outline bg-surface text-sm text-on-surface cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
@@ -427,7 +427,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
             <option value="DRAFT">Draft</option>
             <option value="SOLD">Sold</option>
             <option value="EXPIRED">Expired</option>
-          </select>
+          </select> */}
         </div>
       </div>
       {/* Product Cards Grid */}
@@ -583,7 +583,17 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                     </button>
                   </th>
                   <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
-                    Status
+                    <select
+                      value={filter}
+                      onChange={(e) => setFilter(e.target.value as typeof filter)}
+                      className="text-[13px] font-semibold text-[#667085] bg-transparent border-none cursor-pointer focus:outline-none hover:text-[#0b5d68] transition-colors"
+                    >
+                      <option value="all">Status</option>
+                      <option value="ACTIVE">Active</option>
+                      <option value="DRAFT">Draft</option>
+                      {/* <option value="SOLD">Sold</option> */}
+                      {/* <option value="EXPIRED">Expired</option> */}
+                    </select>
                   </th>
                   <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     <select
