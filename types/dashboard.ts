@@ -31,6 +31,7 @@ export type Listing = {
   id: string
   product: string
   description: string
+  verificationStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED';
   quantity: string
   bids: number
   views: number

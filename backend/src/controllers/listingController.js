@@ -227,6 +227,7 @@ export const getListingsByUser = async (req, res) => {
             sortDirection = 'desc',
             page = 1,
             limit = 10,
+            verification = 'all',
         } = req.query;
 
         const sortMap = {
@@ -245,6 +246,10 @@ export const getListingsByUser = async (req, res) => {
 
         if (status !== 'all') {
             where.status = status;
+        }
+
+        if (verification !== 'all') {
+            where.verification_status = verification;
         }
 
         if (search.trim()) {

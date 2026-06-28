@@ -43,6 +43,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   // state to track per-index replacement files
   const [replacedImages, setReplacedImages] = useState<Record<number, File>>({});
 
+  const [verificationFilter, setVerificationFilter] = useState<'all' | 'PENDING' | 'VERIFIED' | 'REJECTED'>('all')
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -96,6 +98,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
         sortDirection,
         page: String(currentPage),
         limit: String(rowsPerPage),
+        verification: verificationFilter,
       });
 
       // const url = apiUrl(`/listings?${params.toString()}`);
@@ -165,6 +168,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           farmerProduce: item.farmerProduce ?? null,
           warehouse: item.warehouse ?? null,
           transport: item.transport ?? null,
+          verificationStatus: item.verification_status ?? 'PENDING',
         }));
         setListings(userListings);
         setTotalPages(result.totalPages);
@@ -191,7 +195,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
   useEffect(() => {
     fetchListings();
-  }, [localSearch, filter, sortField, sortDirection, currentPage, rowsPerPage]);
+  }, [localSearch, filter, sortField, sortDirection, currentPage, rowsPerPage, verificationFilter]);
 
   const handleStatusChange = async (listingId: string, newStatus: 'live' | 'paused') => {
     setOpenStatusDropdown(null);
@@ -223,7 +227,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filter, localSearch, listingTypeFilter]);
+  }, [filter, localSearch, listingTypeFilter, verificationFilter]);
 
   if (loading) {
     return <DashboardLoader />;
@@ -582,6 +586,18 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                     Status
                   </th>
                   <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    <select
+                      value={verificationFilter}
+                      onChange={(e) => setVerificationFilter(e.target.value as typeof verificationFilter)}
+                      className="text-[13px] font-semibold text-[#667085] bg-transparent border-none cursor-pointer focus:outline-none hover:text-[#0b5d68] transition-colors"
+                    >
+                      <option value="all">Verification</option>
+                      <option value="PENDING">Pending</option>
+                      <option value="VERIFIED">Verified</option>
+                      <option value="REJECTED">Rejected</option>
+                    </select>
+                  </th>
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     Stats
                   </th>
                   <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
@@ -592,7 +608,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedListings.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Icon name="inventory_2" className="text-2xl text-gray-400" />
                       </div>
@@ -654,6 +670,22 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                         </span>
                       </td>
                       <td className="px-6 py-4">{getStatusBadge(listing.status)}</td>
+                      <td className="px-6 py-4 text-center">
+                        {(() => {
+                          const vs = listing.verificationStatus ?? 'PENDING';
+                          const config = {
+                            PENDING: { label: 'Pending', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
+                            VERIFIED: { label: 'Verified', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+                            REJECTED: { label: 'Rejected', cls: 'bg-red-100 text-red-600 border-red-200' },
+                          }[vs] ?? { label: vs, cls: 'bg-gray-100 text-gray-600 border-gray-200' };
+
+                          return (
+                            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${config.cls}`}>
+                              {config.label}
+                            </span>
+                          );
+                        })()}
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3 text-xs text-gray-500">
                           <span
