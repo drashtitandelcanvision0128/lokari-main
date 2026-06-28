@@ -14,10 +14,12 @@ import { getCurrentUser, getUserDisplayName } from '@/lib/auth'
 import { type User } from '@/lib/registration'
 import { useRoleGuard } from '@/lib/authGuard'
 import { SettingsProvider } from '@/lib/context/SettingsContext'
+import { ListingsPage } from '@/components/dashboard/pages/ListingsPage'
 
 // Tab component mapping for Warehouse Owner
 const WAREHOUSE_TAB_COMPONENTS = {
   overview: OverviewPage,
+  listings: ListingsPage,
   requirements: RequirementsPage,
   orders: OrdersPage,
   transactions: TransactionsPage,

@@ -79,6 +79,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const fetchListings = async () => {
     try {
       const currentUser = getCurrentUser();
+      // console.log("Current User:", currentUser);
 
       if (!currentUser?.id) {
         setListings([]);
@@ -96,7 +97,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
         limit: String(rowsPerPage),
       });
 
-      const url = apiUrl(`/listings?${params.toString()}`);
+      // const url = apiUrl(`/listings?${params.toString()}`);
+      const url = apiUrl(`/listings/user/${currentUser.id}?${params.toString()}`)
 
       const response = await fetch(url);
       const result = await response.json();
@@ -627,10 +629,10 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                       <td className="px-6 py-4 text-sm text-gray-600">
                         <span
                           className={`inline-block whitespace-nowrap px-2.5 py-0.5 rounded-full text-xs font-medium border ${listing.priceType === 'AUCTION'
-                              ? 'bg-amber-100 text-amber-800 border-amber-300'
-                              : listing.priceType === 'FIXED_PRICE'
-                                ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                                : 'text-gray-400 border-transparent'
+                            ? 'bg-amber-100 text-amber-800 border-amber-300'
+                            : listing.priceType === 'FIXED_PRICE'
+                              ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                              : 'text-gray-400 border-transparent'
                             }`}
                         >
                           {listing.priceType?.replace('_', ' ') || '-'}

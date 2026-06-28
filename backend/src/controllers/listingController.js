@@ -184,33 +184,94 @@ export const getAllListings = async (req, res) => {
     }
 };
 
+// export const getListingsByUser = async (req, res) => {
+//     try {
+//         const { userId } = req.params;
+
+//         const listings = await prisma.marketplace.findMany({
+//             where: {
+//                 user_id: userId,
+//                 is_deleted: false,
+//             },
+//             include: {
+//                 farmerProduce: true,
+//                 warehouse: true,
+//                 transport: true,
+//             },
+//             // orderBy: { created_at: 'desc' },
+//             orderBy: {
+//                 [dbSortField]: sortDirection
+//             }
+//         });
+
+//         res.json({ success: true, data: listings });
+//     } catch (error) {
+//         console.error('❌ GET USER LISTINGS ERROR:', error);
+//         res.status(500).json({ success: false, message: error.message });
+//     }
+// };
+
 export const getListingsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
+        const {
+            search = '',
+            status = 'all',
+            sortField = '',
+            sortDirection = 'desc',
+            page = 1,
+            limit = 10,
+        } = req.query;
+
+        const sortMap = {
+            product: 'title',
+            price: 'price',
+            quantity: 'quantity',
+            listingLocation: 'created_at',
+        };
+        const dbSortField = sortMap[sortField] || 'created_at';
+        const dbSortDirection = sortDirection === 'asc' ? 'asc' : 'desc';
+
+        const where = {
+            user_id: userId,
+            is_deleted: false,
+        };
+
+        if (status !== 'all') {
+            where.status = status;
+        }
+
+        if (search.trim()) {
+            where.title = { contains: search.trim(), mode: 'insensitive' };
+        }
 
         const listings = await prisma.marketplace.findMany({
-            where: {
-                user_id: userId,
-                is_deleted: false,
-            },
+            where,
+            skip: (Number(page) - 1) * Number(limit),
+            take: Number(limit),
+            orderBy: { [dbSortField]: dbSortDirection },
             include: {
+                address: true,
                 farmerProduce: true,
                 warehouse: true,
                 transport: true,
             },
-            // orderBy: { created_at: 'desc' },
-            orderBy: {
-                [dbSortField]: sortDirection
-            }
         });
 
-        res.json({ success: true, data: listings });
+        const total = await prisma.marketplace.count({ where });
+
+        res.json({
+            success: true,
+            data: listings,
+            total,
+            totalPages: Math.ceil(total / Number(limit)),
+            currentPage: Number(page),
+        });
     } catch (error) {
         console.error('❌ GET USER LISTINGS ERROR:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 };
-
 export const deleteListing = async (req, res) => {
     const { id } = req.params
 

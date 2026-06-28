@@ -133,7 +133,8 @@ const DynamicForm = ({
     }
   }
 
-  const validateStep = (step: number): boolean => {
+  // const validateStep = (step: number): boolean => {
+  const validateStep = (step: number, type: typeof listingType): boolean => {
     const newErrors: any = {}
 
     // STEP 1
@@ -181,36 +182,71 @@ const DynamicForm = ({
 
 
     // STEP 2
+    // else if (step === 2) {
+
+    //   // Only validate quantity for non-warehouse
+
+    //   if (listingType !== 'warehouse') {
+    //     if (!listingData.quantity)
+    //       newErrors.quantity = 'Quantity is required'
+
+    //     if (!listingData.minOrder || +listingData.minOrder <= 0)
+    //       newErrors.minOrder = 'Min. order is required'
+    //   }
+    //   // Warehouse needs capacity
+    //   if (listingType === 'warehouse') {
+    //     if (!listingData.capacity || +listingData.capacity <= 0)
+    //       newErrors.capacity = 'Capacity is required'
+    //   }
+
+    //   // if (!listingData.street?.trim())
+    //   //   newErrors.street = 'Street address is required'
+
+    //   if (!listingData.city?.trim())
+    //     newErrors.city = 'City is required'
+
+    //   if (!listingData.state?.trim())
+    //     newErrors.state = 'State is required'
+
+    //   if (!listingData.pincode?.trim())
+    //     newErrors.pincode = 'Pincode is required'
+
+
+    //   if (listingType === 'transport') {
+
+    //     if (!listingData.routes?.from?.trim())
+    //       newErrors['routes.from'] = 'From location is required'
+
+    //     if (!listingData.routes?.to?.trim())
+    //       newErrors['routes.to'] = 'To location is required'
+    //   }
+    // }
+
     else if (step === 2) {
+      if (type === 'produce') {
+        if (!listingData.quantity)
+          newErrors.quantity = 'Quantity is required'
+        if (!listingData.minOrder || +listingData.minOrder <= 0)
+          newErrors.minOrder = 'Min. order is required'
+      }
 
-      if (!listingData.quantity)
-        newErrors.quantity = 'Quantity is required'
+      if (type === 'warehouse') {
+        if (!listingData.capacity || +listingData.capacity <= 0)
+          newErrors.capacity = 'Capacity is required'
+      }
 
-      if (!listingData.minOrder || +listingData.minOrder <= 0)
-        newErrors.minOrder = 'Min. order is required'
-
-
-      // if (!listingData.street?.trim())
-      //   newErrors.street = 'Street address is required'
-
-      if (!listingData.city?.trim())
-        newErrors.city = 'City is required'
-
-      if (!listingData.state?.trim())
-        newErrors.state = 'State is required'
-
-      if (!listingData.pincode?.trim())
-        newErrors.pincode = 'Pincode is required'
-
-
-      if (listingType === 'transport') {
-
+      if (type === 'transport') {
+        if (!listingData.capacity || +listingData.capacity <= 0)
+          newErrors.capacity = 'Capacity is required'
         if (!listingData.routes?.from?.trim())
           newErrors['routes.from'] = 'From location is required'
-
         if (!listingData.routes?.to?.trim())
           newErrors['routes.to'] = 'To location is required'
       }
+
+      if (!listingData.city?.trim()) newErrors.city = 'City is required'
+      if (!listingData.state?.trim()) newErrors.state = 'State is required'
+      if (!listingData.pincode?.trim()) newErrors.pincode = 'Pincode is required'
     }
 
 
@@ -296,7 +332,7 @@ const DynamicForm = ({
 
   const handleNext = () => {
     console.log(currentStep, listingData);
-    if (validateStep(currentStep)) {
+    if (validateStep(currentStep, listingType)) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -323,7 +359,7 @@ const DynamicForm = ({
 
   const handleSubmit = () => {
     setSubmitAttempted(true)
-    if (!validateStep(4)) return
+    if (!validateStep(4, listingType)) return
 
     // Pass plain data + images, let the page build FormData
     onSubmit({ ...listingData, product_images: images, publishNow })
@@ -1047,6 +1083,104 @@ const BasicInfoStep = ({ listingType, listingData, updateFormData, errors }: any
         </>
       )} */}
 
+      {/* {listingType === 'warehouse' && (
+        <div className="space-y-3">
+          <div>
+            <FieldLabel icon="warehouse" label="Facility Name" required />
+            <input
+              type="text"
+              value={listingData.facilityName || ''}
+              onChange={(e) => updateFormData('facilityName', e.target.value)}
+              className={premiumCls(errors.facilityName)}
+              placeholder="e.g. Rampur Cold Storage"
+            />
+            <Err msg={errors.facilityName} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel icon="straighten" label="Available Capacity (sq ft)" required />
+              <input
+                type="number"
+                min="1"
+                value={listingData.capacity || ''}
+                onChange={(e) => updateFormData('capacity', e.target.value)}
+                className={premiumCls(errors.capacity)}
+                placeholder="5000"
+              />
+              <Err msg={errors.capacity} />
+            </div>
+
+            <div>
+              <FieldLabel icon="category" label="Storage Type" />
+              <select
+                value={listingData.storageType || ''}
+                onChange={(e) => updateFormData('storageType', e.target.value)}
+                className={premiumCls()}
+              >
+                <option value="">Select Type</option>
+                <option value="Cold">Cold</option>
+                <option value="Dry">Dry</option>
+                <option value="Wet">Wet</option>
+                <option value="Frozen">Frozen</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel icon="calendar_today" label="Available From" />
+              <input
+                type="date"
+                value={listingData.availableFrom || ''}
+                onChange={(e) => updateFormData('availableFrom', e.target.value)}
+                className={premiumCls()}
+              />
+            </div>
+            <div>
+              <FieldLabel icon="event" label="Available To" />
+              <input
+                type="date"
+                value={listingData.availableTo || ''}
+                onChange={(e) => updateFormData('availableTo', e.target.value)}
+                className={premiumCls()}
+              />
+            </div>
+          </div>
+        </div>
+      )} */}
+
+      {listingType === 'warehouse' && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <FieldLabel icon="warehouse" label="Facility Name" required />
+            <input
+              type="text"
+              value={listingData.facilityName || ''}
+              onChange={(e) => updateFormData('facilityName', e.target.value)}
+              className={premiumCls(errors.facilityName)}
+              placeholder="e.g. Rampur Cold Storage"
+            />
+            <Err msg={errors.facilityName} />
+          </div>
+
+          <div>
+            <FieldLabel icon="category" label="Storage Type" />
+            <select
+              value={listingData.storageType || ''}
+              onChange={(e) => updateFormData('storageType', e.target.value)}
+              className={premiumCls()}
+            >
+              <option value="">Select Type</option>
+              <option value="Cold">Cold</option>
+              <option value="Dry">Dry</option>
+              <option value="Wet">Wet</option>
+              <option value="Frozen">Frozen</option>
+            </select>
+          </div>
+        </div>
+      )}
+
 
       {/* {listingType === 'transport' && (
         <>
@@ -1175,61 +1309,327 @@ const BasicInfoStep = ({ listingType, listingData, updateFormData, errors }: any
           </div>
         </>
       )} */}
+
+      {/* {listingType === 'transport' && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel icon="local_shipping" label="Vehicle Type" required />
+              <select
+                value={listingData.vehicleType || ''}
+                onChange={(e) => updateFormData('vehicleType', e.target.value)}
+                className={premiumCls(errors.vehicleType)}
+              >
+                <option value="">Select Type</option>
+                <option value="Truck">Truck</option>
+                <option value="Tempo">Tempo</option>
+                <option value="Reefer">Reefer (Refrigerated)</option>
+                <option value="Flatbed">Flatbed</option>
+              </select>
+              <Err msg={errors.vehicleType} />
+            </div>
+
+            <div>
+              <FieldLabel icon="fitness_center" label="Capacity (tons)" required />
+              <input
+                type="number"
+                min="1"
+                value={listingData.capacity || ''}
+                onChange={(e) => updateFormData('capacity', e.target.value)}
+                className={premiumCls(errors.capacity)}
+                placeholder="10"
+              />
+              <Err msg={errors.capacity} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel icon="place" label="Route From" required />
+              <input
+                type="text"
+                value={listingData.routes?.from || ''}
+                onChange={(e) => updateFormData('routes', { ...listingData.routes, from: e.target.value })}
+                className={premiumCls(errors['routes.from'])}
+                placeholder="e.g. Bhopal"
+              />
+              <Err msg={errors['routes.from']} />
+            </div>
+
+            <div>
+              <FieldLabel icon="flag" label="Route To" required />
+              <input
+                type="text"
+                value={listingData.routes?.to || ''}
+                onChange={(e) => updateFormData('routes', { ...listingData.routes, to: e.target.value })}
+                className={premiumCls(errors['routes.to'])}
+                placeholder="e.g. Delhi"
+              />
+              <Err msg={errors['routes.to']} />
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={listingData.refrigeration || false}
+              onChange={(e) => updateFormData('refrigeration', e.target.checked)}
+              className="h-4 w-4 accent-[#0b5d68]"
+            />
+            <span className="text-sm text-[#555]">Refrigeration available</span>
+          </label>
+        </div>
+      )} */}
+
+      {listingType === 'transport' && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel icon="local_shipping" label="Vehicle Type" required />
+              <select
+                value={listingData.vehicleType || ''}
+                onChange={(e) => updateFormData('vehicleType', e.target.value)}
+                className={premiumCls(errors.vehicleType)}
+              >
+                <option value="">Select Type</option>
+                <option value="Truck">Truck</option>
+                <option value="Tempo">Tempo</option>
+                <option value="Reefer">Reefer (Refrigerated)</option>
+                <option value="Flatbed">Flatbed</option>
+              </select>
+              <Err msg={errors.vehicleType} />
+            </div>
+
+            <div>
+              <FieldLabel icon="fitness_center" label="Capacity (tons)" required />
+              <input
+                type="number"
+                min="1"
+                value={listingData.capacity || ''}
+                onChange={(e) => updateFormData('capacity', e.target.value)}
+                className={premiumCls(errors.capacity)}
+                placeholder="10"
+              />
+              <Err msg={errors.capacity} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel icon="place" label="Route From" required />
+              <input
+                type="text"
+                value={listingData.routes?.from || ''}
+                onChange={(e) => updateFormData('routes', { ...listingData.routes, from: e.target.value })}
+                className={premiumCls(errors['routes.from'])}
+                placeholder="e.g. Bhopal"
+              />
+              <Err msg={errors['routes.from']} />
+            </div>
+
+            <div>
+              <FieldLabel icon="flag" label="Route To" required />
+              <input
+                type="text"
+                value={listingData.routes?.to || ''}
+                onChange={(e) => updateFormData('routes', { ...listingData.routes, to: e.target.value })}
+                className={premiumCls(errors['routes.to'])}
+                placeholder="e.g. Delhi"
+              />
+              <Err msg={errors['routes.to']} />
+            </div>
+          </div>
+        </div>
+      )}
     </SectionCard>
   </div>
 
 )
 
 // ─── Step 2: Quantity & Location ──────────────────────────────────────────────
-const DetailsStep = ({ listingData, updateFormData, errors }: any) => (
+const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) => (
   <div className="space-y-4">
 
-    <SectionCard title="Quantity" icon="inventory_2">
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <FieldLabel icon="scale" label="Quantity" required />
-          <input
-            type="number"
-            min="1"
-            value={listingData.quantity || ''}
-            onChange={(e) => updateFormData('quantity', e.target.value)}
-            className={premiumCls(errors.quantity)}
-            placeholder="50"
-          />
-          <Err msg={errors.quantity} />
-        </div>
+    {/* Quantity — only for produce */}
+    {listingType === 'produce' && (
+      <SectionCard title="Quantity" icon="inventory_2">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <FieldLabel icon="scale" label="Quantity" required />
+            <input
+              type="number"
+              min="1"
+              value={listingData.quantity || ''}
+              onChange={(e) => updateFormData('quantity', e.target.value)}
+              className={premiumCls(errors.quantity)}
+              placeholder="50"
+            />
+            <Err msg={errors.quantity} />
+          </div>
 
-        <div>
-          <FieldLabel icon="straighten" label="Unit" />
-          <select
-            value={listingData.unit || 'Quintal'}
-            onChange={(e) => updateFormData('unit', e.target.value)}
-            className={premiumCls()}
-          >
-            {UNITS.map(u => <option key={u}>{u}</option>)}
-            {/* <option value="kg">Kilograms (kg)</option>
+          <div>
+            <FieldLabel icon="straighten" label="Unit" />
+            <select
+              value={listingData.unit || 'Quintal'}
+              onChange={(e) => updateFormData('unit', e.target.value)}
+              className={premiumCls()}
+            >
+              {UNITS.map(u => <option key={u}>{u}</option>)}
+              {/* <option value="kg">Kilograms (kg)</option>
             <option value="quintal">Quintal</option>
             <option value="ton">Ton</option>
             <option value="lbs">Pounds (lbs)</option>
             <option value="bushels">Bushels</option> */}
-          </select>
+            </select>
+          </div>
+
+          <div>
+            <FieldLabel icon="production_quantity_limits" label="Min. Order" />
+            <input type="number" min="1" placeholder="5"
+              value={listingData.minOrder} onChange={e => updateFormData('minOrder', e.target.value)}
+              className={premiumCls(errors.minOrder)} />
+            <Err msg={errors.minOrder} />
+          </div>
+          <div>
+            <FieldLabel icon="straighten" label="Min. Order Unit" />
+            <select value={listingData.minOrderUnit} onChange={e => updateFormData('minOrderUnit', e.target.value)} className={premiumCls()}>
+              {UNITS.map(u => <option key={u}>{u}</option>)}
+            </select>
+          </div>
+        </div>
+      </SectionCard>
+    )}
+
+    {/* Warehouse capacity & availability */}
+    {listingType === 'warehouse' && (
+      <SectionCard title="Storage Capacity & Availability" icon="warehouse">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <FieldLabel icon="straighten" label="Capacity" required />
+            <input
+              type="number"
+              min="1"
+              value={listingData.capacity || ''}
+              onChange={(e) => updateFormData('capacity', e.target.value)}
+              className={premiumCls(errors.capacity)}
+              placeholder="5000"
+            />
+            <Err msg={errors.capacity} />
+          </div>
+
+          <div>
+            <FieldLabel icon="category" label="Capacity Unit" />
+            <select
+              value={listingData.capacityUnit || 'sqft'}
+              onChange={(e) => updateFormData('capacityUnit', e.target.value)}
+              className={premiumCls()}
+            >
+              <option value="sqft">Sq. Ft</option>
+              <option value="sqm">Sq. Meters</option>
+              <option value="ton">Tons</option>
+            </select>
+          </div>
+
+          <div>
+            <FieldLabel icon="calendar_today" label="Available From" />
+            <input
+              type="date"
+              value={listingData.availableFrom || ''}
+              onChange={(e) => updateFormData('availableFrom', e.target.value)}
+              className={premiumCls()}
+            />
+          </div>
+
+          <div>
+            <FieldLabel icon="event" label="Available To" />
+            <input
+              type="date"
+              value={listingData.availableTo || ''}
+              onChange={(e) => updateFormData('availableTo', e.target.value)}
+              className={premiumCls()}
+            />
+          </div>
         </div>
 
-        <div>
-          <FieldLabel icon="production_quantity_limits" label="Min. Order" />
-          <input type="number" min="1" placeholder="5"
-            value={listingData.minOrder} onChange={e => updateFormData('minOrder', e.target.value)}
-            className={premiumCls(errors.minOrder)} />
-          <Err msg={errors.minOrder} />
+        <div className="mt-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={listingData.climateControlled || false}
+              onChange={(e) => updateFormData('climateControlled', e.target.checked)}
+              className="h-4 w-4 accent-[#0b5d68]"
+            />
+            <span className="text-sm text-[#555]">Climate controlled facility</span>
+          </label>
         </div>
-        <div>
-          <FieldLabel icon="straighten" label="Min. Order Unit" />
-          <select value={listingData.minOrderUnit} onChange={e => updateFormData('minOrderUnit', e.target.value)} className={premiumCls()}>
-            {UNITS.map(u => <option key={u}>{u}</option>)}
-          </select>
+      </SectionCard>
+    )}
+
+
+    {/* Transport capacity & availability */}
+    {listingType === 'transport' && (
+      <SectionCard title="Vehicle Capacity & Availability" icon="local_shipping">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <FieldLabel icon="fitness_center" label="Capacity" required />
+            <input
+              type="number"
+              min="1"
+              value={listingData.capacity || ''}
+              onChange={(e) => updateFormData('capacity', e.target.value)}
+              className={premiumCls(errors.capacity)}
+              placeholder="10"
+            />
+            <Err msg={errors.capacity} />
+          </div>
+
+          <div>
+            <FieldLabel icon="category" label="Capacity Unit" />
+            <select
+              value={listingData.capacityUnit || 'ton'}
+              onChange={(e) => updateFormData('capacityUnit', e.target.value)}
+              className={premiumCls()}
+            >
+              <option value="ton">Tons</option>
+              <option value="kg">Kilograms</option>
+              <option value="quintal">Quintal</option>
+            </select>
+          </div>
+
+          <div>
+            <FieldLabel icon="calendar_today" label="Available From" />
+            <input
+              type="date"
+              value={listingData.availableFrom || ''}
+              onChange={(e) => updateFormData('availableFrom', e.target.value)}
+              className={premiumCls()}
+            />
+          </div>
+
+          <div>
+            <FieldLabel icon="event" label="Available To" />
+            <input
+              type="date"
+              value={listingData.availableTo || ''}
+              onChange={(e) => updateFormData('availableTo', e.target.value)}
+              className={premiumCls()}
+            />
+          </div>
         </div>
-      </div>
-    </SectionCard>
+
+        <div className="mt-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={listingData.isRefrigerated || false}
+              onChange={(e) => updateFormData('isRefrigerated', e.target.checked)}
+              className="h-4 w-4 accent-[#0b5d68]"
+            />
+            <span className="text-sm text-[#555]">Refrigerated vehicle</span>
+          </label>
+        </div>
+      </SectionCard>
+    )}
 
 
     <SectionCard
@@ -1489,10 +1889,20 @@ const PricingStep = ({ listingType, listingData, updateFormData, errors }: any) 
           <div>
             <FieldLabel
               icon="payments"
+              // label={
+              //   pt === 'fixed'
+              //     ? `Price (₹ per ${listingData.unit || 'unit'})`
+              //     : `Expected Price (₹ per ${listingData.unit || 'unit'})`
+              // }
+
               label={
-                pt === 'fixed'
-                  ? `Price (₹ per ${listingData.unit || 'unit'})`
-                  : `Expected Price (₹ per ${listingData.unit || 'unit'})`
+                listingType === 'transport'
+                  ? pt === 'fixed' ? 'Price (₹ per km)' : 'Expected Price (₹ per km)'
+                  : listingType === 'warehouse'
+                    ? pt === 'fixed' ? 'Price (₹ per sq ft / month)' : 'Expected Price (₹ per sq ft / month)'
+                    : pt === 'fixed'
+                      ? `Price (₹ per ${listingData.unit || 'unit'})`
+                      : `Expected Price (₹ per ${listingData.unit || 'unit'})`
               }
               required={pt === 'fixed'}
             />
