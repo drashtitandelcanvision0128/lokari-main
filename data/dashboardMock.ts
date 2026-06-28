@@ -235,77 +235,77 @@ export const mockRequirements: Requirement[] = [
 ]
 
 export const mockShipments: Shipment[] = [
-{
-id: '1',
-product: 'Arabica Coffee',
-from: 'Mumbai',
-to: 'Chennai',
-status: 'in_transit',
-trackingNumber: 'TRK-2024-001',
-estimatedDelivery: '2024-01-20',
-driver: 'John Kamau',
-vehicle: 'Toyota Hilux - KBC 123A'
-},
-{
-id: '2',
-product: 'Yellow Maize',
-from: 'Pune',
-to: 'Mumbai',
-status: 'preparing',
-trackingNumber: 'TRK-2024-002',
-estimatedDelivery: '2024-01-22',
-driver: 'Mary Wanjiku',
-vehicle: 'Isuzu Truck - KCD 456B'
-}
+  {
+    id: '1',
+    product: 'Arabica Coffee',
+    from: 'Mumbai',
+    to: 'Chennai',
+    status: 'in_transit',
+    trackingNumber: 'TRK-2024-001',
+    estimatedDelivery: '2024-01-20',
+    driver: 'John Kamau',
+    vehicle: 'Toyota Hilux - KBC 123A'
+  },
+  {
+    id: '2',
+    product: 'Yellow Maize',
+    from: 'Pune',
+    to: 'Mumbai',
+    status: 'preparing',
+    trackingNumber: 'TRK-2024-002',
+    estimatedDelivery: '2024-01-22',
+    driver: 'Mary Wanjiku',
+    vehicle: 'Isuzu Truck - KCD 456B'
+  }
 ]
 
 export const mockTransactions: Transaction[] = [
-{
-id: '1',
-type: 'payment',
-amount: '₹45,000.00',
-description: 'Payment for Arabica Coffee - Order #1234',
-status: 'completed',
-date: '2024-01-15',
-invoice: 'INV-2024-001'
-},
-{
-id: '2',
-type: 'refund',
-amount: '₹8,500.00',
-description: 'Refund for cancelled order - Order #1233',
-status: 'pending',
-date: '2024-01-14',
-invoice: 'REF-2024-001'
-},
-{
-id: '3',
-type: 'payment',
-amount: '₹28,000.00',
-description: 'Payment for Yellow Maize - Order #1235',
-status: 'in_escrow',
-date: '2024-01-16',
-invoice: 'INV-2024-002',
-escrowReleaseDate: '2024-01-20'
-},
-{
-id: '4',
-type: 'payout',
-amount: '₹35,000.00',
-description: 'Monthly payout - January 2024',
-status: 'completed',
-date: '2024-01-31'
-},
-{
-id: '5',
-type: 'payment',
-amount: '₹12,500.00',
-description: 'Payment for Organic Tomatoes - Order #1236',
-status: 'in_escrow',
-date: '2024-01-17',
-invoice: 'INV-2024-003',
-escrowReleaseDate: '2024-01-22'
-}
+  {
+    id: '1',
+    type: 'payment',
+    amount: '₹45,000.00',
+    description: 'Payment for Arabica Coffee - Order #1234',
+    status: 'completed',
+    date: '2024-01-15',
+    invoice: 'INV-2024-001'
+  },
+  {
+    id: '2',
+    type: 'refund',
+    amount: '₹8,500.00',
+    description: 'Refund for cancelled order - Order #1233',
+    status: 'pending',
+    date: '2024-01-14',
+    invoice: 'REF-2024-001'
+  },
+  {
+    id: '3',
+    type: 'payment',
+    amount: '₹28,000.00',
+    description: 'Payment for Yellow Maize - Order #1235',
+    status: 'in_escrow',
+    date: '2024-01-16',
+    invoice: 'INV-2024-002',
+    escrowReleaseDate: '2024-01-20'
+  },
+  {
+    id: '4',
+    type: 'payout',
+    amount: '₹35,000.00',
+    description: 'Monthly payout - January 2024',
+    status: 'completed',
+    date: '2024-01-31'
+  },
+  {
+    id: '5',
+    type: 'payment',
+    amount: '₹12,500.00',
+    description: 'Payment for Organic Tomatoes - Order #1236',
+    status: 'in_escrow',
+    date: '2024-01-17',
+    invoice: 'INV-2024-003',
+    escrowReleaseDate: '2024-01-22'
+  }
 ]
 
 export const mockTransportListings: TransportListing[] = [
@@ -456,7 +456,7 @@ export const warehouseDashboardConfig: DashboardState = {
 export const transporterDashboardConfig: DashboardState = {
   tabs: {
     overview: true,
-    listings: false,
+    listings: true,
     bids: false,
     requirements: false,
     logistics: true,
