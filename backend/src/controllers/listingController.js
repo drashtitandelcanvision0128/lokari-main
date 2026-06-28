@@ -90,7 +90,8 @@ export const getAllListings = async (req, res) => {
             status = 'all',
             sortField = 'created_at',
             sortDirection = 'desc',
-            marketplace = 'false'
+            marketplace = 'false',
+            type = 'all'
         } = req.query;
 
 
@@ -108,6 +109,10 @@ export const getAllListings = async (req, res) => {
             where.is_blocked = false;
         } else if (cleanStatus !== 'all') {
             where.status = cleanStatus;
+        }
+
+        if (type !== 'all') {
+            where.type = type.toUpperCase();
         }
 
         if (cleanSearch) {

@@ -46,17 +46,13 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
     }
   }
 
-  // Reset to page 1 when filters/search change
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [localSearch, selectedCategory, selectedStatus, sortField, sortDirection, rowsPerPage])
-
   const fetchListings = async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({
         search: localSearch.trim(),
         status: selectedStatus === 'all' ? 'all' : selectedStatus.toUpperCase(),
+        type: selectedCategory,
         sortField: sortField ?? '',
         sortDirection,
         page: String(currentPage),
@@ -136,14 +132,21 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
     }
   }
 
+
+  // Reset to page 1 when filters/search change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [localSearch, selectedCategory, selectedStatus, sortField, sortDirection, rowsPerPage])
+
+
   useEffect(() => {
     fetchListings()
-  }, [localSearch, selectedStatus, sortField, sortDirection, currentPage, rowsPerPage])
+  }, [localSearch, selectedCategory, selectedStatus, sortField, sortDirection, currentPage, rowsPerPage])
 
   // Category filter is client-side only (backend doesn't have a category/type filter param yet)
-  const displayedListings = selectedCategory === 'all'
-    ? listings
-    : listings.filter(l => l.category === selectedCategory)
+  // const displayedListings = selectedCategory === 'all'
+  //   ? listings
+  //   : listings.filter(l => l.category === selectedCategory)
 
   const handleSaveListing = async (listingId: string, updatedData: any) => {
     try {
@@ -305,7 +308,8 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {displayedListings.length === 0 ? (
+                {/* {displayedListings.length === 0 ? ( */}
+                {listings.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -315,7 +319,8 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                     </td>
                   </tr>
                 ) : (
-                  displayedListings.map((listing) => (
+                  // displayedListings.map((listing) => (
+                  listings.map((listing) => (
                     <tr key={listing.id} className="hover:bg-gray-50 transition-colors">
 
                       {/* Title */}
@@ -341,8 +346,8 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                       {/* Category */}
                       <td className="px-6 py-4">
                         <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium border ${listing.category === 'produce' ? 'bg-[#2eb5c2]/10 text-[#2eb5c2] border-[#2eb5c2]/20'
-                            : listing.category === 'warehouse' ? 'bg-amber-100 text-amber-700 border-amber-200'
-                              : 'bg-purple-100 text-purple-700 border-purple-200'
+                          : listing.category === 'warehouse' ? 'bg-amber-100 text-amber-700 border-amber-200'
+                            : 'bg-purple-100 text-purple-700 border-purple-200'
                           }`}>
                           {listing.category}
                         </span>
