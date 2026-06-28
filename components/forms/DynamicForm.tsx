@@ -170,13 +170,10 @@ const DynamicForm = ({
 
 
       if (listingType === 'transport') {
-
         if (!listingData.vehicleType)
           newErrors.vehicleType = 'Vehicle type is required'
-
-        if (!listingData.capacity)
+        if (!listingData.capacity || +listingData.capacity <= 0)
           newErrors.capacity = 'Capacity is required'
-
       }
     }
 
@@ -236,8 +233,6 @@ const DynamicForm = ({
       }
 
       if (type === 'transport') {
-        if (!listingData.capacity || +listingData.capacity <= 0)
-          newErrors.capacity = 'Capacity is required'
         if (!listingData.routes?.from?.trim())
           newErrors['routes.from'] = 'From location is required'
         if (!listingData.routes?.to?.trim())
@@ -1381,7 +1376,7 @@ const BasicInfoStep = ({ listingType, listingData, updateFormData, errors }: any
         </div>
       )} */}
 
-      {listingType === 'transport' && (
+      {/* {listingType === 'transport' && (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -1437,6 +1432,54 @@ const BasicInfoStep = ({ listingType, listingData, updateFormData, errors }: any
                 placeholder="e.g. Delhi"
               />
               <Err msg={errors['routes.to']} />
+            </div>
+          </div>
+        </div>
+      )} */}
+
+      {listingType === 'transport' && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <FieldLabel icon="local_shipping" label="Vehicle Type" required />
+              <select
+                value={listingData.vehicleType || ''}
+                onChange={(e) => updateFormData('vehicleType', e.target.value)}
+                className={premiumCls(errors.vehicleType)}
+              >
+                <option value="">Select Type</option>
+                <option value="Truck">Truck</option>
+                <option value="Tempo">Tempo</option>
+                <option value="Reefer">Reefer (Refrigerated)</option>
+                <option value="Flatbed">Flatbed</option>
+              </select>
+              <Err msg={errors.vehicleType} />
+            </div>
+
+            <div>
+              <FieldLabel icon="fitness_center" label="Capacity" required />
+              <input
+                type="number"
+                min="1"
+                value={listingData.capacity || ''}
+                onChange={(e) => updateFormData('capacity', e.target.value)}
+                className={premiumCls(errors.capacity)}
+                placeholder="10"
+              />
+              <Err msg={errors.capacity} />
+            </div>
+
+            <div>
+              <FieldLabel icon="category" label="Capacity Unit" />
+              <select
+                value={listingData.capacityUnit || 'ton'}
+                onChange={(e) => updateFormData('capacityUnit', e.target.value)}
+                className={premiumCls()}
+              >
+                <option value="ton">Tons</option>
+                <option value="kg">Kilograms</option>
+                <option value="quintal">Quintal</option>
+              </select>
             </div>
           </div>
         </div>
@@ -1567,7 +1610,7 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
 
 
     {/* Transport capacity & availability */}
-    {listingType === 'transport' && (
+    {/* {listingType === 'transport' && (
       <SectionCard title="Vehicle Capacity & Availability" icon="local_shipping">
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -1614,6 +1657,68 @@ const DetailsStep = ({ listingType, listingData, updateFormData, errors }: any) 
               onChange={(e) => updateFormData('availableTo', e.target.value)}
               className={premiumCls()}
             />
+          </div>
+        </div>
+
+        <div className="mt-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={listingData.isRefrigerated || false}
+              onChange={(e) => updateFormData('isRefrigerated', e.target.checked)}
+              className="h-4 w-4 accent-[#0b5d68]"
+            />
+            <span className="text-sm text-[#555]">Refrigerated vehicle</span>
+          </label>
+        </div>
+      </SectionCard>
+    )} */}
+
+    {listingType === 'transport' && (
+      <SectionCard title="Vehicle Capacity & Availability" icon="local_shipping">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <FieldLabel icon="calendar_today" label="Available From" />
+            <input
+              type="date"
+              value={listingData.availableFrom || ''}
+              onChange={(e) => updateFormData('availableFrom', e.target.value)}
+              className={premiumCls()}
+            />
+          </div>
+
+          <div>
+            <FieldLabel icon="event" label="Available To" />
+            <input
+              type="date"
+              value={listingData.availableTo || ''}
+              onChange={(e) => updateFormData('availableTo', e.target.value)}
+              className={premiumCls()}
+            />
+          </div>
+
+          <div>
+            <FieldLabel icon="place" label="Route From" required />
+            <input
+              type="text"
+              value={listingData.routes?.from || ''}
+              onChange={(e) => updateFormData('routes', { ...listingData.routes, from: e.target.value })}
+              className={premiumCls(errors['routes.from'])}
+              placeholder="e.g. Bhopal"
+            />
+            <Err msg={errors['routes.from']} />
+          </div>
+
+          <div>
+            <FieldLabel icon="flag" label="Route To" required />
+            <input
+              type="text"
+              value={listingData.routes?.to || ''}
+              onChange={(e) => updateFormData('routes', { ...listingData.routes, to: e.target.value })}
+              className={premiumCls(errors['routes.to'])}
+              placeholder="e.g. Delhi"
+            />
+            <Err msg={errors['routes.to']} />
           </div>
         </div>
 
