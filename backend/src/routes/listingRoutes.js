@@ -10,8 +10,9 @@ import {
   placeBid,
   toggleBlockListing,
   updateListing,
+  updateListingVerificationController,
 } from '../controllers/listingController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, requireAdmin } from '../middleware/authMiddleware.js';
 import { updateListingImages } from '../controllers/listingController.js';
 const router = express.Router();
 
@@ -50,5 +51,12 @@ router.delete('/:id', protect, deleteListing);
 router.post('/:id/bid', protect, placeBid);
 
 router.patch('/:id/block', protect, toggleBlockListing);
+router.patch(
+  '/:id/verification',
+  protect,
+  requireAdmin,
+  updateListingVerificationController
+);
+
 
 export default router;

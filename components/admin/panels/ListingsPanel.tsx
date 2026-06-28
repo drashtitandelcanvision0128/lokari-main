@@ -14,6 +14,8 @@ interface ListingsPanelProps {
   searchQuery?: string
 }
 
+type VerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+
 export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   // const [listings] = useState<AdminListing[]>(mockAdminListings)
   const [listings, setListings] = useState<AdminListing[]>([])
@@ -95,6 +97,7 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                       ? 'expired'
                       : 'draft',
             isBlocked: item.is_blocked || false,
+            verificationStatus: item.verification_status,
             createdAt: item.created_at,
             expiresAt:
               item.farmerProduce?.expiry_date ||
@@ -180,6 +183,36 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
     } catch (error) {
       console.error('Error deleting listing:', error)
       alert('Error deleting listing')
+    }
+  }
+
+  const handleVerificationChange = async (
+    listingId: string,
+    status: 'VERIFIED' | 'REJECTED' | 'PENDING'
+  ) => {
+    try {
+      const response = await fetch(
+        apiUrl(`/listings/${listingId}/verification`),
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            ...authHeaders(),
+          },
+          body: JSON.stringify({
+            verification_status: status,
+          }),
+        }
+      )
+
+      if (response.ok) {
+        fetchListings()
+      } else {
+        alert('Failed to update verification status')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Something went wrong')
     }
   }
 
@@ -578,6 +611,10 @@ text-[#0b5d68] text-on-surface-variant">Status:</label>
                   </th>
 
                   <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
+                    Verification
+                  </th>
+
+                  <th className="px-6 py-3 text-center text-[13px] font-semibold tracking-[0.02em] text-[#667085]">
                     Actions
                   </th>
 
@@ -696,6 +733,22 @@ text-[#0b5d68]">
                     </td>
 
 
+                    <td className="px-6 py-4 text-center">
+                      <select
+                        value={listing.verificationStatus}
+                        onChange={(e) =>
+                          handleVerificationChange(
+                            listing.id,
+                            e.target.value as VerificationStatus
+                          )
+                        }
+                        className="text-xs rounded-md border border-gray-200 px-2 py-1 bg-white"
+                      >
+                        <option value="PENDING">Pending</option>
+                        <option value="VERIFIED">Verified</option>
+                        <option value="REJECTED">Rejected</option>
+                      </select>
+                    </td>
 
                     <td className="px-6 py-4">
 

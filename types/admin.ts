@@ -72,6 +72,11 @@ export type AdminListing = {
   featured: boolean
   image?: string;
   images?: string[]
+
+  verificationStatus:
+  | 'PENDING'
+  | 'VERIFIED'
+  | 'REJECTED';
 }
 
 export type AdminOrder = {

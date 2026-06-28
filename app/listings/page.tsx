@@ -88,31 +88,32 @@ function ListingsPageContent() {
 
         setDbListings(dbArray)
 
-        const normalizedDB = dbArray
-          // Safety net: only show ACTIVE, non-blocked listings in the marketplace
-          .filter((item: any) => item.status === 'ACTIVE' && !item.is_blocked)
-          .map((item: any) => ({
-            id: item.listing_id,
-            title: item.title,
-            description: item.description,
-            type: item.type.toLowerCase(),
-            price: Number(item.price),
-            quantity:
-              Number(item.farmerProduce?.quantity) ||
-              item.warehouse?.capacity ||
-              1,
-            unit:
-              item.farmerProduce?.unit ||
-              item.transport?.vehicleType ||
-              "unit",
-            location: item.address
-              ? `${item.address.city}, ${item.address.state}`
-              : "Unknown",
-            status: item.status.toLowerCase(),
-            is_blocked: item.is_blocked || false,
-            images: item.product_images || [],
-            isDb: true
-          }))
+        // const normalizedDB = dbArray
+        // Safety net: only show ACTIVE, non-blocked listings in the marketplace
+        // .filter((item: any) => item.status === 'ACTIVE' && !item.is_blocked)
+        // .map((item: any) => ({
+        const normalizedDB = dbArray.map((item: any) => ({
+          id: item.listing_id,
+          title: item.title,
+          description: item.description,
+          type: item.type.toLowerCase(),
+          price: Number(item.price),
+          quantity:
+            Number(item.farmerProduce?.quantity) ||
+            item.warehouse?.capacity ||
+            1,
+          unit:
+            item.farmerProduce?.unit ||
+            item.transport?.vehicleType ||
+            "unit",
+          location: item.address
+            ? `${item.address.city}, ${item.address.state}`
+            : "Unknown",
+          status: item.status.toLowerCase(),
+          is_blocked: item.is_blocked || false,
+          images: item.product_images || [],
+          isDb: true
+        }))
 
         const merged = [...normalizedDB, ...dummyListings]
 

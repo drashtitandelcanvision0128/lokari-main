@@ -104,6 +104,7 @@ export const getAllListings = async (req, res) => {
 
         if (marketplace === 'true') {
             where.status = 'ACTIVE';
+            where.verification_status = 'VERIFIED';
             where.is_blocked = false;
         } else if (cleanStatus !== 'all') {
             where.status = cleanStatus;
@@ -312,6 +313,62 @@ export const toggleBlockListing = async (req, res) => {
         res.status(500).json({ success: false, message: err.message })
     }
 }
+
+export const updateListingVerificationController = async (req, res) => {
+    const { id } = req.params;
+    const { verification_status } = req.body;
+
+    try {
+        const allowedStatuses = [
+            'PENDING',
+            'VERIFIED',
+            'REJECTED'
+        ];
+
+        if (!allowedStatuses.includes(verification_status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid verification status'
+            });
+        }
+
+        const listing = await prisma.marketplace.findUnique({
+            where: {
+                listing_id: id
+            }
+        });
+
+        if (!listing) {
+            return res.status(404).json({
+                success: false,
+                message: 'Listing not found'
+            });
+        }
+
+        const updatedListing = await prisma.marketplace.update({
+            where: {
+                listing_id: id
+            },
+            data: {
+                verification_status
+            }
+        });
+
+        res.json({
+            success: true,
+            message: 'Verification status updated successfully',
+            data: updatedListing
+        });
+
+    } catch (error) {
+        console.error('UPDATE VERIFICATION ERROR:', error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
 
 export const updateListing = async (req, res) => {
     const { id } = req.params;

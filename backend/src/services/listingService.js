@@ -30,7 +30,9 @@ export const createListingService = async (body) => {
                 description,
                 price: price ? Number(price) : (starting_bid ? Number(starting_bid) : 0),
                 price_type: price_type ?? 'FIXED_PRICE',
-                status: status ?? 'ACTIVE',
+                // status: status ?? 'ACTIVE',
+                status: status ?? 'DRAFT',
+                verification_status: 'PENDING',
 
                 ...(type === 'PRODUCE' && {
                     farmerProduce: {

@@ -60,6 +60,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // For sorting
   const [sortField, setSortField] = useState<
@@ -166,6 +167,8 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
           transport: item.transport ?? null,
         }));
         setListings(userListings);
+        setTotalPages(result.totalPages);
+        setTotalCount(result.total);
 
         if (selectedListing) {
           const freshListing = userListings.find((item: Listing) => item.id === selectedListing.id);
@@ -1388,7 +1391,7 @@ hover:text-[#0b5d68]
 
           {/* Footer pagination */}
           {/* {sortedListings.length > 0 && ( */}
-          {listings.length > 0 && (
+          {/* {listings.length > 0 && (
             <div className="p-4 border-t border-gray-200 bg-white">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <p className="text-sm text-gray-500">
@@ -1426,6 +1429,54 @@ hover:text-[#0b5d68]
                     </span>
                     <button
                       disabled={currentPage === totalPages || totalPages === 0}
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                      className="px-3 py-1 text-sm border rounded-md disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )} */}
+
+          {totalCount > 0 && (
+            <div className="p-4 border-t border-gray-200 bg-white">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p className="text-sm text-gray-500">
+                  Showing {(currentPage - 1) * rowsPerPage + 1} -{' '}
+                  {Math.min(currentPage * rowsPerPage, totalCount)} of {totalCount} listings
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span>Rows:</span>
+                    <select
+                      value={rowsPerPage}
+                      onChange={(e) => {
+                        setRowsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="border border-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => p - 1)}
+                      className="px-3 py-1 text-sm border rounded-md disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      {currentPage} / {totalPages || 1}
+                    </span>
+                    <button
+                      disabled={currentPage >= totalPages}
                       onClick={() => setCurrentPage((p) => p + 1)}
                       className="px-3 py-1 text-sm border rounded-md disabled:opacity-40 hover:bg-gray-50 transition-colors"
                     >
