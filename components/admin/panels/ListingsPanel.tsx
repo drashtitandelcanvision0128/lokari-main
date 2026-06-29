@@ -7,6 +7,9 @@ import { apiUrl, authHeaders } from '@/lib/api'
 import { AdminDetailDrawer } from '../AdminDetailDrawer'
 import { EditListingModal } from './EditListingModal'
 import AdminTable from '@/components/admin/common/AdminTable'
+import UpdateListingImagesModal from '@/components/admin/modals/UpdateListingImagesModal';
+import { Icon } from '@/components/ui/Icon';
+import { Button } from '@/components/ui/Button';
 
 interface ListingsPanelProps {
   searchQuery?: string
@@ -36,6 +39,9 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
   // Sorting
   const [sortField, setSortField] = useState<'title' | 'seller' | 'location' | 'price' | 'quantity' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   const handleSort = (field: 'title' | 'seller' | 'location' | 'price' | 'quantity') => {
     if (sortField === field) {
@@ -421,6 +427,45 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
                             </div>
                           </button>
 
+                          {/* Images */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedListing(listing);
+                              setImageModalOpen(true);
+                            }}
+                            className="
+    h-7
+    px-2.5
+    rounded-md
+    border
+    border-[#2eb5c2]/20
+    bg-white
+    text-[#2eb5c2]
+    shadow-sm
+    hover:bg-[#2eb5c2]/5
+    hover:border-[#2eb5c2]/50
+    hover:shadow-md
+    transition-all
+    duration-200
+    flex
+    items-center
+    justify-center
+    group
+  "
+                            title="Update Images"
+                          >
+                            <Icon
+                              name="upload"
+                              className="
+      text-[14px]
+      transition-transform
+      duration-200
+      group-hover:-translate-y-[1px]
+    "
+                            />
+                          </Button>
                           {/* Block toggle */}
                           <button
                             onClick={async () => {
@@ -502,6 +547,13 @@ export function ListingsPanel({ searchQuery = '' }: ListingsPanelProps) {
         onClose={() => setIsEditModalOpen(false)}
         listing={editListingData}
         onSave={handleSaveListing}
+      />
+
+      <UpdateListingImagesModal
+        open={imageModalOpen}
+        listing={selectedListing}
+        onClose={() => setImageModalOpen(false)}
+        onSuccess={fetchListings}
       />
     </>
   )
