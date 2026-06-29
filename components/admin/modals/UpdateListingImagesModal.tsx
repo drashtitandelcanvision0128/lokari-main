@@ -24,11 +24,16 @@ export default function UpdateListingImagesModal({
     const [replacingIndex, setReplacingIndex] = useState<number | null>(null);
     const [replacedImages, setReplacedImages] = useState<Record<number, File>>({});
 
+    const [activeImage, setActiveImage] = useState(0);
+    const [currentImage, setCurrentImage] = useState(0);
+
     useEffect(() => {
         if (open && listing) {
             setListingImages(listing.images || []);
             setNewImages([]);
             setReplacedImages({});
+            setActiveImage(0);
+            setCurrentImage(0);
         }
     }, [open, listing]);
 
@@ -39,6 +44,7 @@ export default function UpdateListingImagesModal({
         setReplacedImages({});
         setNewImages([]);
         onClose();
+        setActiveImage(0);
     };
 
     const getImageSrc = (img?: string) => {
@@ -184,129 +190,270 @@ export default function UpdateListingImagesModal({
 
                 {/* Body */}
                 <div className="p-5">
-                    <div
-                        className="
-                    grid grid-cols-3 gap-3
-                "
-                    >
-                        {listingImages.map((img, index) => (
-                            <div
-                                key={img}
-                                className="
-        group
-        relative
-        h-28
-        rounded
-        overflow-hidden
-        bg-gray-100
-    "
-                            >
-                                {index === 0 && (
-                                    <div
-                                        className="
-                                                absolute top-2 left-2 z-10
-                                                px-2 py-1
-                                                rounded-md
-                                                bg-black/45
-                                                backdrop-blur-md
-                                                text-white
-                                                text-[10px]
-                                                font-medium
-                                                tracking-wide
-                                            "
-                                    >
-                                        Cover Image
-                                    </div>
+                    <div className="space-y-5">
 
+                        {/* Big Preview */}
+                        <div className="group relative">
 
+                            <div className="relative h-72 rounded-2xl overflow-hidden bg-gray-100">
+
+                                {listingImages.length > 0 && (
+                                    <img
+                                        // src={getImageSrc(listingImages[activeImage])}
+                                        src={getImageSrc(listingImages[currentImage])}
+                                        className="w-full h-full object-cover"
+                                    />
                                 )}
 
-                                <img
-                                    src={getImageSrc(img)}
-                                    className="
-        w-full
-        h-full
-        object-cover
-        transition-transform
-        duration-300
-        group-hover:scale-105
-    "
-                                />
+                                {activeImage === 0 && (
+                                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 text-white text-xs font-medium">
+                                        Cover Image
+                                    </div>
+                                )}
 
-                                <div
-                                    className="
-        absolute
-        inset-0
-        flex
-        items-center
-        justify-center
-        bg-black/40
-        opacity-0
-        group-hover:opacity-100
-        transition
-    "
-                                >
-                                    <label
-                                        htmlFor="listing-image-replace" // ← shared input, index tracked via state
-                                        onClick={() => setReplacingIndex(index)}
+                                {/* Previous */}
+
+                                {listingImages.length > 1 && (
+                                    <button
+                                        // onClick={() =>
+                                        //     setActiveImage(prev =>
+                                        //         prev === 0
+                                        //             ? listingImages.length - 1
+                                        //             : prev - 1
+                                        //     )
+                                        // }
+                                        onClick={() =>
+                                            setCurrentImage(prev =>
+                                                prev === 0 ? listingImages.length - 1 : prev - 1
+                                            )
+                                        }
                                         className="
-            w-10
-            h-10
-            rounded-full
-            bg-white/90
-            flex
-            items-center
-            justify-center
-            cursor-pointer
-            shadow-lg
-            hover:bg-white
-            transition
-        "
+                    absolute
+                    left-3
+                    top-1/2
+                    -translate-y-1/2
+
+                    opacity-0
+                    group-hover:opacity-100
+
+                    transition
+
+                    w-10
+                    h-10
+                    rounded-full
+                    bg-black/45
+                    text-white
+                    backdrop-blur-sm
+                "
                                     >
-                                        <span className="material-symbols-outlined text-[#0b5d68] text-[22px]">
-                                            upload
+                                        <span className="material-symbols-outlined">
+                                            chevron_left
                                         </span>
-                                    </label>
-                                </div>
+                                    </button>
+                                )}
+
+                                {/* Next */}
+
+                                {listingImages.length > 1 && (
+                                    <button
+                                        // onClick={() =>
+                                        //     setActiveImage(prev =>
+                                        //         prev === listingImages.length - 1
+                                        //             ? 0
+                                        //             : prev + 1
+                                        //     )
+                                        // }
+
+                                        onClick={() =>
+                                            setCurrentImage(prev =>
+                                                prev === listingImages.length - 1 ? 0 : prev + 1
+                                            )
+                                        }
+                                        className="
+                    absolute
+                    right-3
+                    top-1/2
+                    -translate-y-1/2
+
+                    opacity-0
+                    group-hover:opacity-100
+
+                    transition
+
+                    w-10
+                    h-10
+                    rounded-full
+                    bg-black/45
+                    text-white
+                    backdrop-blur-sm
+                "
+                                    >
+                                        <span className="material-symbols-outlined">
+                                            chevron_right
+                                        </span>
+                                    </button>
+                                )}
+
+                                {/* Replace */}
+
+                                <label
+                                    htmlFor="listing-image-replace"
+                                    onClick={() => setReplacingIndex(activeImage)}
+                                    className="
+                absolute
+                bottom-4
+                left-4
+
+                opacity-0
+                group-hover:opacity-100
+
+                transition
+
+                cursor-pointer
+
+                bg-white
+                rounded-full
+
+                w-10
+                h-10
+
+                flex
+                items-center
+                justify-center
+
+                shadow-lg
+            "
+                                >
+                                    <span className="material-symbols-outlined text-[#0b5d68]">
+                                        upload
+                                    </span>
+                                </label>
+
+                                {/* Delete */}
+
                                 <button
                                     onClick={() => {
-                                        setListingImages((prev) => prev.filter((_, i) => i !== index));
 
-                                        setReplacedImages((prev) => {
+                                        setListingImages(prev =>
+                                            prev.filter((_, i) => i !== activeImage)
+                                        );
+
+                                        setReplacedImages(prev => {
                                             const updated = { ...prev };
-                                            delete updated[index];
+                                            delete updated[activeImage];
                                             return updated;
                                         });
+
+                                        setActiveImage(prev =>
+                                            Math.max(
+                                                0,
+                                                prev === listingImages.length - 1
+                                                    ? prev - 1
+                                                    : prev
+                                            )
+                                        );
+
                                     }}
                                     className="
-    absolute top-1.5 right-1.5
-    w-5 h-5
-    rounded-full
-    bg-[#faf7f2]
-    border border-[#f0ebe3]
-    flex items-center justify-center
-    text-[#666]
-    shadow-sm
-    transition-all duration-300
-    hover:bg-white
-    hover:text-red-500
-    group/delete
-"
+                absolute
+                bottom-4
+                right-4
+
+                opacity-0
+                group-hover:opacity-100
+
+                transition
+
+                w-10
+                h-10
+
+                rounded-full
+
+                bg-white
+
+                shadow-lg
+
+                flex
+                items-center
+                justify-center
+
+                hover:text-red-500
+            "
                                 >
-                                    <span
-                                        className="
-        block text-sm
-        leading-none
-        transition-transform duration-300
-        group-hover/delete:rotate-90
-    "
-                                    >
-                                        ×
-                                    </span>
+                                    ×
                                 </button>
+
                             </div>
-                        ))}
+
+                        </div>
+
+
+                        <div className="flex items-center justify-center gap-2 mt-4 mb-5">
+                            {listingImages.map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setCurrentImage(index)}
+                                    className={`
+        rounded-full transition-all duration-300
+        ${currentImage === index
+                                            ? "w-6 h-2 bg-[#0b5d68]"
+                                            : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
+                                        }
+      `}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Thumbnails */}
+
+                        <div className="flex gap-3 overflow-x-auto pb-1">
+
+                            {listingImages.map((img, index) => (
+
+                                <button
+                                    key={index}
+                                    // onClick={() => setActiveImage(index)}
+                                    onClick={() => setCurrentImage(index)}
+                                    className={`
+                    relative
+                    flex-shrink-0
+
+                    w-24
+                    h-24
+
+                    rounded-xl
+                    overflow-hidden
+
+                    border-2
+
+                    transition
+
+                    ${currentImage === index
+                                            ? 'border-[#2eb5c2]'
+                                            : 'border-transparent hover:border-gray-300'
+                                        }
+                `}
+                                >
+                                    <img
+                                        src={getImageSrc(img)}
+                                        className="w-full h-full object-cover"
+                                    />
+
+                                    {index === 0 && (
+                                        <div className="absolute bottom-1 left-1 right-1 rounded bg-black/55 text-white text-[9px] py-0.5">
+                                            Cover
+                                        </div>
+                                    )}
+
+                                </button>
+
+                            ))}
+
+                        </div>
+
                     </div>
+
+
 
                     {/* Hidden input for per-image replacement */}
                     <input
