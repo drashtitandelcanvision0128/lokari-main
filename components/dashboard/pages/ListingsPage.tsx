@@ -94,8 +94,9 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
       const params = new URLSearchParams({
         search: localSearch.trim(),
         status: filter,
-        sortField: sortField ?? '',
-        sortDirection,
+        sortField: sortField ?? 'createdAt',
+        sortDirection: sortField ? sortDirection : 'desc',
+        // sortDirection,
         page: String(currentPage),
         limit: String(rowsPerPage),
         verification: verificationFilter,
@@ -470,7 +471,7 @@ export function ListingsPage({ searchQuery = '' }: ListingsPageProps) {
                           ? sortDirection === 'asc'
                             ? 'arrow_upward'
                             : 'arrow_downward'
-                          : 'unfold_more'}
+                          : 'arrow_downward'}
                       </span>
                     </button>
                   </th>

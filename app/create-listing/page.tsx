@@ -57,6 +57,7 @@ export default function CreateListingPage() {
   const [userRole, setUserRole] = useState<string>('')
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [success, setSuccess] = useState(false)
   const [listingData, setListingData] = useState(initialListingData);
 
   useEffect(() => {
@@ -88,6 +89,22 @@ export default function CreateListingPage() {
         return 'transport'
       default:
         return 'produce'
+    }
+  }
+
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'farmer':
+      case 'FARMER':
+        return '/farmer-dashboard?tab=listings'
+      case 'warehouse':
+      case 'WAREHOUSE_OWNER':
+        return '/warehouse-dashboard?tab=listings'
+      case 'transporter':
+      case 'TRANSPORTER':
+        return '/transporter-dashboard?tab=listings'
+      default:
+        return '/dashboard?tab=listings'
     }
   }
 
@@ -186,7 +203,10 @@ export default function CreateListingPage() {
       }
 
       // Use real UUID from DB
-      router.push(`/listings/${result.data.listing_id}`)
+      // router.push(`/listings/${result.data.listing_id}`)
+      setSuccess(true)
+      // setTimeout(() => router.push(`/listings/${result.data.listing_id}`), 1600)
+      setTimeout(() => router.push(getDashboardRoute()), 5600)
 
     } catch (error: any) {
       console.error('❌ Create listing failed:', error)
@@ -264,6 +284,7 @@ export default function CreateListingPage() {
             onSubmit={handleSubmit}
             listingData={listingData}
             setListingData={setListingData}
+            success={success}
           />
         )}
       </div>

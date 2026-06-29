@@ -10,6 +10,7 @@ interface DynamicFormProps {
   onSubmit: (data: any) => void
   listingData: any
   setListingData: (data: any) => void
+  success?: boolean
 }
 
 const STEPS = [
@@ -122,7 +123,8 @@ const DynamicForm = ({
   setCurrentStep,
   onSubmit,
   listingData,
-  setListingData
+  setListingData,
+  success,
 }: DynamicFormProps) => {
   const [errors, setErrors] = useState<any>({})
 
@@ -470,9 +472,9 @@ const DynamicForm = ({
       </div>
 
 
-      {/* TODO: Stepper comes here */}
-
-      <div className="
+      {/* Stepper */}
+      {!success && (
+        <div className="
   shrink-0
   bg-white
   border-b
@@ -481,7 +483,7 @@ const DynamicForm = ({
   py-3
 ">
 
-        <div className="
+          <div className="
     flex
     items-center
     justify-center
@@ -489,20 +491,20 @@ const DynamicForm = ({
   ">
 
 
-          {STEPS.map((s, i) => {
+            {STEPS.map((s, i) => {
 
-            const stepIndex = i + 1
+              const stepIndex = i + 1
 
-            const done = stepIndex < currentStep
-            const cur = stepIndex === currentStep
-
-
-            return (
-
-              <Fragment key={s.label}>
+              const done = stepIndex < currentStep
+              const cur = stepIndex === currentStep
 
 
-                <div className="
+              return (
+
+                <Fragment key={s.label}>
+
+
+                  <div className="
             flex
             flex-col
             items-center
@@ -510,8 +512,8 @@ const DynamicForm = ({
           ">
 
 
-                  <div
-                    className={`
+                    <div
+                      className={`
                 flex
                 h-8
                 w-8
@@ -523,33 +525,59 @@ const DynamicForm = ({
                 duration-300
 
                 ${done
-                        ? 'border-[#2eb5c2] bg-[#2eb5c2]'
+                          ? 'border-[#2eb5c2] bg-[#2eb5c2]'
 
-                        : cur
-                          ? 'border-[#0b5d68] bg-[#0b5d68] scale-110 shadow-[0_0_0_3px_rgba(11,93,104,0.12)]'
+                          : cur
+                            ? 'border-[#0b5d68] bg-[#0b5d68] scale-110 shadow-[0_0_0_3px_rgba(11,93,104,0.12)]'
 
-                          : 'border-[#e2e8ea] bg-white'
-                      }
+                            : 'border-[#e2e8ea] bg-white'
+                        }
               `}
-                  >
+                    >
 
 
-                    <span
-                      className="
+                      <span
+                        className="
                   material-symbols-outlined
                   select-none
                 "
-                      style={{
-                        fontSize: '14px',
-                        fontVariationSettings: "'FILL' 1",
-                        color:
-                          done || cur
-                            ? '#fff'
-                            : '#bbb'
-                      }}
+                        style={{
+                          fontSize: '14px',
+                          fontVariationSettings: "'FILL' 1",
+                          color:
+                            done || cur
+                              ? '#fff'
+                              : '#bbb'
+                        }}
+                      >
+
+                        {done ? 'check' : s.icon}
+
+                      </span>
+
+
+                    </div>
+
+
+
+                    <span
+                      className={`
+                whitespace-nowrap
+                text-[9px]
+                font-bold
+                uppercase
+                tracking-wide
+
+                ${cur
+                          ? 'text-[#0b5d68]'
+                          : done
+                            ? 'text-[#2eb5c2]'
+                            : 'text-[#bbb]'
+                        }
+              `}
                     >
 
-                      {done ? 'check' : s.icon}
+                      {s.label}
 
                     </span>
 
@@ -558,36 +586,10 @@ const DynamicForm = ({
 
 
 
-                  <span
-                    className={`
-                whitespace-nowrap
-                text-[9px]
-                font-bold
-                uppercase
-                tracking-wide
+                  {i < STEPS.length - 1 && (
 
-                ${cur
-                        ? 'text-[#0b5d68]'
-                        : done
-                          ? 'text-[#2eb5c2]'
-                          : 'text-[#bbb]'
-                      }
-              `}
-                  >
-
-                    {s.label}
-
-                  </span>
-
-
-                </div>
-
-
-
-                {i < STEPS.length - 1 && (
-
-                  <div
-                    className={`
+                    <div
+                      className={`
                 mt-3.5
                 h-px
                 w-16
@@ -596,147 +598,135 @@ const DynamicForm = ({
                 duration-500
 
                 ${done
-                        ? 'bg-[#2eb5c2]'
-                        : 'bg-[#e2e8ea]'
-                      }
+                          ? 'bg-[#2eb5c2]'
+                          : 'bg-[#e2e8ea]'
+                        }
               `}
-                  />
+                    />
 
-                )}
+                  )}
 
 
-              </Fragment>
+                </Fragment>
 
-            )
+              )
 
-          })}
+            })}
+
+
+          </div>
 
 
         </div>
-
-
-      </div>
+      )}
 
       {/* Content */}
-      {/* <div className="
-      px-6
-      py-5
-      space-y-4
-      flex-1
-    ">
+      {success ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16 bg-white">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+            <span
+              className="material-symbols-outlined text-emerald-500"
+              style={{ fontSize: '36px', fontVariationSettings: "'FILL' 1" }}
+            >
+              check_circle
+            </span>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-bold text-[#0b5d68]">Listing Created!</p>
 
-        {renderStepContent()}
-
-      </div> */}
-
-      <div className="px-6 py-5 space-y-4 flex-1">
-
-        {renderStepContent()}
-
-      </div>
-
-
+            {publishNow ? (
+              <>
+                <p className="mt-1 text-sm text-[#888]">Your listing has been posted to the marketplace.</p>
+                <p className="mt-2 text-xs text-amber-600 bg-amber-50 rounded-md px-3 py-2">
+                  <span className="material-symbols-outlined align-middle mr-1" style={{ fontSize: '14px' }}>schedule</span>
+                  Your listing will be publicly visible once verified — usually within 24 hours.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-[#888]">Your listing has been added to the system.</p>
+                <p className="mt-2 text-xs text-[#aaa] bg-[#f7f9fa] rounded-md px-3 py-2">
+                  <span className="material-symbols-outlined align-middle mr-1" style={{ fontSize: '14px' }}>info</span>
+                  You can publish your listing anytime from your dashboard. Verification usually takes 24 hours.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="px-6 py-5 space-y-4 flex-1">
+          {renderStepContent()}
+        </div>
+      )}
 
 
 
       {/* Footer */}
-      <div className="
+      {!success && (
+        <div className="
       bg-white
       border-t
       border-[#edf1f3]
       px-6
       py-4
       flex
-      justify-between
+      justify-end
       items-center
+      gap-3
     ">
 
+          <div className="flex gap-3">
 
-        <div>
-
-          {currentStep > 1 && (
-
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              className="
-              px-6
-              py-2
-              border-[#e0e0e0]
-              text-[#666]
-              hover:bg-[#f5f5f5]
-            "
-            >
-              Previous
-            </Button>
-
-          )}
-
-        </div>
-
-
-
-        <div className="flex gap-3">
-
-
-          {currentStep < 4 ? (
-
-            <Button
-              onClick={handleNext}
-              className="
-              px-6
-              py-2
-              bg-gradient-to-r
-              from-[#0b5d68]
-              to-[#2eb5c2]
-              text-white
-            "
-            >
-              Next
-            </Button>
-
-
-          ) : (
-
-            <>
-
+            {currentStep > 1 && (
               <Button
                 variant="outline"
                 onClick={handlePrevious}
                 className="
-                px-6
-                py-2
-                border-[#e0e0e0]
-                text-[#666]
-              "
+        px-6
+        py-2
+        border-[#e0e0e0]
+        text-[#666]
+      "
               >
                 Previous
               </Button>
+            )}
 
-
+            {currentStep < 4 ? (
+              <Button
+                onClick={handleNext}
+                className="
+        px-6
+        py-2
+        bg-gradient-to-r
+        from-[#0b5d68]
+        to-[#2eb5c2]
+        text-white
+      "
+              >
+                Next
+              </Button>
+            ) : (
               <Button
                 onClick={handleSubmit}
                 className="
-                px-6
-                py-2
-                bg-gradient-to-r
-                from-[#0b5d68]
-                to-[#2eb5c2]
-                text-white
-              "
+        px-6
+        py-2
+        bg-gradient-to-r
+        from-[#0b5d68]
+        to-[#2eb5c2]
+        text-white
+      "
               >
                 Publish Listing
               </Button>
+            )}
 
-            </>
+          </div>
 
-          )}
 
         </div>
-
-
-      </div>
-
+      )}
 
     </div>
   )
