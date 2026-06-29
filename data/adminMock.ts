@@ -150,6 +150,7 @@ export const mockAdminListings: AdminListing[] = [
     reports: 0,
     featured: false,
     isBlocked: false,
+    verificationStatus: 'PENDING',
     images: ['https://example.com/coffee1.jpg', 'https://example.com/coffee2.jpg']
   },
   {
@@ -175,6 +176,7 @@ export const mockAdminListings: AdminListing[] = [
     reports: 0,
     featured: true,
     isBlocked: false,
+    verificationStatus: 'VERIFIED',
     images: ['https://example.com/maize1.jpg']
   },
   {
@@ -200,6 +202,7 @@ export const mockAdminListings: AdminListing[] = [
     reports: 1,
     featured: false,
     isBlocked: false,
+    verificationStatus: 'PENDING',
     images: ['https://example.com/warehouse1.jpg', 'https://example.com/warehouse2.jpg']
   },
   {
@@ -225,6 +228,7 @@ export const mockAdminListings: AdminListing[] = [
     reports: 0,
     featured: false,
     isBlocked: false,
+    verificationStatus: 'VERIFIED',
     images: ['https://example.com/truck1.jpg']
   },
   {
@@ -250,6 +254,7 @@ export const mockAdminListings: AdminListing[] = [
     reports: 2,
     featured: false,
     isBlocked: false,
+    verificationStatus: 'REJECTED',
     images: ['https://example.com/tomatoes1.jpg']
   }
 ]
