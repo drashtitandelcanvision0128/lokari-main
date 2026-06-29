@@ -1,4 +1,4 @@
-import { Icon } from '@/components/ui/Icon'
+// import { Icon } from '@/components/ui/Icon'
 import { useEffect, useState } from 'react'
 import { apiUrl, authHeaders } from '@/lib/api';
 // import { getAuthToken } from "@/lib/api";
@@ -11,35 +11,35 @@ interface EditUserListingModalProps {
 }
 
 // ── Field wrapper ──────────────────────────────────────────────────────────────
-const Field = ({
-    label,
-    icon,
-    children,
-    readOnly = false,
-}: {
-    label: string
-    icon?: string
-    children: React.ReactNode
-    readOnly?: boolean
-}) => (
-    <div className="flex flex-col gap-1">
-        <label className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/70">
-            <span
-                className="material-symbols-outlined text-[#2eb5c2]"
-                style={{ fontSize: '21px' }}
-            >
-                {icon}
-            </span>
-            {label}
-            {readOnly && (
-                <span className="ml-auto text-[0.65rem] font-medium text-[#999] normal-case tracking-normal">
-                    read-only
-                </span>
-            )}
-        </label>
-        {children}
-    </div>
-)
+// const Field = ({
+//     label,
+//     icon,
+//     children,
+//     readOnly = false,
+// }: {
+//     label: string
+//     icon?: string
+//     children: React.ReactNode
+//     readOnly?: boolean
+// }) => (
+//     <div className="flex flex-col gap-1">
+//         <label className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/70">
+//             <span
+//                 className="material-symbols-outlined text-[#2eb5c2]"
+//                 style={{ fontSize: '21px' }}
+//             >
+//                 {icon}
+//             </span>
+//             {label}
+//             {readOnly && (
+//                 <span className="ml-auto text-[0.65rem] font-medium text-[#999] normal-case tracking-normal">
+//                     read-only
+//                 </span>
+//             )}
+//         </label>
+//         {children}
+//     </div>
+// )
 
 // ── Editable input ─────────────────────────────────────────────────────────────
 const PremiumInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -58,16 +58,6 @@ const PremiumInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
     />
 )
 
-// ── Read-only display ──────────────────────────────────────────────────────────
-const ReadOnlyField = ({ value }: { value: string }) => (
-    <div className="
-        w-full px-3.5 py-2.5 rounded-md text-sm text-[#666]
-        bg-[#f5f7f8] border border-[#e8ecee]
-        select-none cursor-default
-    ">
-        {value || <span className="text-[#bbb]">—</span>}
-    </div>
-)
 
 // ── Section card ───────────────────────────────────────────────────────────────
 const SectionCard = ({
@@ -136,23 +126,22 @@ const DetailRow = ({ label, value }: { label: string; value?: string | number | 
     )
 }
 
-const ProduceDetails = ({ data, editing, detailsData, setDetailsData }: {
-    data: any; editing: boolean; detailsData: any; setDetailsData: any
+const ProduceDetails = ({ data, detailsData, setDetailsData }: {
+    data: any; detailsData: any; setDetailsData: any
 }) => (
     <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Quantity</span>
-            {editing ? (
-                <PremiumInput
-                    value={detailsData.quantity}
-                    placeholder="e.g. 500"
-                    onChange={e => setDetailsData({ ...detailsData, quantity: e.target.value })}
-                />
-            ) : (
-                <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">
-                    {data?.quantity != null ? `${data.quantity} ${data?.unit ?? ''}`.trim() : '—'}
-                </div>
-            )}
+            <PremiumInput
+                value={detailsData.quantity}
+                placeholder="e.g. 500"
+                onChange={e =>
+                    setDetailsData({
+                        ...detailsData,
+                        quantity: e.target.value,
+                    })
+                }
+            />
         </div>
         <DetailRow label="Unit" value={data?.unit} />
         <DetailRow label="Crop Type" value={data?.crop_type} />
@@ -163,23 +152,28 @@ const ProduceDetails = ({ data, editing, detailsData, setDetailsData }: {
     </div>
 )
 
-const WarehouseDetails = ({ data, editing, detailsData, setDetailsData }: {
-    data: any; editing: boolean; detailsData: any; setDetailsData: any
+const WarehouseDetails = ({ data, detailsData, setDetailsData }: {
+    data: any; detailsData: any; setDetailsData: any
 }) => (
     <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Capacity</span>
-            {editing ? (
+            <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">
+                    Capacity
+                </span>
+
                 <PremiumInput
                     value={detailsData.warehouseCapacity}
                     placeholder="e.g. 1000"
-                    onChange={e => setDetailsData({ ...detailsData, warehouseCapacity: e.target.value })}
+                    onChange={(e) =>
+                        setDetailsData({
+                            ...detailsData,
+                            warehouseCapacity: e.target.value,
+                        })
+                    }
                 />
-            ) : (
-                <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">
-                    {data?.capacity != null ? `${data.capacity} ${data?.capacity_unit ?? ''}`.trim() : '—'}
-                </div>
-            )}
+            </div>
         </div>
         <DetailRow label="Unit" value={data?.capacity_unit} />
         <DetailRow label="Climate Controlled" value={data?.climate_controlled} />
@@ -188,23 +182,24 @@ const WarehouseDetails = ({ data, editing, detailsData, setDetailsData }: {
     </div>
 )
 
-const TransportDetails = ({ data, editing, detailsData, setDetailsData }: {
-    data: any; editing: boolean; detailsData: any; setDetailsData: any
+const TransportDetails = ({ data, detailsData, setDetailsData }: {
+    data: any; detailsData: any; setDetailsData: any
 }) => (
     <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Capacity</span>
-            {editing ? (
-                <PremiumInput
-                    value={detailsData.transportCapacity}
-                    placeholder="e.g. 10"
-                    onChange={e => setDetailsData({ ...detailsData, transportCapacity: e.target.value })}
-                />
-            ) : (
-                <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">
-                    {data?.capacity != null ? `${data.capacity} ${data?.capacity_unit ?? ''}`.trim() : '—'}
-                </div>
-            )}
+
+            <PremiumInput
+                value={detailsData.transportCapacity}
+                placeholder="e.g. 1000"
+                onChange={(e) =>
+                    setDetailsData({
+                        ...detailsData,
+                        transportCapacity: e.target.value,
+                    })
+                }
+            />
+
         </div>
         <DetailRow label="Unit" value={data?.capacity_unit} />
         <DetailRow label="Vehicle Type" value={data?.vehicle_type} />
@@ -252,11 +247,11 @@ export default function EditUserListingModal({
     const [addressErrors, setAddressErrors] = useState<any>({})
 
 
-    const [isEditingDescription, setIsEditingDescription] = useState(false)
-    const [isEditingInfo, setIsEditingInfo] = useState(false)
+    // const [isEditingDescription, setIsEditingDescription] = useState(false)
+    // const [isEditingInfo, setIsEditingInfo] = useState(false)
     const [addressModalOpen, setAddressModalOpen] = useState(false)
 
-    const [isEditingDetails, setIsEditingDetails] = useState(false)
+    // const [isEditingDetails, setIsEditingDetails] = useState(false)
     const [detailsData, setDetailsData] = useState({ quantity: '', warehouseCapacity: '', transportCapacity: '' })
 
 
@@ -294,7 +289,7 @@ export default function EditUserListingModal({
             warehouseCapacity: listing.warehouse?.capacity != null ? String(listing.warehouse.capacity) : '',
             transportCapacity: listing.transport?.capacity != null ? String(listing.transport.capacity) : '',
         })
-        setIsEditingDetails(false)
+        // setIsEditingDetails(false)
 
     }, [listing]);
 
@@ -317,6 +312,7 @@ export default function EditUserListingModal({
                         title: formData.title,
                         description: formData.description,
                         price: formData.price.replace('₹', ''),
+                        priceType: formData.priceType,
                         quantity: formData.quantity.replace(/[^0-9.]/g, ''),
 
                         address: {
@@ -335,17 +331,30 @@ export default function EditUserListingModal({
 
             if (result.success) {
 
-                if (isEditingDetails) {
-                    await fetch(apiUrl(`/listings/${listing.id}/details`), {
-                        method: 'PUT',
-                        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            quantity: detailsData.quantity,
-                            warehouseCapacity: detailsData.warehouseCapacity,
-                            transportCapacity: detailsData.transportCapacity,
-                        }),
-                    })
-                }
+                // if (isEditingDetails) {
+                //     await fetch(apiUrl(`/listings/${listing.id}/details`), {
+                //         method: 'PUT',
+                //         headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+                //         body: JSON.stringify({
+                //             quantity: detailsData.quantity,
+                //             warehouseCapacity: detailsData.warehouseCapacity,
+                //             transportCapacity: detailsData.transportCapacity,
+                //         }),
+                //     })
+                // }
+
+                await fetch(apiUrl(`/listings/${listing.id}/details`), {
+                    method: 'PUT',
+                    headers: {
+                        ...authHeaders(),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        quantity: detailsData.quantity,
+                        warehouseCapacity: detailsData.warehouseCapacity,
+                        transportCapacity: detailsData.transportCapacity,
+                    }),
+                })
                 // console.log("SAVE SUCCESS")
                 await onSuccess()
                 // console.log("AFTER ONSUCCESS")
@@ -414,7 +423,7 @@ export default function EditUserListingModal({
     const isLive = listing?.status === 'live'
 
     const renderDetailPanel = () => {
-        const sharedProps = { editing: isEditingDetails, detailsData, setDetailsData }
+        const sharedProps = { detailsData, setDetailsData }
         if (listing?.listingType === 'produce') return <ProduceDetails data={listing.farmerProduce} {...sharedProps} />
         if (listing?.listingType === 'warehouse') return <WarehouseDetails data={listing.warehouse}     {...sharedProps} />
         if (listing?.listingType === 'transport') return <TransportDetails data={listing.transport}     {...sharedProps} />
@@ -424,7 +433,7 @@ export default function EditUserListingModal({
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-            style={{ background: 'rgba(10, 30, 35, 0.55)', backdropFilter: 'blur(6px)' }}
+            style={{ background: 'rgba(10, 30, 35, 0.45)' }}
         >
             {/* Modal shell */}
             <div
@@ -497,7 +506,7 @@ export default function EditUserListingModal({
                         <div className="flex flex-col gap-3 h-full">
 
                             {/* Listing Information */}
-                            <SectionCard
+                            {/* <SectionCard
                                 title="Listing details"
                                 icon="store"
                                 action={
@@ -506,18 +515,23 @@ export default function EditUserListingModal({
                                         className="text-[#888] hover:text-[#0b5d68]"
                                     >
                                         <span className="material-symbols-outlined text-[18px]">
-                                            {/* edit */}
+                                            
                                             {isEditingInfo ? 'check_small' : 'edit_note'}
                                         </span>
                                     </button>
                                 }
+                            > */}
+
+                            <SectionCard
+                                title="Listing details"
+                                icon="store"
                             >
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-3">
 
                                     {/* Title */}
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Title</span>
-                                        {isEditingInfo ? (
+                                        {/* {isEditingInfo ? (
                                             <PremiumInput
                                                 value={formData.title}
                                                 placeholder="e.g. Premium Organic Wheat"
@@ -525,7 +539,12 @@ export default function EditUserListingModal({
                                             />
                                         ) : (
                                             <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">{formData.title || '—'}</div>
-                                        )}
+                                        )} */}
+                                        <PremiumInput
+                                            value={formData.title}
+                                            placeholder="e.g. Premium Organic Wheat"
+                                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                        />
                                     </div>
 
                                     {/* Location */}
@@ -553,7 +572,7 @@ export default function EditUserListingModal({
                                     {/* Price */}
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Price</span>
-                                        {isEditingInfo ? (
+                                        {/* {isEditingInfo ? (
                                             <PremiumInput
                                                 value={formData.price}
                                                 placeholder="e.g. ₹1200"
@@ -561,15 +580,40 @@ export default function EditUserListingModal({
                                             />
                                         ) : (
                                             <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">{formData.price || '—'}</div>
-                                        )}
+                                        )} */}
+                                        <PremiumInput
+                                            value={formData.price}
+                                            placeholder="e.g. ₹1200"
+                                            onChange={e => setFormData({ ...formData, price: e.target.value })}
+                                        />
                                     </div>
 
                                     {/* Price Type — read only */}
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#0b5d68]/60">Price Type</span>
-                                        <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">
+                                        {/* <div className="w-full px-3.5 py-2.5 rounded-md text-sm text-[#666] bg-[#f5f7f8] border border-[#e8ecee] select-none cursor-default min-h-[38px] flex items-center">
                                             {(listing?.priceType || '').replace(/_/g, ' ') || '—'}
-                                        </div>
+                                        </div> */}
+                                        <select
+                                            value={formData.priceType}
+                                            onChange={(e) =>
+                                                setFormData({
+                                                    ...formData,
+                                                    priceType: e.target.value,
+                                                })
+                                            }
+                                            className="
+        w-full px-3.5 py-2.5 rounded-md text-sm
+        bg-white border border-[#e2e8ea]
+        focus:outline-none focus:ring-2
+        focus:ring-[#2eb5c2]/30
+        focus:border-[#2eb5c2]
+    "
+                                        >
+                                            <option value="FIXED_PRICE">Fixed Price</option>
+                                            <option value="NEGOTIABLE">Negotiable</option>
+                                            <option value="AUCTION">Auction</option>
+                                        </select>
                                     </div>
 
                                 </div>
@@ -587,11 +631,11 @@ export default function EditUserListingModal({
                                             {listing?.listingType === 'produce' ? 'Produce Details' : listing?.listingType === 'warehouse' ? 'Warehouse Details' : 'Transport Details'}
                                         </h3>
                                     </div>
-                                    <button onClick={() => setIsEditingDetails(p => !p)} className="text-[#888] hover:text-[#0b5d68]">
+                                    {/* <button onClick={() => setIsEditingDetails(p => !p)} className="text-[#888] hover:text-[#0b5d68]">
                                         <span className="material-symbols-outlined text-[18px]">
                                             {isEditingDetails ? 'check_small' : 'edit_note'}
                                         </span>
-                                    </button>
+                                    </button> */}
                                 </div>
                                 <div className="p-3">
                                     {renderDetailPanel()}
@@ -602,24 +646,23 @@ export default function EditUserListingModal({
 
                     {/* Description — full width */}
                     <SectionCard title="Description" icon="notes">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="text-[11px] text-[#888]">
-                                Provide additional details about the listing.
-                            </div>
+                        {/* <div className="flex items-center justify-between mb-3"> */}
+                        <div className="mb-3 text-[11px] text-[#888]">
+                            Provide additional details about the listing.
+                        </div>
 
-                            <button
+                        {/* <button
                                 type="button"
                                 onClick={() => setIsEditingDescription(!isEditingDescription)}
                                 className="text-[#888] hover:text-[#0b5d68]"
                             >
                                 <span className="material-symbols-outlined text-[16px]">
-                                    {/* edit */}
                                     {isEditingDescription ? 'check_small' : 'edit_note'}
                                 </span>
-                            </button>
-                        </div>
+                            </button> */}
+                        {/* </div> */}
 
-                        {isEditingDescription ? (
+                        {/* {isEditingDescription ? (
                             <textarea
                                 value={formData.description}
                                 onChange={(e) =>
@@ -659,7 +702,32 @@ export default function EditUserListingModal({
                             >
                                 {formData.description || 'No description provided'}
                             </div>
-                        )}
+                        )} */}
+
+                        <textarea
+                            value={formData.description}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    description: e.target.value,
+                                })
+                            }
+                            className="
+        w-full
+        min-h-[120px]
+        p-3
+        rounded
+        bg-[#fafafa]
+        border border-[#e8ecee]
+        text-[13px]
+        text-[#555]
+        resize-none
+        focus:outline-none
+        focus:ring-0
+        focus:border-[#e8ecee]
+        shadow-none
+    "
+                        />
                     </SectionCard>
 
                 </div>
