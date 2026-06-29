@@ -18,19 +18,20 @@ export function usePostListingNavigation() {
   const createListingPath = useMemo(() => {
     // Remove trailing slash for consistent matching
     const normalizedPath = pathname.replace(/\/$/, '')
-    
+
     // Check if user is on /listing page
     if (normalizedPath === '/listings') {
-      return '/listings/create-listing'
+      // return '/listings/create-listing'
+      return '/create-listing'
     }
-    
+
     // Check if user is on a role-based dashboard (e.g., /farmer-dashboard)
     const dashboardMatch = normalizedPath.match(/^\/([^\/]+)-dashboard$/)
     if (dashboardMatch) {
       const role = dashboardMatch[1]
       return `/${role}-dashboard/create-listing`
     }
-    
+
     // Default fallback
     return '/create-listing'
   }, [pathname])
