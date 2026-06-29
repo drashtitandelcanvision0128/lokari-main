@@ -178,6 +178,25 @@ export const getAllListings = async (req, res) => {
         };
 
         const dbSortField = sortMap[sortField] || 'created_at';
+        let finalSortField = dbSortField;
+        let finalSortDirection = cleanDirection === 'asc' ? 'asc' : 'desc';
+
+        switch (sortBy) {
+            case 'price-low':
+                finalSortField = 'price';
+                finalSortDirection = 'asc';
+                break;
+
+            case 'price-high':
+                finalSortField = 'price';
+                finalSortDirection = 'desc';
+                break;
+
+            case 'latest':
+            default:
+                finalSortField = 'created_at';
+                finalSortDirection = 'desc';
+        }
         const listings = await prisma.marketplace.findMany({
             // where: { is_deleted: false },
             where,
@@ -215,8 +234,12 @@ export const getAllListings = async (req, res) => {
                 }
             },
             // orderBy: { created_at: 'desc' }
+            // orderBy: {
+            //     [dbSortField]: sortDirection
+            // }
+
             orderBy: {
-                [dbSortField]: sortDirection
+                [finalSortField]: finalSortDirection
             }
         });
         const total = await prisma.marketplace.count({

@@ -182,7 +182,7 @@ function ListingsPageContent() {
                   { value: 'latest', label: 'Latest' },
                   { value: 'price-low', label: 'Price Low' },
                   { value: 'price-high', label: 'Price High' },
-                  { value: 'capacity', label: 'Capacity' },
+                  // { value: 'capacity', label: 'Capacity' },
                 ].map(({ value, label }) => (
                   <button
                     key={value}
