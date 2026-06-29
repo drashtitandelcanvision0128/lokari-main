@@ -16,6 +16,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - lokhari-net
 
   redis:
     image: redis:7-alpine
@@ -30,6 +32,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - lokhari-net
 
   backend:
     build:
@@ -40,7 +44,6 @@ services:
     env_file:
       - .env
     environment:
-      # Use Docker service name "postgres" — not localhost (localhost = this container)
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: production
@@ -56,19 +59,20 @@ services:
       RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY:-}
       CONTACT_NOTIFY_EMAIL: ${CONTACT_NOTIFY_EMAIL:-support@lokhari.com}
     ports:
-      - "5000:5000" # match hardcoded frontend URLs
+      - "5000:5000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "${FRONTEND_URL}/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
-
+    networks:
+      - lokhari-net
 
   frontend:
     build:
@@ -89,6 +93,12 @@ services:
     depends_on:
       backend:
         condition: service_started
+    networks:
+      - lokhari-net
+
+networks:
+  lokhari-net:
+    driver: bridge
 
 volumes:
   postgres_data:
