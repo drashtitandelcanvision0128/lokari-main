@@ -180,46 +180,6 @@ const DynamicForm = ({
     }
 
 
-    // STEP 2
-    // else if (step === 2) {
-
-    //   // Only validate quantity for non-warehouse
-
-    //   if (listingType !== 'warehouse') {
-    //     if (!listingData.quantity)
-    //       newErrors.quantity = 'Quantity is required'
-
-    //     if (!listingData.minOrder || +listingData.minOrder <= 0)
-    //       newErrors.minOrder = 'Min. order is required'
-    //   }
-    //   // Warehouse needs capacity
-    //   if (listingType === 'warehouse') {
-    //     if (!listingData.capacity || +listingData.capacity <= 0)
-    //       newErrors.capacity = 'Capacity is required'
-    //   }
-
-    //   // if (!listingData.street?.trim())
-    //   //   newErrors.street = 'Street address is required'
-
-    //   if (!listingData.city?.trim())
-    //     newErrors.city = 'City is required'
-
-    //   if (!listingData.state?.trim())
-    //     newErrors.state = 'State is required'
-
-    //   if (!listingData.pincode?.trim())
-    //     newErrors.pincode = 'Pincode is required'
-
-
-    //   if (listingType === 'transport') {
-
-    //     if (!listingData.routes?.from?.trim())
-    //       newErrors['routes.from'] = 'From location is required'
-
-    //     if (!listingData.routes?.to?.trim())
-    //       newErrors['routes.to'] = 'To location is required'
-    //   }
-    // }
 
     else if (step === 2) {
       if (type === 'produce') {
@@ -246,31 +206,6 @@ const DynamicForm = ({
       if (!listingData.pincode?.trim()) newErrors.pincode = 'Pincode is required'
     }
 
-
-    // STEP 3
-    // else if (step === 3) {
-
-    //   if (!listingData.priceType)
-    //     newErrors.priceType = 'Price type is required'
-
-    //   if (
-    //     listingData.priceType === 'fixed' &&
-    //     !listingData.price
-    //   )
-    //     newErrors.price = 'Price is required'
-
-
-    //   if (
-    //     listingData.priceType === 'auction' &&
-    //     !listingData.startingBid
-    //   )
-    //     newErrors.startingBid = 'Starting bid is required'
-
-
-    //   if (!listingData.duration)
-    //     newErrors.duration = 'Duration is required'
-    // }
-
     else if (step === 3) {
       if (!listingData.priceType)
         newErrors.priceType = 'Price type is required'
@@ -296,6 +231,7 @@ const DynamicForm = ({
   const [previews, setPreviews] = useState<string[]>([])
   const [dragOver, setDragOver] = useState(false)
   const [publishNow, setPublishNow] = useState(true)
+  const submittedPublishNowRef = useRef(true)
   const [submitAttempted, setSubmitAttempted] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null!)
 
@@ -338,26 +274,12 @@ const DynamicForm = ({
     setCurrentStep(currentStep - 1)
   }
 
-  // const handleSubmit = () => {
-  //   if (validateStep(4)) {
-  //     onSubmit(listingData)
-  //   }
-  // }
-
-  // const handleSubmit = () => {
-
-  //   console.log(listingData);
-
-  //   setSubmitAttempted(true)
-  //   if (validateStep(4)) {
-  //     onSubmit({ ...listingData, product_images: images, publishNow })
-  //   }
-  // }
-
   const handleSubmit = () => {
     setSubmitAttempted(true)
     if (!validateStep(4, listingType)) return
 
+
+    submittedPublishNowRef.current = publishNow
     // Pass plain data + images, let the page build FormData
     onSubmit({ ...listingData, product_images: images, publishNow })
   }
@@ -634,8 +556,9 @@ const DynamicForm = ({
           <div className="text-center">
             <p className="text-lg font-bold text-[#0b5d68]">Listing Created!</p>
 
-            {publishNow ? (
+            {submittedPublishNowRef.current ? (
               <>
+                {/* <p className="text-xs text-red-500">publishNow: {String(submittedPublishNowRef.current)}</p> */}
                 <p className="mt-1 text-sm text-[#888]">Your listing has been posted to the marketplace.</p>
                 <p className="mt-2 text-xs text-amber-600 bg-amber-50 rounded-md px-3 py-2">
                   <span className="material-symbols-outlined align-middle mr-1" style={{ fontSize: '14px' }}>schedule</span>
@@ -675,53 +598,37 @@ const DynamicForm = ({
       gap-3
     ">
 
-          <div className="flex gap-3">
-
-            {currentStep > 1 && (
-              <Button
-                variant="outline"
+          <div className="flex items-center gap-3 ml-auto">
+            {currentStep > 1 ? (
+              <button
+                type="button"
                 onClick={handlePrevious}
-                className="
-        px-6
-        py-2
-        border-[#e0e0e0]
-        text-[#666]
-      "
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md text-sm font-semibold text-[#555] border border-[#e0e4e6] bg-white hover:bg-[#f5f7f8] hover:border-[#cdd3d6] transition-colors"
               >
-                Previous
-              </Button>
-            )}
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
+                Back
+              </button>
+            ) : null}
 
             {currentStep < 4 ? (
-              <Button
+              <button
+                type="button"
                 onClick={handleNext}
-                className="
-        px-6
-        py-2
-        bg-gradient-to-r
-        from-[#0b5d68]
-        to-[#2eb5c2]
-        text-white
-      "
+                className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-md text-sm font-semibold text-white bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] hover:from-[#0a5260] hover:to-[#28a8b4] active:scale-[0.98] shadow-[0_2px_12px_rgba(46,181,194,0.35)] transition-all"
               >
                 Next
-              </Button>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
+              </button>
             ) : (
-              <Button
+              <button
+                type="button"
                 onClick={handleSubmit}
-                className="
-        px-6
-        py-2
-        bg-gradient-to-r
-        from-[#0b5d68]
-        to-[#2eb5c2]
-        text-white
-      "
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md text-sm font-semibold text-white bg-gradient-to-r from-[#0b5d68] to-[#2eb5c2] hover:from-[#0a5260] hover:to-[#28a8b4] active:scale-[0.98] shadow-[0_2px_12px_rgba(46,181,194,0.35)] transition-all"
               >
-                Publish Listing
-              </Button>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>publish</span>
+                Post Listing
+              </button>
             )}
-
           </div>
 
 

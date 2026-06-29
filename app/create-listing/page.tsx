@@ -206,7 +206,7 @@ export default function CreateListingPage() {
       // router.push(`/listings/${result.data.listing_id}`)
       setSuccess(true)
       // setTimeout(() => router.push(`/listings/${result.data.listing_id}`), 1600)
-      setTimeout(() => router.push(getDashboardRoute()), 5600)
+      setTimeout(() => router.push(getDashboardRoute()), 15600)
 
     } catch (error: any) {
       console.error('❌ Create listing failed:', error)
@@ -271,7 +271,7 @@ export default function CreateListingPage() {
 
       {/* Form */}
       <div className="bg-white rounded-xl shadow-sm border border-[#e0e0e0] p-6">
-        {isSubmitting ? (
+        {/* {isSubmitting ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0b5d68] mx-auto mb-4"></div>
             <p className="text-[#666666]">Creating listing...</p>
@@ -286,7 +286,17 @@ export default function CreateListingPage() {
             setListingData={setListingData}
             success={success}
           />
-        )}
+        )} */}
+
+        <DynamicForm
+          listingType={listingType}
+          currentStep={currentStep}
+          setCurrentStep={setCurrentStep}
+          onSubmit={handleSubmit}
+          listingData={listingData}
+          setListingData={setListingData}
+          success={success}
+        />
       </div>
     </div>
   )
