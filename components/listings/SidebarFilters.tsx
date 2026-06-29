@@ -222,7 +222,7 @@ const SidebarFilters = ({ onFilterChange }: SidebarFiltersProps) => {
         </div>
 
         {/* Storage Type */}
-        <div>
+        {/* <div>
           <h3 className={filterSectionTitle}>Storage Type</h3>
           <div className="flex flex-wrap gap-1.5">
             {[
@@ -240,7 +240,7 @@ const SidebarFilters = ({ onFilterChange }: SidebarFiltersProps) => {
               </button>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
 
       {userRole !== 'trader' && (
