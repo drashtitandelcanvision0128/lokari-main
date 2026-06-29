@@ -51,6 +51,45 @@ function FilterField({
   );
 }
 
+const states = [
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chhattisgarh',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+  'Andaman and Nicobar Islands',
+  'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Jammu and Kashmir',
+  'Ladakh',
+  'Lakshadweep',
+  'Puducherry',
+];
+
 const SidebarFilters = ({ onFilterChange }: SidebarFiltersProps) => {
   const [userRole, setUserRole] = useState<string>('');
   const { createListingPath } = usePostListingNavigation();
@@ -73,6 +112,7 @@ const SidebarFilters = ({ onFilterChange }: SidebarFiltersProps) => {
       : filters.categories.filter((c) => c !== category);
 
     const newFilters = { ...filters, categories: newCategories };
+    // console.log("Sidebar:", newFilters);
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
@@ -94,10 +134,9 @@ const SidebarFilters = ({ onFilterChange }: SidebarFiltersProps) => {
   };
 
   const storagePillClass = (active: boolean) =>
-    `px-2 py-1 rounded-[0.3125rem] text-xs font-medium border cursor-pointer transition-all font-body ${
-      active
-        ? 'bg-[#0b5d68] text-white border-[#0b5d68]'
-        : 'bg-white text-[#0b5d68] border-gray-200 hover:border-[#2eb5c2] hover:text-[#2eb5c2]'
+    `px-2 py-1 rounded-[0.3125rem] text-xs font-medium border cursor-pointer transition-all font-body ${active
+      ? 'bg-[#0b5d68] text-white border-[#0b5d68]'
+      : 'bg-white text-[#0b5d68] border-gray-200 hover:border-[#2eb5c2] hover:text-[#2eb5c2]'
     }`;
 
   return (
@@ -142,16 +181,12 @@ const SidebarFilters = ({ onFilterChange }: SidebarFiltersProps) => {
               onChange={(e) => handleChange('location', e.target.value)}
               className={`${filterInput} appearance-none pl-8 pr-7`}
             >
-              <option value="all">All Regions</option>
-              <option value="Maharashtra">Maharashtra</option>
-              <option value="Gujarat">Gujarat</option>
-              <option value="Rajasthan">Rajasthan</option>
-              <option value="Karnataka">Karnataka</option>
-              <option value="Madhya Pradesh">Madhya Pradesh</option>
-              <option value="Uttarakhand">Uttarakhand</option>
-              <option value="Punjab">Punjab</option>
-              <option value="Himachal Pradesh">Himachal Pradesh</option>
-              <option value="Delhi">Delhi</option>
+              <option value="all">All States</option>
+              {states.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
             </select>
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <span className="material-symbols-outlined text-sm text-[#2eb5c2]">

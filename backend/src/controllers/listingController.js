@@ -91,14 +91,24 @@ export const getAllListings = async (req, res) => {
             sortField = 'created_at',
             sortDirection = 'desc',
             marketplace = 'false',
-            type = 'all'
+            type = 'all',
+
+
+            location,
+            priceMin,
+            priceMax,
+            storageTypes,
+            availabilityDate,
+
+            sortBy = 'latest'
+
         } = req.query;
 
 
         const cleanSearch = search.trim();
         const cleanStatus = status.trim();
         const cleanDirection = sortDirection.trim();
-
+        console.log("Type from frontend:", type);
         const where = {
             is_deleted: false,
         };
@@ -111,15 +121,52 @@ export const getAllListings = async (req, res) => {
             where.status = cleanStatus;
         }
 
+        // if (type !== 'all') {
+        //     where.type = type.toUpperCase();
+        // }
+
         if (type !== 'all') {
-            where.type = type.toUpperCase();
+            const types = type
+                .split(',')
+                .map(t => t.trim().toUpperCase());
+
+            where.type = {
+                in: types
+            };
         }
+        console.log("Prisma where:", where);
 
         if (cleanSearch) {
             where.title = {
                 contains: cleanSearch,
                 mode: 'insensitive'
             }
+        }
+
+
+        // Marketplace Filters
+
+        // price min max
+        if (priceMin || priceMax) {
+
+            where.price = {}
+
+            if (priceMin)
+                where.price.gte = Number(priceMin)
+
+            if (priceMax)
+                where.price.lte = Number(priceMax)
+
+        }
+
+        // location
+        if (location && location !== 'all') {
+            where.address = {
+                state: {
+                    equals: location,
+                    mode: 'insensitive'
+                }
+            };
         }
 
 
