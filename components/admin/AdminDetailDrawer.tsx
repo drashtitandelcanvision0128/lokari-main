@@ -14,851 +14,559 @@ interface AdminDetailDrawerProps {
   onAction?: (action: string, item: any) => void
 }
 
+// ─── Design atoms ─────────────────────────────────────────────────────────────
+
+function Section({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <span className="material-symbols-outlined text-[#2eb5c2]" style={{ fontSize: '15px' }}>{icon}</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#0b5d68]/50">{title}</span>
+      </div>
+      <div className="border border-[#e8ecee] rounded-lg overflow-hidden">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function Row({ label, value, mono = false, accent = false }: {
+  label: string
+  value: React.ReactNode
+  mono?: boolean
+  accent?: boolean
+}) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-l-2 border-l-transparent hover:border-l-[#2eb5c2] hover:bg-[#f7fafb] transition-all duration-150 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-b-[#f0f3f4]">
+      <span className="text-xs text-[#667085] font-medium">{label}</span>
+      <span className={`text-xs font-semibold ${accent ? 'text-[#2eb5c2]' : 'text-[#1a2332]'} ${mono ? 'font-mono' : ''}`}>
+        {value}
+      </span>
+    </div>
+  )
+}
+
+function StatusPill({ status, variant = 'default' }: { status: string; variant?: 'green' | 'red' | 'amber' | 'blue' | 'default' }) {
+  const styles = {
+    green: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    red: 'bg-red-50 text-red-600 border-red-200',
+    amber: 'bg-amber-50 text-amber-700 border-amber-200',
+    blue: 'bg-[#2eb5c2]/10 text-[#0b5d68] border-[#2eb5c2]/30',
+    default: 'bg-gray-50 text-gray-600 border-gray-200',
+  }
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${styles[variant]} capitalize`}>
+      {status}
+    </span>
+  )
+}
+
+function getStatusVariant(status: string): 'green' | 'red' | 'amber' | 'blue' | 'default' {
+  const s = status.toLowerCase()
+  if (['active', 'verified', 'approved', 'resolved', 'completed', 'paid'].includes(s)) return 'green'
+  if (['banned', 'blocked', 'rejected', 'cancelled', 'expired'].includes(s)) return 'red'
+  if (['pending', 'investigating', 'flagged', 'unpaid'].includes(s)) return 'amber'
+  if (['draft', 'inactive', 'unverified', 'open'].includes(s)) return 'blue'
+  return 'default'
+}
+
+// ─── Type icons ───────────────────────────────────────────────────────────────
+
+function typeIcon(type: DetailType) {
+  const map: Record<DetailType, string> = {
+    user: 'person',
+    listing: 'inventory_2',
+    order: 'shopping_bag',
+    dispute: 'gavel',
+    auditLog: 'history',
+  }
+  return map[type]
+}
+
+function categoryIcon(category: string) {
+  const map: Record<string, string> = {
+    produce: 'agriculture',
+    warehouse: 'warehouse',
+    transport: 'local_shipping',
+    user: 'person',
+    listing: 'inventory_2',
+    order: 'shopping_cart',
+    payment: 'payments',
+    system: 'settings',
+    security: 'security',
+  }
+  return map[category] || 'category'
+}
+
+// ─── Section renderers ────────────────────────────────────────────────────────
+
+function UserDetails({ user, formatDate }: { user: AdminUser; formatDate: (d: string) => string }) {
+  const initials = user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)
+  return (
+    <div className="space-y-6">
+      {/* Identity card */}
+      <div className="flex items-center gap-4 p-5 bg-[#f7fafb] border border-[#e8ecee] rounded-lg">
+        {/* <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] flex items-center justify-center shrink-0 shadow-sm">
+          <span className="text-lg font-bold text-white tracking-tight">{initials}</span>
+        </div> */}
+        {user.avatar ? (
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="w-14 h-14 rounded-lg object-cover shrink-0"
+          />
+        ) : (
+          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] flex items-center justify-center shrink-0 shadow-sm">
+            <span className="text-lg font-bold text-white tracking-tight">
+              {initials}
+            </span>
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-bold text-[#0b5d68] truncate">{user.name}</p>
+          <p className="text-xs text-[#667085] truncate mt-0.5">{user.email}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <StatusPill status={user.verificationStatus} variant={getStatusVariant(user.verificationStatus)} />
+            <StatusPill status={user.role} variant="default" />
+          </div>
+        </div>
+      </div>
+
+      {/* Performance */}
+      <Section title="Performance" icon="analytics">
+        <Row label="Listings" value={user.listings} accent />
+        <Row label="Orders" value={user.orders} accent />
+        <Row label="Revenue" value={user.revenue} accent />
+      </Section>
+
+      {/* Contact */}
+      <Section title="Contact" icon="contact_mail">
+        <Row label="Phone" value={user.phone} />
+        <Row label="Location" value={user.location} />
+        <Row label="Joined" value={formatDate(user.createdAt)} />
+        <Row label="Last active" value={formatDate(user.lastActive)} />
+      </Section>
+
+      {/* Meta */}
+      <Section title="Meta" icon="tag">
+        <Row label="User ID" value={user.id} mono />
+        <Row label="Status" value={<StatusPill status={user.status} variant={getStatusVariant(user.status)} />} />
+      </Section>
+    </div>
+  )
+}
+
+function ListingDetails({ listing, formatDate }: { listing: AdminListing; formatDate: (d: string) => string }) {
+  return (
+    <div className="space-y-6">
+      {/* Header card */}
+      <div className="flex items-start gap-4 p-5 bg-[#f7fafb] border border-[#e8ecee] rounded-lg">
+        {listing.image ? (
+          <img src={listing.image} alt={listing.title} className="w-14 h-14 rounded-lg object-cover shrink-0 bg-gray-100" />
+        ) : (
+          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] flex items-center justify-center shrink-0 shadow-sm">
+            <span className="material-symbols-outlined text-white" style={{ fontSize: '22px' }}>{categoryIcon(listing.category)}</span>
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-bold text-[#0b5d68] leading-tight">{listing.title}</p>
+          <p className="text-xs text-[#667085] mt-1 line-clamp-2">{listing.description || 'No description'}</p>
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <StatusPill status={listing.status} variant={getStatusVariant(listing.status)} />
+            {listing.isBlocked && <StatusPill status="Blocked" variant="red" />}
+            <StatusPill status={listing.category} variant="blue" />
+          </div>
+        </div>
+      </div>
+
+      {/* Listing details */}
+      <Section title="Details" icon="info">
+        <Row label="Price" value={`₹${listing.price} / ${listing.unit}`} accent />
+        <Row label="Quantity" value={`${listing.quantity} ${listing.unit}`} />
+        <Row label="Location" value={listing.location} />
+        <Row label="Verification" value={<StatusPill status={listing.verificationStatus || 'PENDING'} variant={getStatusVariant(listing.verificationStatus || 'PENDING')} />} />
+      </Section>
+
+      {/* Performance */}
+      <Section title="Performance" icon="analytics">
+        <Row label="Views" value={listing.views} />
+        <Row label="Inquiries" value={listing.inquiries} />
+        <Row label="Reports" value={
+          <span className={listing.reports > 0 ? 'text-red-600 font-semibold text-xs' : 'text-xs font-semibold text-[#1a2332]'}>
+            {listing.reports}
+          </span>
+        } />
+      </Section>
+
+      {/* Seller */}
+      <Section title="Seller" icon="person">
+        <Row label="Name" value={listing.seller.name} />
+        <Row label="Email" value={listing.seller.email} />
+      </Section>
+
+      {/* Meta */}
+      <Section title="Meta" icon="tag">
+        <Row label="Listing ID" value={listing.id} mono />
+        <Row label="Created" value={formatDate(listing.createdAt)} />
+        <Row label="Expires" value={formatDate(listing.expiresAt)} />
+      </Section>
+    </div>
+  )
+}
+
+function OrderDetails({ order, data, formatDate }: { order: AdminOrder; data: any; formatDate: (d: string) => string }) {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="p-5 bg-[#f7fafb] border border-[#e8ecee] rounded-lg">
+        <p className="text-xs text-[#667085] font-medium mb-1">Order</p>
+        <p className="text-base font-bold text-[#0b5d68]">{order.id}</p>
+        <p className="text-xs text-[#667085] mt-1">{order.listingTitle}</p>
+        <div className="flex items-center gap-2 mt-3">
+          <StatusPill status={order.status} variant={getStatusVariant(order.status)} />
+          <StatusPill status={order.paymentStatus.replace('_', ' ')} variant={getStatusVariant(order.paymentStatus)} />
+          {data.isBlocked && <StatusPill status="Blocked" variant="red" />}
+        </div>
+      </div>
+
+      {/* Order details */}
+      <Section title="Order" icon="shopping_bag">
+        <Row label="Quantity" value={`${order.quantity} units`} />
+        <Row label="Unit price" value={`$${order.unitPrice.toFixed(2)}`} />
+        <Row label="Total" value={`$${order.totalAmount.toFixed(2)}`} accent />
+        {order.trackingNumber && <Row label="Tracking" value={order.trackingNumber} mono />}
+      </Section>
+
+      {/* Participants */}
+      <Section title="Buyer" icon="person">
+        <Row label="Name" value={order.buyer.name} />
+        <Row label="Email" value={order.buyer.email} />
+      </Section>
+
+      <Section title="Seller" icon="storefront">
+        <Row label="Name" value={order.seller.name} />
+        <Row label="Email" value={order.seller.email} />
+      </Section>
+
+      {/* Meta */}
+      <Section title="Meta" icon="tag">
+        <Row label="Order ID" value={order.id} mono />
+        <Row label="Created" value={formatDate(order.createdAt)} />
+        <Row label="Updated" value={formatDate(order.updatedAt)} />
+        {order.deliveryDate && <Row label="Delivery" value={formatDate(order.deliveryDate)} />}
+      </Section>
+    </div>
+  )
+}
+
+function DisputeDetails({ dispute, formatDate }: { dispute: AdminDispute; formatDate: (d: string) => string }) {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="p-5 bg-[#f7fafb] border border-[#e8ecee] rounded-lg">
+        <p className="text-xs text-[#667085] font-medium mb-1">Dispute</p>
+        <p className="text-base font-bold text-[#0b5d68]">{dispute.id}</p>
+        <p className="text-xs text-[#667085] mt-1">{dispute.orderTitle}</p>
+        <p className="text-xs text-[#667085] mt-2 leading-relaxed">{dispute.description}</p>
+        <div className="flex items-center gap-2 mt-3">
+          <StatusPill status={dispute.status} variant={getStatusVariant(dispute.status)} />
+          <StatusPill status={dispute.priority} variant={getStatusVariant(dispute.priority)} />
+        </div>
+      </div>
+
+      {/* Details */}
+      <Section title="Details" icon="info">
+        <Row label="Type" value={dispute.type} />
+        <Row label="Priority" value={dispute.priority} />
+        {dispute.assignedTo && <Row label="Assigned to" value={dispute.assignedTo} />}
+      </Section>
+
+      {/* Raised by */}
+      <Section title="Raised by" icon="person">
+        <Row label="Name" value={dispute.raisedBy.name} />
+        <Row label="Email" value={dispute.raisedBy.email} />
+        <Row label="Role" value={dispute.raisedBy.role} />
+      </Section>
+
+      {/* Against */}
+      <Section title="Against" icon="person_off">
+        <Row label="Name" value={dispute.against.name} />
+        <Row label="Email" value={dispute.against.email} />
+        <Row label="Role" value={dispute.against.role} />
+      </Section>
+
+      {/* Evidence */}
+      {dispute.evidence.length > 0 && (
+        <Section title={`Evidence (${dispute.evidence.length})`} icon="attach_file">
+          {dispute.evidence.map((e, i) => (
+            <div key={i} className="flex items-center justify-between px-4 py-3 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-b-[#f0f3f4] hover:bg-[#f7fafb] transition-colors">
+              <span className="text-xs text-[#667085] truncate">{e.split('/').pop()}</span>
+              <button className="text-[11px] font-semibold text-[#2eb5c2] hover:text-[#0b5d68] transition-colors ml-4 shrink-0">Download</button>
+            </div>
+          ))}
+        </Section>
+      )}
+
+      {/* Resolution */}
+      {dispute.resolution && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-emerald-600 mb-2">Resolution</p>
+          <p className="text-xs text-emerald-800 leading-relaxed">{dispute.resolution}</p>
+          <p className="text-[11px] text-emerald-600 mt-2">Resolved {formatDate(dispute.resolvedAt!)}</p>
+        </div>
+      )}
+
+      {/* Meta */}
+      <Section title="Meta" icon="tag">
+        <Row label="Dispute ID" value={dispute.id} mono />
+        <Row label="Created" value={formatDate(dispute.createdAt)} />
+        <Row label="Updated" value={formatDate(dispute.updatedAt)} />
+      </Section>
+    </div>
+  )
+}
+
+function AuditLogDetails({ log, formatDate }: { log: AuditLogEntry; formatDate: (d: string) => string }) {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="p-5 bg-[#f7fafb] border border-[#e8ecee] rounded-lg">
+        <p className="text-xs text-[#667085] font-medium mb-1">Audit event</p>
+        <p className="text-base font-bold text-[#0b5d68]">{log.action}</p>
+        <p className="text-xs text-[#667085] mt-2 leading-relaxed">{log.details}</p>
+        <div className="flex items-center gap-2 mt-3">
+          <StatusPill status={log.severity} variant={getStatusVariant(log.severity)} />
+          <StatusPill status={log.category} variant="default" />
+        </div>
+      </div>
+
+      {/* Event */}
+      <Section title="Event" icon="info">
+        <Row label="Category" value={log.category} />
+        <Row label="Severity" value={log.severity} />
+        <Row label="Resource" value={log.resource} />
+        <Row label="Resource ID" value={log.resourceId} mono />
+      </Section>
+
+      {/* User */}
+      <Section title="Actor" icon="person">
+        {log.userName && <Row label="Name" value={log.userName} />}
+        <Row label="IP address" value={log.ipAddress} mono />
+      </Section>
+
+      {/* Meta */}
+      <Section title="Meta" icon="tag">
+        <Row label="Log ID" value={log.id} mono />
+        <Row label="Timestamp" value={formatDate(log.timestamp)} />
+      </Section>
+    </div>
+  )
+}
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+
+function ActionButton({
+  label,
+  variant,
+  onClick,
+}: {
+  label: string
+  variant: 'primary' | 'danger' | 'ghost'
+  onClick?: () => void
+}) {
+  const styles = {
+    primary: 'bg-[#0b5d68] text-white hover:bg-[#094d57] shadow-sm',
+    danger: 'bg-red-500 text-white hover:bg-red-600 shadow-sm',
+    ghost: 'border border-[#e0e4e6] text-[#555] hover:bg-[#f5f7f8] hover:border-[#cdd3d6]',
+  }
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2 rounded-md text-xs font-semibold transition-all duration-150 ${styles[variant]}`}
+    >
+      {label}
+    </button>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export function AdminDetailDrawer({ isOpen, onClose, data, type, onAction }: AdminDetailDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null)
 
-  // Close on ESC key
   useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose()
-      }
-    }
-
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     if (isOpen) {
       document.addEventListener('keydown', handleEsc)
       document.body.style.overflow = 'hidden'
     }
-
     return () => {
       document.removeEventListener('keydown', handleEsc)
       document.body.style.overflow = 'unset'
     }
   }, [isOpen, onClose])
 
-  // Close on outside click
-  const handleOverlayClick = (event: React.MouseEvent) => {
-    if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
-      onClose()
-    }
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) onClose()
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
     })
-  }
 
-  const getStatusColor = (status: string, type: string) => {
-    const baseColors = {
-      active: 'bg-[#2eb5c2] text-white',
-      inactive: 'bg-[#0b5d68] text-white',
-      pending: 'bg-[#e89151] text-white',
-      completed: 'bg-[#2eb5c2] text-white',
-      cancelled: 'bg-[#d55b39] text-white',
-      rejected: 'bg-[#d55b39] text-white',
-      approved: 'bg-[#2eb5c2] text-white',
-      flagged: 'bg-[#e89151] text-white',
-      resolved: 'bg-[#2eb5c2] text-white',
-      open: 'bg-[#0b5d68] text-white',
-      investigating: 'bg-[#e89151] text-white',
-      paid: 'bg-[#2eb5c2] text-white',
-      unpaid: 'bg-[#d55b39] text-white',
-      verified: 'bg-[#2eb5c2] text-white',
-      unverified: 'bg-[#e89151] text-white'
+  const renderContent = () => {
+    if (!data) return null
+    switch (type) {
+      case 'user': return <UserDetails user={data as AdminUser} formatDate={formatDate} />
+      case 'listing': return <ListingDetails listing={data as AdminListing} formatDate={formatDate} />
+      case 'order': return <OrderDetails order={data as AdminOrder} data={data} formatDate={formatDate} />
+      case 'dispute': return <DisputeDetails dispute={data as AdminDispute} formatDate={formatDate} />
+      case 'auditLog': return <AuditLogDetails log={data as AuditLogEntry} formatDate={formatDate} />
+      default: return null
     }
-    return baseColors[status as keyof typeof baseColors] || 'bg-[#f9f9f7] text-[#0b5d68]'
   }
-
-  const renderUserDetails = (user: AdminUser) => (
-    <div className="space-y-8">
-      {/* Enhanced Header Info */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-3xl"></div>
-        <div className="relative flex items-center gap-6 p-6 bg-surface-container-high rounded-3xl border border-outline/20">
-          <div className="relative">
-            <div className="w-20 h-20 bg-gradient-to-br from-[#2eb5c2] to-[#2eb5c2]/80 rounded-2xl flex items-center justify-center shadow-xl">
-              <span className="text-2xl font-bold text-white">
-                {user.name.split(' ').map(n => n[0]).join('')}
-              </span>
-            </div>
-            <div className={`absolute -bottom-1 -right-1 w-6 h-6 ${user.status === 'active' ? 'bg-[#2eb5c2]' : 'bg-[#0b5d68]/50'} rounded-full border-4 border-[#f9f9f7]`}></div>
-          </div>
-          <div className="flex-1">
-            <div className="mb-3">
-              <h3 className="text-2xl font-bold text-[#0b5d68] font-headline tracking-tight">{user.name}</h3>
-              <p className="text-sm text-[#0b5d68]/70 font-medium mt-1">{user.email}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor(user.verificationStatus, 'user')} shadow-sm`}>
-                <span className="material-symbols-outlined text-sm mr-1">
-                  {user.verificationStatus === 'verified' ? 'verified_user' : 'pending_actions'}
-                </span>
-                <span className="capitalize">{user.verificationStatus}</span>
-              </span>
-              <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold bg-[#f9f9f7] border border-[#0b5d68]/20 text-[#0b5d68] shadow-sm">
-                <span className="material-symbols-outlined text-sm mr-1">badge</span>
-                {user.role}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Enhanced Main Details */}
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-gradient-to-br from-[#f9f9f7] to-[#f9f9f7]/50 rounded-2xl p-6 border border-[#0b5d68]/20 shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-[#2eb5c2]/10 rounded-xl flex items-center justify-center">
-                <span className="material-symbols-outlined text-lg text-[#2eb5c2]">analytics</span>
-              </div>
-              <h4 className="text-lg font-semibold text-[#0b5d68] font-headline">Performance</h4>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-[#f9f9f7] rounded-xl">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm text-[#0b5d68]/70">inventory_2</span>
-                  <span className="text-sm font-medium text-[#0b5d68]/70">Listings</span>
-                </div>
-                <span className="text-lg font-bold text-[#2eb5c2]">{user.listings}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-[#f9f9f7] rounded-xl">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm text-[#0b5d68]/70">shopping_cart</span>
-                  <span className="text-sm font-medium text-[#0b5d68]/70">Orders</span>
-                </div>
-                <span className="text-lg font-bold text-[#2eb5c2]">{user.orders}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-[#f9f9f7] rounded-xl">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm text-[#0b5d68]/70">payments</span>
-                  <span className="text-sm font-medium text-[#0b5d68]/70">Revenue</span>
-                </div>
-                <span className="text-lg font-bold text-[#e89151]">{user.revenue}</span>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gradient-to-br from-surface-container to-surface-container-high rounded-2xl p-6 border border-outline/20 shadow-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center">
-                <span className="material-symbols-outlined text-lg text-secondary">contact_mail</span>
-              </div>
-              <h4 className="text-lg font-semibold text-on-surface font-headline">Contact</h4>
-            </div>
-            <div className="space-y-4">
-              <div className="p-3 bg-surface rounded-xl">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="material-symbols-outlined text-sm text-on-surface-variant">phone</span>
-                  <span className="text-sm font-medium text-on-surface-variant">Phone</span>
-                </div>
-                <span className="text-sm text-on-surface">{user.phone}</span>
-              </div>
-              <div className="p-3 bg-surface rounded-xl">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="material-symbols-outlined text-sm text-on-surface-variant">location_on</span>
-                  <span className="text-sm font-medium text-on-surface-variant">Location</span>
-                </div>
-                <span className="text-sm text-on-surface">{user.location}</span>
-              </div>
-              <div className="p-3 bg-surface rounded-xl">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="material-symbols-outlined text-sm text-on-surface-variant">calendar_today</span>
-                  <span className="text-sm font-medium text-on-surface-variant">Joined</span>
-                </div>
-                <span className="text-sm text-on-surface">{formatDate(user.createdAt)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Enhanced Meta Info */}
-      <div className="bg-gradient-to-br from-surface-container to-surface-container-high rounded-2xl p-6 border border-outline/20 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-tertiary/10 rounded-xl flex items-center justify-center">
-            <span className="material-symbols-outlined text-lg text-tertiary">info</span>
-          </div>
-          <h4 className="text-lg font-semibold text-on-surface font-headline">Meta Information</h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-center justify-between p-3 bg-surface rounded-xl">
-            <span className="text-sm font-medium text-on-surface-variant">User ID</span>
-            <span className="text-sm font-mono text-on-surface font-semibold">{user.id}</span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-surface rounded-xl">
-            <span className="text-sm font-medium text-on-surface-variant">Last Active</span>
-            <span className="text-sm text-on-surface">{formatDate(user.lastActive)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderListingDetails = (listing: AdminListing) => (
-    <div className="space-y-6">
-      {/* Header Info */}
-      <div className="pb-4 border-b border-outline">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center">
-            <span className="material-symbols-outlined text-lg text-on-surface-variant">
-              {listing.category === 'produce' ? 'agriculture' : listing.category === 'warehouse' ? 'warehouse' : 'local_shipping'}
-            </span>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold text-on-surface font-headline">{listing.title}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(listing.status, 'listing')}`}>
-                {listing.status}
-              </span>
-              {listing.isBlocked && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#d55b39] text-white shadow-sm">
-                  Blocked
-                </span>
-              )}
-              {listing.featured && (
-                <span className="material-symbols-outlined text-warning text-sm">star</span>
-              )}
-            </div>
-          </div>
-        </div>
-        <p className="text-on-surface-variant">{listing.description}</p>
-      </div>
-
-      {/* Main Details */}
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-surface-container rounded-lg p-4">
-            <h4 className="text-sm font-medium text-on-surface-variant mb-2">Listing Details</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Category</span>
-                <span className="text-sm text-on-surface capitalize">{listing.category}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Price</span>
-                <span className="text-sm font-medium text-primary">${listing.price}/{listing.unit}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Quantity</span>
-                <span className="text-sm text-on-surface">{listing.quantity} {listing.unit}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Location</span>
-                <span className="text-sm text-on-surface">{listing.location}</span>
-              </div>
-            </div>
-          </div>
-          <div className="bg-surface-container rounded-lg p-4">
-            <h4 className="text-sm font-medium text-on-surface-variant mb-2">Performance</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Views</span>
-                <span className="text-sm font-medium text-on-surface">{listing.views}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Inquiries</span>
-                <span className="text-sm font-medium text-on-surface">{listing.inquiries}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Reports</span>
-                <span className={`text-sm font-medium ${listing.reports > 0 ? 'text-error' : 'text-on-surface'}`}>
-                  {listing.reports}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Seller Info */}
-      <div className="bg-surface-container rounded-lg p-4">
-        <h4 className="text-sm font-medium text-on-surface-variant mb-2">Seller Information</h4>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Name</span>
-            <span className="text-on-surface">{listing.seller.name}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Email</span>
-            <span className="text-on-surface">{listing.seller.email}</span>
-          </div>
-          {/* <div className="flex justify-between">
-            <span className="text-on-surface-variant">Location</span>
-            <span className="text-on-surface">{listing.seller.location || 'N/A'}</span>
-          </div> */}
-        </div>
-      </div>
-
-      {/* Meta Info */}
-      <div className="bg-surface-container rounded-lg p-4">
-        <h4 className="text-sm font-medium text-on-surface-variant mb-2">Meta Information</h4>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Listing ID</span>
-            <span className="font-mono text-on-surface">{listing.id}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Created</span>
-            <span className="text-on-surface">{formatDate(listing.createdAt)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Expires</span>
-            <span className="text-on-surface">{formatDate(listing.expiresAt)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderOrderDetails = (order: AdminOrder) => (
-    <div className="space-y-6">
-      {/* Header Info */}
-      <div className="pb-4 border-b border-outline">
-        <h3 className="text-xl font-semibold text-on-surface font-headline mb-2">{order.id}</h3>
-        <p className="text-on-surface-variant">{order.listingTitle}</p>
-        <div className="flex items-center gap-2 mt-2">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status, 'order')}`}>
-            {order.status}
-          </span>
-          {/* only shows when blocked */}
-          {(data as AdminListing).isBlocked && (
-            <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold bg-[#d55b39] text-white shadow-sm">
-              blocked
-            </span>
-          )}
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.paymentStatus, 'order')}`}>
-            {order.paymentStatus.replace('_', ' ')}
-          </span>
-        </div>
-      </div>
-
-      {/* Main Details */}
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-surface-container rounded-lg p-4">
-            <h4 className="text-sm font-medium text-on-surface-variant mb-2">Order Details</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Quantity</span>
-                <span className="text-sm text-on-surface">{order.quantity} units</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Unit Price</span>
-                <span className="text-sm text-on-surface">${order.unitPrice.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Total Amount</span>
-                <span className="text-sm font-medium text-primary">${order.totalAmount.toFixed(2)}</span>
-              </div>
-              {order.trackingNumber && (
-                <div className="flex justify-between">
-                  <span className="text-sm text-on-surface-variant">Tracking</span>
-                  <span className="text-sm text-on-surface">{order.trackingNumber}</span>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="bg-surface-container rounded-lg p-4">
-            <h4 className="text-sm font-medium text-on-surface-variant mb-2">Participants</h4>
-            <div className="space-y-2">
-              <div>
-                <span className="text-sm text-on-surface-variant">Buyer</span>
-                <div className="text-sm text-on-surface">{order.buyer.name}</div>
-                <div className="text-xs text-on-surface-variant">{order.buyer.email}</div>
-              </div>
-              <div>
-                <span className="text-sm text-on-surface-variant">Seller</span>
-                <div className="text-sm text-on-surface">{order.seller.name}</div>
-                <div className="text-xs text-on-surface-variant">{order.seller.email}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Meta Info */}
-      <div className="bg-surface-container rounded-lg p-4">
-        <h4 className="text-sm font-medium text-on-surface-variant mb-2">Meta Information</h4>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Order ID</span>
-            <span className="font-mono text-on-surface">{order.id}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Created</span>
-            <span className="text-on-surface">{formatDate(order.createdAt)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Updated</span>
-            <span className="text-on-surface">{formatDate(order.updatedAt)}</span>
-          </div>
-          {order.deliveryDate && (
-            <div className="flex justify-between">
-              <span className="text-on-surface-variant">Delivery Date</span>
-              <span className="text-on-surface">{formatDate(order.deliveryDate)}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderDisputeDetails = (dispute: AdminDispute) => (
-    <div className="space-y-6">
-      {/* Header Info */}
-      <div className="pb-4 border-b border-outline">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center">
-            <span className="material-symbols-outlined text-lg text-on-surface-variant">gavel</span>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold text-on-surface font-headline">{dispute.id}</h3>
-            <p className="text-on-surface-variant">{dispute.orderTitle}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(dispute.status, 'dispute')}`}>
-                {dispute.status}
-              </span>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(dispute.priority, 'dispute')}`}>
-                {dispute.priority}
-              </span>
-            </div>
-          </div>
-        </div>
-        <p className="text-on-surface-variant">{dispute.description}</p>
-      </div>
-
-      {/* Main Details */}
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-surface-container rounded-lg p-4">
-            <h4 className="text-sm font-medium text-on-surface-variant mb-2">Dispute Details</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Type</span>
-                <span className="text-sm text-on-surface capitalize">{dispute.type}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Priority</span>
-                <span className="text-sm text-on-surface capitalize">{dispute.priority}</span>
-              </div>
-              {dispute.assignedTo && (
-                <div className="flex justify-between">
-                  <span className="text-sm text-on-surface-variant">Assigned To</span>
-                  <span className="text-sm text-on-surface">{dispute.assignedTo}</span>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="bg-surface-container rounded-lg p-4">
-            <h4 className="text-sm font-medium text-on-surface-variant mb-2">Participants</h4>
-            <div className="space-y-2">
-              <div>
-                <span className="text-sm text-on-surface-variant">Raised By</span>
-                <div className="text-sm text-on-surface">{dispute.raisedBy.name}</div>
-                <div className="text-xs text-on-surface-variant">{dispute.raisedBy.email} ({dispute.raisedBy.role})</div>
-              </div>
-              <div>
-                <span className="text-sm text-on-surface-variant">Against</span>
-                <div className="text-sm text-on-surface">{dispute.against.name}</div>
-                <div className="text-xs text-on-surface-variant">{dispute.against.email} ({dispute.against.role})</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Evidence */}
-      {dispute.evidence.length > 0 && (
-        <div className="bg-surface-container rounded-lg p-4">
-          <h4 className="text-sm font-medium text-on-surface-variant mb-2">Evidence ({dispute.evidence.length} files)</h4>
-          <div className="space-y-2">
-            {dispute.evidence.map((evidence, index) => (
-              <div key={index} className="flex items-center justify-between p-2 bg-surface rounded-lg">
-                <span className="text-sm text-on-surface">📎 {evidence.split('/').pop()}</span>
-                <button className="text-xs text-primary hover:text-primary-container">Download</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Resolution */}
-      {dispute.resolution && (
-        <div className="bg-tertiary-container rounded-lg p-4">
-          <h4 className="text-sm font-medium text-tertiary mb-2">Resolution</h4>
-          <p className="text-sm text-on-tertiary mb-2">{dispute.resolution}</p>
-          <div className="text-xs text-tertiary-variant">
-            Resolved on: {formatDate(dispute.resolvedAt!)}
-          </div>
-        </div>
-      )}
-
-      {/* Meta Info */}
-      <div className="bg-surface-container rounded-lg p-4">
-        <h4 className="text-sm font-medium text-on-surface-variant mb-2">Meta Information</h4>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Dispute ID</span>
-            <span className="font-mono text-on-surface">{dispute.id}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Created</span>
-            <span className="text-on-surface">{formatDate(dispute.createdAt)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Updated</span>
-            <span className="text-on-surface">{formatDate(dispute.updatedAt)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
 
   const renderActions = () => {
     if (!data) return null
 
-    const baseActions = [
-      { label: 'Edit', color: 'bg-[#e89151] hover:bg-[#d55b39] text-white hover:shadow-md transition-all duration-200', actionType: 'edit' },
-      { label: 'Delete', color: 'border border-[#d55b39] text-[#d55b39] hover:bg-[#d55b39] hover:text-white transition-all duration-200', actionType: 'delete' }
-    ]
+    const actions: { label: string; variant: 'primary' | 'danger' | 'ghost'; onClick?: () => void }[] = []
 
-    let specificActions: any[] = []
-
-    switch (type) {
-      case 'user':
-        const user = data as AdminUser
-        specificActions = user.status === 'active'
-          ? [{ label: 'Ban', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_ban' }]
-          : [{ label: 'Unban', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_ban' }]
-
-        // Add verification button
-        if (user.verificationStatus === 'verified') {
-          specificActions.push({ label: 'Unverify', color: 'bg-[#e89151] hover:bg-[#d55b39] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_verify' })
-        } else {
-          specificActions.push({ label: 'Verify User', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200', actionType: 'toggle_verify' })
-        }
-        break
-      // case 'listing':
-      //   const listing = data as AdminListing
-      //   specificActions = listing.status === 'pending'
-      //     ? [
-      //       { label: 'Approve', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
-      //       { label: 'Reject', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' },
-      //       { label: 'Flag', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer' }
-      //     ]
-      //     : [{
-      //       label: listing.isBlocked ? 'Unblock' : 'Block',
-      //       color: listing.isBlocked
-      //         ? 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200'
-      //         : 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200'
-      //     }]
-      //   break
-      case 'listing':
-        const listing = data as AdminListing
-        specificActions = [
-          {
-            label: listing.isBlocked ? 'Unblock' : 'Block',
-            color: listing.isBlocked
-              ? 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200 cursor-pointer'
-              : 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200 cursor-pointer',
-            onClick: async () => {
-              try {
-                const response = await fetch(apiUrl(`/listings/${listing.id}/block`), {
-                  method: 'PATCH',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    ...authHeaders()
-                  },
-                })
-                const result = await response.json()
-                if (result.success) {
-                  onAction?.('block_toggled', { id: listing.id })
-                  onClose()
-                }
-              } catch (err) {
-                console.error('Failed to toggle block:', err)
-              }
-            }
-          }
-        ]
-        break
-      case 'order':
-        const order = data as AdminOrder
-        specificActions = order.status === 'disputed'
-          ? [{ label: 'Resolve Dispute', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200' }]
-          : []
-        break
-      case 'dispute':
-        const dispute = data as AdminDispute
-        specificActions = dispute.status === 'open'
-          ? [
-            { label: 'Start Investigation', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200' },
-            { label: 'Escalate', color: 'bg-[#d55b39] hover:bg-[#b84630] text-white hover:shadow-md transition-all duration-200' }
-          ]
-          : dispute.status === 'investigating'
-            ? [{ label: 'Resolve', color: 'bg-[#2eb5c2] hover:bg-[#0b5d68] text-white hover:shadow-md transition-all duration-200' }]
-            : []
-        break
+    if (type === 'user') {
+      const user = data as AdminUser
+      actions.push({
+        label: user.status === 'active' ? 'Ban user' : 'Unban user',
+        variant: user.status === 'active' ? 'danger' : 'primary',
+        onClick: () => onAction?.('toggle_ban', data),
+      })
+      actions.push({
+        label: user.verificationStatus === 'verified' ? 'Unverify' : 'Verify user',
+        variant: user.verificationStatus === 'verified' ? 'ghost' : 'primary',
+        onClick: () => onAction?.('toggle_verify', data),
+      })
     }
 
-    const allActions = [...specificActions, ...baseActions]
+    if (type === 'listing') {
+      const listing = data as AdminListing
+      actions.push({
+        label: listing.isBlocked ? 'Unblock' : 'Block listing',
+        variant: listing.isBlocked ? 'primary' : 'danger',
+        onClick: async () => {
+          try {
+            const res = await fetch(apiUrl(`/listings/${listing.id}/block`), {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            })
+            const result = await res.json()
+            if (result.success) { onAction?.('block_toggled', { id: listing.id }); onClose() }
+          } catch (err) { console.error('Failed to toggle block:', err) }
+        },
+      })
+    }
+
+    if (type === 'dispute') {
+      const dispute = data as AdminDispute
+      if (dispute.status === 'open') {
+        actions.push({ label: 'Start investigation', variant: 'primary', onClick: () => onAction?.('investigate', data) })
+        actions.push({ label: 'Escalate', variant: 'danger', onClick: () => onAction?.('escalate', data) })
+      } else if (dispute.status === 'investigating') {
+        actions.push({ label: 'Mark resolved', variant: 'primary', onClick: () => onAction?.('resolve', data) })
+      }
+    }
+
+    // Edit + Delete always last
+    actions.push({ label: 'Edit', variant: 'ghost', onClick: () => onAction?.('edit', data) })
+    actions.push({ label: 'Delete', variant: 'danger', onClick: () => onAction?.('delete', data) })
+
+    if (actions.length === 0) return null
 
     return (
-      <div className="p-6">
-        <div className="mb-4">
-          <h4 className="text-sm font-medium text-[#0b5d68] mb-1">Actions</h4>
-        </div>
+      <div className="px-6 py-4 border-t border-[#edf1f3] bg-white">
+        <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#0b5d68]/40 mb-3">Actions</p>
         <div className="flex flex-wrap gap-2">
-          {allActions.map((action, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                if (action.onClick) {
-                  action.onClick()
-                } else if (action.actionType && onAction) {
-                  onAction(action.actionType, data)
-                }
-              }}
-              className={`px-4 py-2 text-sm font-medium rounded-lg cursor-pointer ${action.color}`}
-            >
-              {action.label}
-            </button>
+          {actions.map((a, i) => (
+            <ActionButton key={i} label={a.label} variant={a.variant} onClick={a.onClick} />
           ))}
         </div>
       </div>
     )
   }
 
-  const renderAuditLogDetails = (log: AuditLogEntry) => (
-    <div className="space-y-6">
-      {/* Header Info */}
-      <div className="pb-4 border-b border-outline">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 bg-surface-container rounded-lg flex items-center justify-center">
-            <span className="material-symbols-outlined text-lg text-on-surface-variant">
-              {getCategoryIcon(log.category)}
-            </span>
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold text-on-surface font-headline">{log.action}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(log.severity, 'auditLog')}`}>
-                {log.severity}
-              </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant">
-                {log.category}
-              </span>
-            </div>
-          </div>
-        </div>
-        <p className="text-on-surface-variant">{log.details}</p>
-      </div>
-
-      {/* Main Details */}
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-surface-container rounded-lg p-4">
-            <h4 className="text-sm font-medium text-on-surface-variant mb-2">Event Details</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Category</span>
-                <span className="text-sm text-on-surface capitalize">{log.category}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Severity</span>
-                <span className="text-sm text-on-surface capitalize">{log.severity}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Resource</span>
-                <span className="text-sm text-on-surface">{log.resource}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">Resource ID</span>
-                <span className="text-sm text-on-surface">{log.resourceId}</span>
-              </div>
-            </div>
-          </div>
-          <div className="bg-surface-container rounded-lg p-4">
-            <h4 className="text-sm font-medium text-on-surface-variant mb-2">User Information</h4>
-            <div className="space-y-2">
-              {log.userName && (
-                <div className="flex justify-between">
-                  <span className="text-sm text-on-surface-variant">User</span>
-                  <span className="text-sm text-on-surface">{log.userName}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-sm text-on-surface-variant">IP Address</span>
-                <span className="text-sm text-on-surface">{log.ipAddress}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Meta Info */}
-      <div className="bg-surface-container rounded-lg p-4">
-        <h4 className="text-sm font-medium text-on-surface-variant mb-2">Meta Information</h4>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Log ID</span>
-            <span className="font-mono text-on-surface">{log.id}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-on-surface-variant">Timestamp</span>
-            <span className="text-on-surface">{formatDate(log.timestamp)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderContent = () => {
-    if (!data) return null
-
-    switch (type) {
-      case 'user':
-        return renderUserDetails(data as AdminUser)
-      case 'listing':
-        return renderListingDetails(data as AdminListing)
-      case 'order':
-        return renderOrderDetails(data as AdminOrder)
-      case 'dispute':
-        return renderDisputeDetails(data as AdminDispute)
-      case 'auditLog':
-        return renderAuditLogDetails(data as AuditLogEntry)
-      default:
-        return null
-    }
-  }
-
-  const getSeverityIcon = (severity: string) => {
-    switch (severity) {
-      case 'critical':
-        return 'error'
-      case 'error':
-        return 'error_outline'
-      case 'warning':
-        return 'warning'
-      case 'info':
-        return 'info'
-      default:
-        return 'info'
-    }
-  }
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'user':
-        return 'person'
-      case 'listing':
-        return 'inventory_2'
-      case 'order':
-        return 'shopping_cart'
-      case 'payment':
-        return 'payments'
-      case 'system':
-        return 'settings'
-      case 'security':
-        return 'security'
-      default:
-        return 'info'
-    }
-  }
-
   if (!isOpen) return null
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex"
-      onClick={handleOverlayClick}
-    >
-      {/* Enhanced Overlay */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
+  const typeLabel = type === 'auditLog' ? 'Audit log' : type.charAt(0).toUpperCase() + type.slice(1)
 
-      {/* Premium Drawer */}
+  return (
+    <div className="fixed inset-0 z-50 flex" onClick={handleOverlayClick}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[3px]" />
+
+      {/* Drawer */}
       <div
         ref={drawerRef}
-        className={`absolute right-0 top-0 h-full w-full max-w-2xl bg-[#f9f9f7] shadow-2xl transform transition-all duration-300 ease-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        className="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-[−32px_0_80px_rgba(11,93,104,0.12)] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Enhanced Header */}
-        <div className="relative bg-gradient-to-r from-[#2eb5c2]/10 to-transparent border-b border-[#0b5d68]/20">
-          <div className="relative flex items-center justify-between p-8">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#2eb5c2] to-[#2eb5c2]/80 rounded-2xl flex items-center justify-center shadow-lg">
-                  <span className="material-symbols-outlined text-xl text-white">
-                    {type === 'user' ? 'person' : type === 'listing' ? 'inventory_2' : type === 'order' ? 'shopping_cart' : type === 'dispute' ? 'gavel' : 'history'}
-                  </span>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-[#0b5d68] font-headline tracking-tight">
-                    {type.charAt(0).toUpperCase() + type.slice(1)} Details
-                  </h2>
-                  <p className="text-sm text-[#0b5d68]/70 font-medium mt-1">
-                    Comprehensive information and management options
-                  </p>
-                </div>
+        {/* Header */}
+        <div className="relative shrink-0 bg-white border-b border-[#edf1f3] px-6 pt-6 pb-5">
+          {/* Teal accent bar */}
+          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-[#0b5d68] via-[#2eb5c2] to-[#2eb5c2]/20" />
+
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-md bg-gradient-to-br from-[#0b5d68] to-[#2eb5c2] flex items-center justify-center shrink-0 shadow-md">
+                <span className="material-symbols-outlined text-white" style={{ fontSize: '18px' }}>
+                  {typeIcon(type)}
+                </span>
               </div>
-              {data && (
-                <div className="flex items-center gap-3 mt-4">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f9f9f7] rounded-xl border border-[#0b5d68]/20">
-                    <span className="material-symbols-outlined text-sm text-[#0b5d68]/70">tag</span>
-                    <span className="text-sm font-mono text-[#0b5d68] font-semibold">{(data as any).id}</span>
-                  </div>
-                  {type === 'user' && (
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor((data as AdminUser).status, 'user')} shadow-sm`}>
-                      {(data as AdminUser).status}
-                    </span>
-                  )}
-                  {type === 'listing' && (
-                    <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor((data as AdminListing).status, 'listing')} shadow-sm`}>
-                        {(data as AdminListing).status}
-                      </span>
-                      {/*  only shows when blocked */}
-                      {(data as AdminListing).isBlocked && (
-                        <span className="inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold bg-[#d55b39] text-white shadow-sm">
-                          blocked
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  {type === 'dispute' && (
-                    <span className={`inline-flex items-center px-3 py-1.5 rounded-xl text-sm font-semibold ${getStatusColor((data as AdminDispute).status, 'dispute')} shadow-sm`}>
-                      {(data as AdminDispute).status}
-                    </span>
-                  )}
-                </div>
-              )}
+              {/* <div>
+                <h2 className="text-base font-bold text-[#0b5d68] leading-tight">{typeLabel} details</h2>
+                {data && (
+                  <p className="text-[11px] text-[#667085] font-mono mt-0.5 truncate max-w-[260px]">
+                    {(data as any).id}
+                  </p>
+                )}
+              </div> */}
+              <div>
+                <h2 className="text-base font-bold text-[#0b5d68] leading-tight">
+                  {typeLabel} details
+                </h2>
+
+                {data &&
+                  (type === 'listing' ? (
+                    <>
+                      <p className="text-[11px] font-semibold text-[#0b5d68] mt-0.5">
+                        {(data as AdminListing).seller.name}
+                      </p>
+                      <p className="text-[11px] text-[#667085] truncate max-w-[260px]">
+                        {(data as AdminListing).seller.email}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-[11px] text-[#667085] font-mono mt-0.5 truncate max-w-[260px]">
+                      {(data as any).id}
+                    </p>
+                  ))}
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="p-3 text-[#0b5d68]/70 hover:text-[#0b5d68] hover:bg-[#f9f9f7] rounded-xl transition-all duration-200 hover:scale-105 shadow-sm"
+              className="w-8 h-8 rounded flex items-center justify-center text-[#999] hover:text-[#0b5d68] hover:bg-[#f0f4f5] transition-colors shrink-0 mt-0.5"
+              aria-label="Close"
             >
-              <span className="material-symbols-outlined text-xl">close</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
             </button>
           </div>
         </div>
 
-        {/* Enhanced Content */}
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <div className="p-8">
-            {renderContent()}
-          </div>
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-[#f7f9fa]">
+          {renderContent()}
         </div>
 
-        {/* Enhanced Actions */}
-        <div className="border-t border-[#0b5d68]/20 bg-[#f9f9f7]/50">
-          {renderActions()}
-        </div>
+        {/* Footer actions */}
+        {renderActions()}
       </div>
     </div>
   )
